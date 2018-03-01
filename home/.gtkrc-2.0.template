@@ -1,0 +1,2 @@
+gtk-theme-name="{{ OOMOXTHEME }}"
+gtk-icon-theme-name="{{ OOMOXTHEME }}"

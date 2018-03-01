@@ -1,0 +1,6 @@
+[Settings]
+gtk-application-prefer-dark-theme = false
+gtk-theme-name = {{ OOMOXTHEME }}
+gtk-fallback-icon-theme = gnome
+gtk-icon-theme-name = {{ OOMOXTHEME }}
+gtk-font-name = Source Code Pro 8

@@ -1,0 +1,4 @@
+pip install --user git+git://github.com/powerline/powerline
+git clone https://github.com/powerline/fonts.git
+npm install -g i3-style
+ponymix
