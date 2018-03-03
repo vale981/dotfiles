@@ -19,7 +19,7 @@ function main {
     printHeading "Creating Color Themes."
     grey "This might take a while..."
     setColors $SCHEME
-    #generateGtk
+    generateGtk
 
     # Install Home files
     printHeading "Installing Home Directory files."
