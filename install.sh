@@ -1,6 +1,5 @@
 #!/bin/bash
 source colors.sh
-source config.sh
 source install_init.sh
 source tools/mo
 
@@ -13,12 +12,15 @@ echo -e "
 DOTFILES_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOTFILES_TMP=$DOTFILES_DIR/.tmp #TODO remove
 FISH_DIR=$HOME/.config/fish
+DOTDIR="dots"
 SCHEME="light"
 YES=false
 
+source config.sh
+
 function main {
     # extract options and their arguments into variables.
-    while getopts ":s: :i :y" OPT; do
+    while getopts ":s: :i :y :d:" OPT; do
 	case $OPT in
 	    s)
 		SCHEME=$OPTARG
@@ -32,47 +34,27 @@ function main {
 	    y)
 		YES=true
 		;;
+	    d)
+		DOTDIR=$OPTARG
+		;;
 	    \?)
-		echo "Usage $0 [-i -> Initialize] [-s -> Colorscheme] [-y]"
+		echo "Usage $0 [-i -> Initialize] [-s -> Colorscheme] [-y] [-d -> dotfile dir, optional]"
 		exit
 		;;
 	esac
     done
     
     mkdir -p $DOTFILES_TMP
-
+    
     printHeading "Creating Color Themes."
     setColors $SCHEME
     generateGtk
 
-    # Install Home files
-    printHeading "Installing Home Directory files."
-    linkall "home" ""
-    grey "Reloading Xresources"
-
-    # Configure Fish
-    printHeading "Configuring Fish"
-
-    ## Install Fish Config
-    linkall "fish" ".config/fish"
-    grey "Renaming fishd.Lobsang..."
-    mv $FISH_DIR/fishd.Lobsang "$FISH_DIR/fishd.$(cat /etc/hostname)"
-
-    # Configure Powerline
-    printHeading "Configuring i3"
-
-    ## Install Powerline Config
-    linkall "i3" ".config/i3"
-    linkall "i3status" ".config/i3status"
-
-    # Install GTK stuff
-    linkall "gtk" ".config/gtk-3.0/"
-
-    # Install Useful Scripts
-    printHeading "Installing Scripts"
-    linkall "scripts" ".scripts"
+    # Install Stuff
+    autolink
     
     # Reload
+    printHeading "Reloading"
     xrdb -load ${HOME}/.Xresources >/dev/null 2>&1
     killall -s USR1 st >/dev/null 2>&1
     i3-msg restart >/dev/null 2>&1
@@ -128,7 +110,7 @@ function linkall {
         mkdir -p $HOME/$INSTALL_PREFIX/$d
     done
 
-    FILES=$(find $DOTFILES_DIR/$DIR -type f | sed -n "s|^${DOTFILES_DIR}/${DIR}/||p")
+    FILES=$(find $DOTFILES_DIR/$DIR ! -name '.link' ! -name '*~' ! -name '#*' -type f |  sed "s~$DOTFILES_DIR/*$DIR/*~~")
 
     for f in $FILES
     do
@@ -159,6 +141,19 @@ function linkall {
         ln -sfv $CDIR/$f $HOME/$INSTALL_PREFIX/$f
     done
 
+}
+
+function autolink {
+    for DIR in $DOTFILES_DIR/$DOTDIR/*/ ; do
+	if [ ! -f $DIR/.link ]; then
+	    continue
+	fi
+
+	source $DIR/.link
+	printHeading "$TASKNAME"
+	CLEANED_DIR=$(echo $DIR | sed "s~$DOTFILES_DIR/~~")
+	linkall $CLEANED_DIR $LINKTO
+    done
 }
 
 main "$@"
