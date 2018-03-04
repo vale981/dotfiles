@@ -50,6 +50,10 @@ function main {
     setColors $SCHEME
     generateGtk
 
+    # Wallpaper
+    printHeading "Install Wallpaper"
+    ln -svf $DOTFILES_DIR/wallpaper/$SCHEME $HOME/.wallpaper
+    
     # Install Stuff
     autolink
     
@@ -59,6 +63,7 @@ function main {
     killall -s USR1 st >/dev/null 2>&1
     i3-msg restart >/dev/null 2>&1
     gtkrc-reload >/dev/null 2>&1
+    $HOME/.scripts/wallp
 }
 
 ## Helpers
