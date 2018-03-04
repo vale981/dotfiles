@@ -1,0 +1,6 @@
+WIFI_DEV="wlp2s0"
+ETH_DEV="enp1s0"
+
+MAIN_NET=$WIFI_DEV
+BATTERY="BAT1"
+MAIN_FONT="Source Code Pro 8"

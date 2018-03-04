@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Shamelessly taken from http://mjwall.com/blog/2013/10/04/how-i-use-emacs/
 

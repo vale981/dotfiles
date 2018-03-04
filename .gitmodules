@@ -1,0 +1,6 @@
+[submodule "tools/oomox-gtk-theme"]
+	path = tools/oomox-gtk-theme
+	url = https://github.com/actionless/oomox-gtk-theme.git
+[submodule "tools/oomox-archdroid-icon-theme"]
+	path = tools/oomox-archdroid-icon-theme
+	url = https://github.com/actionless/oomox-archdroid-icon-theme.git

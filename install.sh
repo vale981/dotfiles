@@ -1,5 +1,7 @@
 #!/bin/bash
 source colors.sh
+source config.sh
+source install_init.sh
 source tools/mo
 
 echo -e "
@@ -11,13 +13,35 @@ echo -e "
 DOTFILES_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOTFILES_TMP=$DOTFILES_DIR/.tmp #TODO remove
 FISH_DIR=$HOME/.config/fish
-SCHEME=$1
+SCHEME="light"
+YES=false
 
 function main {
+    # extract options and their arguments into variables.
+    while getopts ":s: :i :y" OPT; do
+	case $OPT in
+	    s)
+		SCHEME=$OPTARG
+		grey "\n---------> Using color scheme: $SCHEME"
+		;;
+	    i)
+		printHeading "Installing initial dependencies!"
+		installInit
+		exit
+		;;
+	    y)
+		YES=true
+		;;
+	    \?)
+		echo "Usage $0 [-i -> Initialize] [-s -> Colorscheme] [-y]"
+		exit
+		;;
+	esac
+    done
+    
     mkdir -p $DOTFILES_TMP
 
     printHeading "Creating Color Themes."
-    grey "This might take a while..."
     setColors $SCHEME
     generateGtk
 
@@ -39,7 +63,7 @@ function main {
 
     ## Install Powerline Config
     linkall "i3" ".config/i3"
-    linkall "yabar" ".config/yabar"
+    linkall "i3status" ".config/i3status"
 
     # Install GTK stuff
     linkall "gtk" ".config/gtk-3.0/"
@@ -49,10 +73,10 @@ function main {
     linkall "scripts" ".scripts"
     
     # Reload
-    xrdb -load ${HOME}/.Xresources
-    killall -s USR1 st 
-    i3-msg restart
-    gtkrc-reload
+    xrdb -load ${HOME}/.Xresources >/dev/null 2>&1
+    killall -s USR1 st >/dev/null 2>&1
+    i3-msg restart >/dev/null 2>&1
+    gtkrc-reload >/dev/null 2>&1
 }
 
 ## Helpers
@@ -112,13 +136,13 @@ function linkall {
         # Get Commands
         CMD=$(sed -n '/#\$/p' $CDIR/$f | sed -e 's/#\$//g')
 
-        if [  ${f: -9} == ".template" ]; then
+        if [[  ${f: -9} == ".template" ]]; then
             mkdir -p $DOTFILES_TMP/$DIR
             cat $CDIR/$f | mo > $DOTFILES_TMP/$DIR/${f:0:-9}
             CDIR=$DOTFILES_TMP/$DIR/
             f=${f:0:-9}
         fi
-        if [ -f $HOME/$INSTALL_PREFIX/$f ]; then
+        if ! $YES && [ -f $HOME/$INSTALL_PREFIX/$f ]; then
             attention "Overwrite File '$HOME/$INSTALL_PREFIX/$f' [Y/n] "
             read c
             case $c in

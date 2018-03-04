@@ -33,7 +33,11 @@ fi
 }
 
 function generateGtk {
-    OOMOXCONF=$(mktemp)
+    OOMOXCONF="$DOTFILES_TMP/$SCHEME"
+
+    if [ ! -f $OOMOXCONF ]; then
+	grey "Generating...\nThis might take a while..."
+
     cat > $OOMOXCONF << EOF
 NAME="hiroTheme"
 NOGUI=True
@@ -58,7 +62,8 @@ EOF
     sed -i -s 's/#//' $OOMOXCONF
 
     # make the theme
-    oomox-cli $OOMOXCONF  >/dev/null 2>&1
-    oomox-archdroid-icons-cli $OOMOXCONF  >/dev/null 2>&1
-    OOMOXTHEME="oomox-"$(basename $OOMOXCONF)
+    tools/oomox-gtk-theme/change_color.sh $OOMOXCONF >/dev/null 2>&1
+    tools/oomox-archdroid-icon-theme/change_color.sh $OOMOXCONF  >/dev/null 2>&1
+    fi
+    OOMOXTHEME="oomox-"$SCHEME
 }

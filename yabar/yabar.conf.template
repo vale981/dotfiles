@@ -2,7 +2,7 @@
 bar-list = ["topbar"];
 topbar:{
 	font: "Monospace, FontAwesome 8";
-	block-list: ["ya_i3", "ya_title", "ya_date", "ya_uptime", "ya_cpu", "ya_bw", "ya_mem", "ya_disk", "song"];
+	block-list: ["workspaces", "ya_title", "ya_date", "ya_uptime", "ya_cpu", "ya_bw" {{ #BATTERY }}, "ya_bat" {{ /BATTERY }}, "ya_mem", "ya_disk", "song" {{ #WIFI_DEV }}, "ya_wifi" {{ /WIFI_DEV }}];
 	position: "bottom";
 	gap-vertical: 10;
 	#width: 1100;
@@ -15,14 +15,26 @@ topbar:{
 	#border-size: 2;
 	monitor: "HDMI-0"; # get names from `xrandr`
 
-	ya_i3: {
-    		exec: "YABAR_I3_DESKTOPS";
-    underline-color-rgb: 0x{{S_base01}};
-    		align: "left";
-    		fixed-size: 40;
-    background-color-rgb:0x{{S_base01}};
-    		internal-option1: "         ";
-    	}
+	# ya_i3: {
+    # 		exec: "YABAR_I3_DESKTOPS";
+    # underline-color-rgb: 0x{{S_base01}};
+    # 		align: "left";
+    # 		fixed-size: 40;
+    # background-color-rgb:0x{{S_base01}};
+    # 		internal-option1: "         ";
+    # 	}
+			           workspaces: {
+               exec: "YABAR_WORKSPACES";
+               underline-color-rgb: 0xde935f;
+               focused: {    
+                   background-color-rgb: 0xBF674A;
+                   underline-color-rgb: 0xde935f;
+               }
+               urgent: {}
+               align: "left";
+               internal-option2: "name";
+               variable-size: true;
+       }
 	ya_title: {
 		exec: "YABAR_TITLE";
 		align: "left";
@@ -66,7 +78,7 @@ topbar:{
 		fixed-size: 110;
 		interval: 1;
 		internal-prefix: " ";
-		internal-option1: "enp3s0"; # "default" or network interface from `ifconfig` or `ip link`
+		internal-option1: "{{ TRAFFIC_COUNTER }}"; # "default" or network interface from `ifconfig` or `ip link`
 		internal-option2: " "; # characters to be placed before up/down data
 		#background-color-rgb:0x547980;
 		background-color-rgb:0x{{S_base01}};
@@ -85,16 +97,19 @@ topbar:{
 		underline-color-rgb:0x{{S_red}};
 		internal-spacing: true;
 	}
-	# ya_bat: {
-	# 	exec: "YABAR_BATTERY";
-	# 	align: "right";
-	# 	fixed-size: 70;
-	# 	interval: 1;
-	# 	internal-suffix: "%";
-	# 	internal-option1: "BAT0";
-	# 	internal-option2: "    ";
-	# 	#internal-spacing: true;
-	# }
+	{{ #BATTERY }}
+	ya_bat: {
+		exec: "YABAR_BATTERY";
+		align: "right";
+		fixed-size: 70;
+		interval: 1;
+		internal-suffix: "%";
+		internal-option1: "{{ BATTERY }}";
+		background-color-rgb:0x{{S_base01}};
+		internal-option2: "    ";
+		#internal-spacing: true;
+	}
+	{{ /BATTERY }}
 	ya_disk: {
 		exec: "YABAR_DISKIO";
 		align: "right";
@@ -104,7 +119,7 @@ topbar:{
 		internal-option1: "sda"; # name from `lsblk` or `ls /sys/class/block/`
 		internal-option2: " "; # characters to be placed before in/out data
 		background-color-rgb:0x{{S_base01}};
-		underline-color-rgb:0x{{S_green}};
+		underline-color-rgb:0x{{S_blue}};
 		#internal-spacing: true;
 	}
 	ya_diskspace: {
@@ -122,15 +137,17 @@ topbar:{
 		background-color-rgb:0x{{S_base01}};
 		underline-color-rgb:0x{{S_blue}};
 	}
-	# YA_wifi: {
-	# 	exec: "YABAR_WIFI";
-	# 	internal-prefix: "  ";
-	# 	internal-suffix: " ";
-	# 	internal-option1: "wlan0";
-	# 	variable-size: true;
-	# 	background-color-rgb: 0x444444;
-	# }
-
+	{{ #WIFI_DEV }}
+	 ya_wifi: {
+		exec: "YABAR_WIFI";
+		internal-prefix: "  ";
+		internal-suffix: " ";
+		internal-option1: "{{ WIFI_DEV }}";
+		variable-size: true;
+		type: "persist";
+		background-color-rgb:0x{{S_base01}};	
+	}
+	{{ /WIFI_DEV }}
 	song: {
 		exec: "YABAR_SONG";
 		fixed-size: 200;
