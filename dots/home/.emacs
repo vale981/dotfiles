@@ -31,7 +31,7 @@
     ("8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
  '(package-selected-packages
    (quote
-    (nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline))))
+    (rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

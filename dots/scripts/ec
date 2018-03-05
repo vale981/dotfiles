@@ -27,6 +27,7 @@
 
 # Number of current visible frames,
 # Emacs daemon always has a visible frame called F1
+   
 visible_frames() {
   emacsclient -a "" -e '(length (visible-frame-list))'
 }

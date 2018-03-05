@@ -208,6 +208,9 @@ exec --no-startup-id compton
 # Wallpaper
 exec --no-startup-id {{ HOME }}/.scripts/wallp
 
+# Dunst
+exec --no-startup-id dunst
+
 # Media Keys
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 0 +5% #increase sound volume
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 0 -5% #decrease sound volume
