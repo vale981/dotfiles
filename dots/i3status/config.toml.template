@@ -58,6 +58,15 @@ device = "{{ BATTERY }}"
 {{ /BATTERY }}
 
 [[block]]
+block = "toggle"
+
+text = "NEO"
+command_state = "setxkbmap -query | grep neo"
+command_on = "setxkbmap de -variant neo"
+command_off = "setxkbmap us"
+interval = 5
+
+[[block]]
 block = "time"
 interval = 60
 format = "%a %d/%m %R"
