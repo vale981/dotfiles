@@ -20,8 +20,11 @@ source config.sh
 
 function main {
     # extract options and their arguments into variables.
-    while getopts ":s: :i :y :d:" OPT; do
+    while getopts ":s: :i :y :d: :c:" OPT; do
 	case $OPT in
+	    c)
+		source $OPTARG
+		;;
 	    s)
 		SCHEME=$OPTARG
 		grey "\n---------> Using color scheme: $SCHEME"
@@ -38,7 +41,7 @@ function main {
 		DOTDIR=$OPTARG
 		;;
 	    \?)
-		echo "Usage $0 [-i -> Initialize] [-s -> Colorscheme] [-y] [-d -> dotfile dir, optional]"
+		echo "Usage $0 [-i -> Initialize] [-s -> Colorscheme] [-c -> config, default: config.sh] [-y] [-d -> dotfile dir, optional]"
 		exit
 		;;
 	esac

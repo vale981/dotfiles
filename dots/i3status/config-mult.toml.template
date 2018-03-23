@@ -1,0 +1,11 @@
+icons = "awesome"
+
+[theme]
+name = "solarized-dark"
+[theme.overrides]
+idle_bg = "{{ S_base02 }}"
+idle_fg = "{{ S_base3 }}"
+
+[[block]]
+block = "focused_window"
+max_width = 21
