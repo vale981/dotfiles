@@ -36,10 +36,10 @@ format = "{1m}"
 [[block]]
 block = "sound"
 
-[[block]]
-block = "music"
-player = "google-play-music-desktop-player"
-buttons = ["play", "next"]
+# [[block]]
+# block = "music"
+# player = "google-play-music-desktop-player"
+# buttons = ["play", "next"]
 
 [[block]]
 block = "net"
