@@ -28,7 +28,7 @@ font pango:monospace 8
 
 # Borders
 hide_edge_borders both
-for_window [class="Firefox"] border none
+# for_window [class="Firefox"] border none
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -241,5 +241,8 @@ bindsym "Control + 6" exec --no-startup-id setxkbmap de
 exec --no-startup-id i3-msg 'workspace 4; exec st -hold -e ssh chat@ssh.protagon.space -p 5123'
 exec --no-startup-id sudo skiller-ctl -p 2
 exec --no-startup-id sudo skiller-ctl -w 1
+exec --no-startup-id udiskie
 exec --no-startup-id xfce4-clipman
+exec --no-startup-id pulseaudio
+exec --no-startup-id udiskie
 exec ~/.scripts ec -e ''
