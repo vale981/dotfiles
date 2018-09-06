@@ -36,8 +36,9 @@
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-    (dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor indium flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode php+-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
- '(safe-local-variable-values (quote ((TeX-master . t)))))
+    (counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor indium flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode php+-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+ '(safe-local-variable-values (quote ((TeX-master . t))))
+ '(tramp-syntax (quote default) nil (tramp)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -54,15 +55,16 @@
 
 ;;;; Company
 (with-eval-after-load 'company
-  '(progn 
-     (push 'company-rtags company-backends)
-     (global-company-mode)
-     (global-set-key (kbd "<C-tab>") (function company-complete))
-     (define-key company-active-map (kbd "C-n") 'company-select-next-or-abort)
-     (define-key company-active-map (kbd "C-p") 'company-select-previous-or-abort)))
+  (global-company-mode)
+  (global-set-key (kbd "<C-tab>") 'company-complete)
+  (define-key company-active-map (kbd "C-n") 'company-select-next-or-abort)
+  (define-key company-active-map (kbd "C-p") 'company-select-previous-or-abort))
 
 ;;;; Magit
 (global-set-key (kbd "C-x g") 'magit-status)
+
+;;;; Sage
+(add-hook 'sage-shell-after-prompt-hook #'sage-shell-view-mode)
 
 ;;;; GDB
 (setq
@@ -128,12 +130,12 @@
 
 ;;;;; Racer
 (setq racer-cmd "racer") ;; Rustup binaries PATH
-(setq racer-rust-src-path "~/Documents/Projects/Rust") ;; Rust source code PATH
+(setq racer-rust-src-path "~/src/rust/src") ;; Rust source code PATH
 
 (add-hook 'rust-mode-hook #'racer-mode)
 (add-hook 'racer-mode-hook #'eldoc-mode)
 (add-hook 'racer-mode-hook #'company-mode)
-;;(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
+(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
 
 ;;; JavasScipt
 (require 'js2-refactor)
@@ -159,7 +161,108 @@
 (require 'haskell-process)
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
+;;; Org
+  (require 'org-install)
+  (require 'org-habit)
+  
+  (require 'doc-view)
+  (setq doc-view-resolution 144)
 
+
+  (setq org-treat-S-cursor-todo-selection-as-state-change nil)
+  (setq org-todo-state-tags-triggers
+        (quote (("CANCELLED" ("CANCELLED" . t))
+                ("WAITING" ("WAITING" . t))
+                ("HOLD" ("WAITING") ("HOLD" . t))
+                (done ("WAITING") ("HOLD"))
+                ("TODO" ("WAITING") ("CANCELLED") ("HOLD"))
+                ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
+                ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
+
+
+  (setq org-todo-keywords
+        '(
+          (sequence "TODO" "WAITING" "NEXT" "HOLD" "|" "DONE")
+          (sequence "BESORGEN" "WARTEN" "|" "BESORGT")
+          (sequence "OUTOFSTOCK" "|" "INSTOCK")
+          (sequence "RESOLVE" "ASK" "RESEARCH" "|" "RESOLVED")
+          (sequence "HOMEWORK" "ACTIVE" "|" "FINISHED"))
+        )
+
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
+  (setq org-directory "~/Documents/org")
+  (setq org-default-notes-file "~/Documents/org/refile.org")
+  
+  ;; I use C-c c to start capture mode
+  (global-set-key (kbd "C-c c") 'org-capture)
+
+  ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
+  (setq org-capture-templates
+        (quote (("t" "Todo" entry (file org-default-notes-file)
+                 "* TODO %?\n%U\n%a\n")
+                ("n" "Note" entry (file org-default-notes-file)
+                 "* %? :NOTE:\n%U\n%a\n")
+                ("q" "Question" entry (file "~/Documents/org/refile/questions.org")
+                 "* RESOLVE %? :QUESTION:\n%U\n%a\n")
+                ("e" "Exercise" entry (file "~/Documents/org/refile/exercises.org")
+                 "* HOMEWORK %? :EXERCISE:\n%a\n")
+                ("j" "Journal" entry (file+datetree "~/Documents/org/diary.org")
+                 "**** %?\n%U\n")
+                ("m" "Meeting" entry (file org-default-notes-file)
+                 "** %? :MEETING:\n"
+                 ))))
+
+
+(setq org-agenda-files (list "~/Documents/org/todo.org"))
+
+					;Targets include this file and any file contributing to the agenda - up to 9 levels deep
+  (setq org-refile-targets (quote ((nil :maxlevel . 9)
+                                   (org-agenda-files :maxlevel . 9))))
+
+                                        ; Use full outline paths for refile targets - we file directly with IDO
+  (setq org-refile-use-outline-path t)
+
+                                        ; Targets complete directly with IDO
+  (setq org-outline-path-complete-in-steps nil)
+
+                                        ; Allow refile to create parent tasks with confirmation
+  (setq org-refile-allow-creating-parent-nodes (quote confirm))
+
+                                        ; Use the current window for indirect buffer display
+  (setq org-indirect-buffer-display 'current-window)
+
+;;;; Refile settings
+                                        ; Exclude DONE state tasks from refile targets
+  (defun bh/verify-refile-target ()
+    "Exclude todo keywords with a done state from refile targets"
+    (not (member (nth 2 (org-heading-components)) org-done-keywords)))
+
+  (setq org-refile-target-verify-function 'bh/verify-refile-target)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (setq org-agenda-custom-commands
+        '(("X" agenda "" nil ("~/Documents/org/out/agenda.html"))
+          ("n" "Notes" tags "NOTE"
+           ((org-agenda-overriding-header "Notes")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/notes.html"))
+	  ("s" "Next" todo "NEXT"
+           ((org-agenda-overriding-header "Next")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/next.html"))
+          ("f" "Questions" tags "QUESTION"
+           ((org-agenda-overriding-header "Questions")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/question.html"))
+          ("l" "Einkaufsliste" todo "OUTOFSTOCK"
+           ((org-agenda-overriding-header "Einkaufsliste")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/einkaufsliste.html"))
+          ))
+
+;;; Email
+;;use org mode for eml files (useful for thunderbird plugin)
+(add-to-list 'auto-mode-alist '("\\.eml\\'" . org-mode))
 
 ;;; Ricing
 ;;(require 'xresources-theme)

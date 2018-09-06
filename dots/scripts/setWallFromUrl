@@ -1,0 +1,5 @@
+#!/bin/bash
+URL=$1
+FILE=$(mktemp)
+wget -q $URL -O $FILE
+feh --bg-scale $FILE 

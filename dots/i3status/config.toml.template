@@ -2,6 +2,7 @@ icons = "awesome"
 
 [theme]
 name = "solarized-dark"
+
 [theme.overrides]
 idle_bg = "{{ S_base02 }}"
 idle_fg = "{{ S_base3 }}"
@@ -33,8 +34,9 @@ block = "load"
 interval = 1
 format = "{1m}"
 
-#[[block]]
-#block = "sound"
+
+# [[block]]
+# block = "sound"
 
 # [[block]]
 # block = "music"
@@ -43,12 +45,8 @@ format = "{1m}"
 
 [[block]]
 block = "net"
-device = "{{ MAIN_NET }}"
-ssid = true
-ip = true
-speed_up = false
-graph_up = false
 interval = 5
+device = "{{ MAIN_NET }}"
 
 {{ #BATTERY }}
 [[block]]

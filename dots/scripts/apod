@@ -1,0 +1,7 @@
+#!/bin/bash
+DATA=$(curl -s "https://api.nasa.gov/planetary/apod?api_key=bRA8UPQcbm4k3RAfv7c87bKPdvLqN9PCkZp3n6sg")
+TITLE=$(echo $DATA | jq -r ".title")
+DESK=$(echo $DATA | jq -r ".explanation")
+URL=$(echo $DATA | jq -r ".hdurl")
+printf "$TITLE\n===========\n$DESK"
+setWallFromUrl $URL
