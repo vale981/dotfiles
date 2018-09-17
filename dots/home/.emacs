@@ -53,6 +53,15 @@
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (package-initialize)
 
+; fetch the list of packages available 
+(unless package-archive-contents
+  (package-refresh-contents))
+
+; install the missing packages
+(dolist (package package-selected-packages)
+  (unless (package-installed-p package)
+    (package-install package)))
+
 ;;;; Company
 (with-eval-after-load 'company
   (global-company-mode)
