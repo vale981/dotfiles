@@ -36,7 +36,7 @@
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-    (counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor indium flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode php+-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (indium counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode php+-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(tramp-syntax (quote default) nil (tramp)))
 (custom-set-faces
@@ -146,7 +146,7 @@
 
 (js2r-add-keybindings-with-prefix "C-c C-r")
 (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
-
+(add-hook 'js2-mode-hook #'indium-interaction-mode)
 ;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
 ;; unbind it.
 (define-key js-mode-map (kbd "M-.") nil)
