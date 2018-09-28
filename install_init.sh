@@ -2,9 +2,7 @@
 function installInit {
     printHeading "Install OMF"
 
-    OMF_TMP=$(mktemp)
-    curl -L https://get.oh-my.fish > $OMF_TMP
-    fish $OMF_TMP
+    curl -L https://get.oh-my.fish | fish
 
     printSubHeading "Install OMF Theme"
     fish -c "omf install bobthefish"

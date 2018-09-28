@@ -36,7 +36,7 @@
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-    (counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor indium flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode php+-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor indium flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(tramp-syntax (quote default) nil (tramp)))
 (custom-set-faces
@@ -46,6 +46,19 @@
  ;; If there is more than one, they won't work right.
  )
 
+(defun unpop-to-mark-command ()
+  "Unpop off mark ring. Does nothing if mark ring is empty."
+  (interactive)
+  (when mark-ring
+    (let ((pos (marker-position (car (last mark-ring)))))
+      (if (not (= (point) pos))
+          (goto-char pos)
+        (setq mark-ring (cons (copy-marker (mark-marker)) mark-ring))
+        (set-marker (mark-marker) pos)
+        (setq mark-ring (nbutlast mark-ring))
+        (goto-char (marker-position (car (last mark-ring))))))))
+(global-set-key (kbd "C-c m c") 'mc/edit-lines)
+(global-set-key (kbd "C-x <spc>") 'mc/edit-lines)
 
 
 ;;; Packages

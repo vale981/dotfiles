@@ -109,7 +109,7 @@ function linkall {
     DIRS=$(find $DOTFILES_DIR/$DIR -type d | sed -n "s|^${DOTFILES_DIR}/${DIR}/||p")
 
     # Create Base-Dir
-    grey "Creating Directory: $HOME/$INSTALL_PREFIX/"
+    grey "Creating Directory: $HOME/$INSTALL_PREFIX"
     mkdir -p $HOME/$INSTALL_PREFIX
 
     for d in $DIRS
