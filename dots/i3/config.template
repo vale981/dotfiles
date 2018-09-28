@@ -211,7 +211,9 @@ exec --no-startup-id sh {{ HOME }}/.screenlayout/{{ SCREENLAYOUT }}.sh
 {{/MONITORS[*]}}
 
 # Rygel
-exec --no-startup-id rygel
+{{#RYGEL}}
+	exec --no-startup-id rygel
+{{/RYGEL}}
 
 # Compton
 exec --no-startup-id compton --vsync opengl
@@ -226,6 +228,10 @@ exec --no-startup-id dunst
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 0 +5% #increase sound volume
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 0 -5% #decrease sound volume
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 0 toggle # mute sound
+bindsym XF86MonBrightnessUp exec xbacklight -inc 5 # increase screen brightness
+bindsym XF86MonBrightnessDown exec xbacklight -dec 5 # decrease screen brightness
+
+
 bindsym $mod+Shift+S exec --no-startup-id xfce4-screenshooter -c -r
 
 bindsym XF86AudioPrev exec playerctl prev
@@ -237,7 +243,7 @@ bindsym $mod+m move workspace to output left
 bindsym $mod+Shift+m move workspace to output right
 bindsym $mod+p exec ~/.scripts/ec -c
 
-client.focused {{S_base02}} {{S_base02}} {{S_base00}} #6c71c4
+client.focused {{S_base02}} {{S_base00}} {{S_base00}} #6c71c4
 client.focused_inactive {{S_base02}} {{S_base03}} {{S_base00}} #6c71c4
 client.unfocused {{S_base02}} {{S_base03}} {{S_base00}} #586e75
 client.urgent {{S_orange}} {{S_base03}} {{S_base00}} #dc322f
@@ -257,4 +263,6 @@ exec --no-startup-id sudo skiller-ctl -w 1
 exec --no-startup-id udiskie
 exec --no-startup-id xfce4-clipman
 exec --no-startup-id udiskie
-exec ~/.scripts ec -e ''
+exec --no-startup-id ~/.scripts ec -e ''
+exec --no-startup-id setxkbmap -layout us -option ctrl:nocaps
+exec --no-startup-id xmodmap -e "keycode 107 = Super_L"

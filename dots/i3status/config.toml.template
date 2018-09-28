@@ -48,12 +48,12 @@ block = "net"
 interval = 5
 device = "{{ MAIN_NET }}"
 
-{{ #BATTERY }}
+{{#BATTERIES}}
 [[block]]
 block = "battery"
 interval = 10
-device = "{{ BATTERY }}"
-{{ /BATTERY }}
+device = "{{.}}"
+{{/BATTERIES}}
 
 [[block]]
 block = "toggle"
