@@ -16,14 +16,12 @@ DOTDIR="dots"
 SCHEME="light"
 YES=false
 
-source config.sh
-
 function main {
     # extract options and their arguments into variables.
     while getopts ":s: :i :y :d: :c:" OPT; do
 	case $OPT in
 	    c)
-		source $OPTARG
+		CONFIG=$OPTARG
 		;;
 	    s)
 		SCHEME=$OPTARG
@@ -46,6 +44,13 @@ function main {
 		;;
 	esac
     done
+
+    # load the right config
+    if [ -z "$CONFIG"]; then
+	source $DOTFILES_DIR/config.sh
+    else
+	source $CONFIG
+    fi
     
     mkdir -p $DOTFILES_TMP
     

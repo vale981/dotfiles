@@ -19,6 +19,7 @@
 (desktop-save-mode 1)
 
 ;;; Custom Scripts
+(load (expand-file-name "~/.roswell/helper.el"))
 (defun close-all-buffers ()
   (interactive)
   (mapc 'kill-buffer (buffer-list)))
@@ -36,11 +37,7 @@
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-<<<<<<< HEAD
-    (indium counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode php+-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
-=======
-    (counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor indium flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
->>>>>>> 1e990ce5eb33bb9ed26c8e6a62b9c97dab5bd03e
+    (paredit slime-volleyball slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(tramp-syntax (quote default) nil (tramp)))
 (custom-set-faces
@@ -148,6 +145,14 @@
 (setq enable-recursive-minibuffers t)
 (global-set-key "\C-s" 'swiper)
 
+;;;; LISP
+(add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+(add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+(add-hook 'ielm-mode-hook             #'enable-paredit-mode)
+(add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+(add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+(add-hook 'scheme-mode-hook           #'enable-paredit-mode)
+
 ;;;; Rust
 (add-hook 'rust-mode-hook 'cargo-minor-mode)
 (add-hook 'rust-mode-hook
@@ -163,7 +168,11 @@
 (add-hook 'racer-mode-hook #'company-mode)
 (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
 
-;;; JavasScipt
+;;;; Latex
+(auctex-latexmk-setup)
+
+
+;;;; JavasScipt
 (require 'js2-refactor)
 (require 'xref-js2)(add-hook 'js2-mode-hook #'js2-refactor-mode)
 
@@ -179,6 +188,11 @@
 
 (add-hook 'js2-mode-hook (lambda ()
 			   (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
+
+(add-hook 'js2-mode-hook
+          #'(lambda ()
+              (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
+              (define-key js2-mode-map "@" 'js-doc-insert-tag)))
 
 (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
 
@@ -294,4 +308,18 @@
 ;;(require 'xresources-theme)
 (load-theme 'solarized t)
 (powerline-default-theme)
+(global-set-key (kbd "M-g w") 'avy-goto-word-1)
+(put 'upcase-region 'disabled nil)
 
+;;; Avy
+(global-set-key (kbd "M-g w") 'avy-goto-word-1)
+(global-set-key (kbd "M-g f") 'avy-goto-line)
+(global-set-key (kbd "C-'") 'avy-goto-char-2)
+(defun avy-goto-paren ()
+  (interactive)
+  (avy--generic-jump "(" nil 'pre))
+(global-set-key (kbd "M-g p") 'avy-goto-paren)
+(defun avy-goto-cparen ()
+  (interactive)
+  (avy--generic-jump ")" nil 'pre))
+(global-set-key (kbd "M-g c") 'avy-goto-cparen)
