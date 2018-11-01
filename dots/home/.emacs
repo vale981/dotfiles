@@ -37,8 +37,9 @@
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-    (paredit slime-volleyball slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
+ '(show-paren-mode t)
  '(tramp-syntax (quote default) nil (tramp)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -145,14 +146,6 @@
 (setq enable-recursive-minibuffers t)
 (global-set-key "\C-s" 'swiper)
 
-;;;; LISP
-(add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-(add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-(add-hook 'ielm-mode-hook             #'enable-paredit-mode)
-(add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-(add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-(add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-
 ;;;; Rust
 (add-hook 'rust-mode-hook 'cargo-minor-mode)
 (add-hook 'rust-mode-hook
@@ -201,8 +194,23 @@
 (require 'haskell-process)
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
+;;; LISP
+(load (expand-file-name "~/.roswell/helper.el"))
+(slime-setup '(slime-company))
+
+(defun sm-greek-lambda () (font-lock-add-keywords nil `(("\\<lambda\\>" (0 (progn (compose-region (match-beginning 0) (match-end 0) ,(make-char 'greek-iso8859-7 107)) nil))))))
+
+(add-hook 'emacs-lisp-mode-hook 'sm-greek-lambda)
+(add-hook 'slime-mode-hook 'sm-greek-lambda)
+(add-hook 'emacs-lisp-mode-hook       #'lispy-mode)
+(add-hook 'eval-expression-minibuffer-setup-hook #'lispy-mode)
+(add-hook 'ielm-mode-hook             #'lispy-mode)
+(add-hook 'lisp-mode-hook             #'lispy-mode)
+(add-hook 'lisp-interaction-mode-hook #'lispy-mode)
+(add-hook 'scheme-mode-hook           #'lispy-mode)
+
 ;;; Org
-  (require 'org-install)
+(require 'org-install)
   (require 'org-habit)
   
   (require 'doc-view)
@@ -310,16 +318,15 @@
 (powerline-default-theme)
 (global-set-key (kbd "M-g w") 'avy-goto-word-1)
 (put 'upcase-region 'disabled nil)
+(use-package frames-only-mode
+  :ensure t
+  :config
+  ;; It breaks magit :( TODO: remove
+  (validate-setq frames-only-mode-reopen-frames-from-hidden-x11-virtual-desktops nil)
+  (frames-only-mode 1))
 
 ;;; Avy
 (global-set-key (kbd "M-g w") 'avy-goto-word-1)
 (global-set-key (kbd "M-g f") 'avy-goto-line)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
-(defun avy-goto-paren ()
-  (interactive)
-  (avy--generic-jump "(" nil 'pre))
-(global-set-key (kbd "M-g p") 'avy-goto-paren)
-(defun avy-goto-cparen ()
-  (interactive)
-  (avy--generic-jump ")" nil 'pre))
-(global-set-key (kbd "M-g c") 'avy-goto-cparen)
+
