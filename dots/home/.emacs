@@ -197,9 +197,8 @@
 ;;; LISP
 (load (expand-file-name "~/.roswell/helper.el"))
 (slime-setup '(slime-company))
-
 (defun sm-greek-lambda () (font-lock-add-keywords nil `(("\\<lambda\\>" (0 (progn (compose-region (match-beginning 0) (match-end 0) ,(make-char 'greek-iso8859-7 107)) nil))))))
-
+(define-key lispy-mode-map (kbd "M-(") #'lispy-parens-auto-wrap)
 (add-hook 'emacs-lisp-mode-hook 'sm-greek-lambda)
 (add-hook 'slime-mode-hook 'sm-greek-lambda)
 (add-hook 'emacs-lisp-mode-hook       #'lispy-mode)
@@ -208,6 +207,7 @@
 (add-hook 'lisp-mode-hook             #'lispy-mode)
 (add-hook 'lisp-interaction-mode-hook #'lispy-mode)
 (add-hook 'scheme-mode-hook           #'lispy-mode)
+
 
 ;;; Org
 (require 'org-install)
@@ -318,12 +318,6 @@
 (powerline-default-theme)
 (global-set-key (kbd "M-g w") 'avy-goto-word-1)
 (put 'upcase-region 'disabled nil)
-(use-package frames-only-mode
-  :ensure t
-  :config
-  ;; It breaks magit :( TODO: remove
-  (validate-setq frames-only-mode-reopen-frames-from-hidden-x11-virtual-desktops nil)
-  (frames-only-mode 1))
 
 ;;; Avy
 (global-set-key (kbd "M-g w") 'avy-goto-word-1)
