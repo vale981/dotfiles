@@ -198,7 +198,7 @@
 (load (expand-file-name "~/.roswell/helper.el"))
 (slime-setup '(slime-company))
 (defun sm-greek-lambda () (font-lock-add-keywords nil `(("\\<lambda\\>" (0 (progn (compose-region (match-beginning 0) (match-end 0) ,(make-char 'greek-iso8859-7 107)) nil))))))
-(define-key lispy-mode-map (kbd "M-(") #'lispy-parens-auto-wrap)
+
 (add-hook 'emacs-lisp-mode-hook 'sm-greek-lambda)
 (add-hook 'slime-mode-hook 'sm-greek-lambda)
 (add-hook 'emacs-lisp-mode-hook       #'lispy-mode)
@@ -207,7 +207,8 @@
 (add-hook 'lisp-mode-hook             #'lispy-mode)
 (add-hook 'lisp-interaction-mode-hook #'lispy-mode)
 (add-hook 'scheme-mode-hook           #'lispy-mode)
-
+(with-eval-after-load 'lispy
+  (define-key lispy-mode-map (kbd "M-(") #'lispy-parens-auto-wrap))
 
 ;;; Org
 (require 'org-install)
