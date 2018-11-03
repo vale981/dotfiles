@@ -37,7 +37,7 @@
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-    (lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (pretty-mode lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(show-paren-mode t)
  '(tramp-syntax (quote default) nil (tramp)))
@@ -197,10 +197,43 @@
 ;;; LISP
 (load (expand-file-name "~/.roswell/helper.el"))
 (slime-setup '(slime-company))
-(defun sm-greek-lambda () (font-lock-add-keywords nil `(("\\<lambda\\>" (0 (progn (compose-region (match-beginning 0) (match-end 0) ,(make-char 'greek-iso8859-7 107)) nil))))))
 
-(add-hook 'emacs-lisp-mode-hook 'sm-greek-lambda)
-(add-hook 'slime-mode-hook 'sm-greek-lambda)
+;; (defun sm-greek-lambda ()
+;;   (font-lock-add-keywords
+;;    nil
+;;    `(("\\<lambda\\>"
+;;       (0
+;;        (progn
+;; 	 (compose-region
+;; 	  (match-beginning 0)
+;; 	  (match-end 0)
+;; 	  ,(make-char
+;; 	    'greek-iso8859-7
+;; 	    107))
+;; 	 nil))))))
+
+(defmacro replace-seqs (chars modes)
+  `(progn ,@(loop for char in chars collect `(replace-seq ,(first char) ,(second char) ,modes))
+	  nil))
+
+(defmacro replace-seq (char replacement modes)
+  (let ((fname (gensym)))
+    `(progn
+       (defun ,fname ()
+	 (font-lock-add-keywords
+	  nil
+	  '((,char (0
+		    (progn
+		      (compose-region (match-beginning 0)
+				      (match-end 0)
+				      ,replacement)
+		      nil))))))
+       
+       ,@(loop for mode in modes collect `(add-hook ,mode (quote ,fname)))
+       nil)))
+
+(replace-seqs (("#'" "⍘") ("\\<lambda\\>" "λ") ("\\<funcall\\>" "⨐")) ('slime-mode-hook 'emacs-lisp-mode-hook 'slime-repl-mode-hook))
+
 (add-hook 'emacs-lisp-mode-hook       #'lispy-mode)
 (add-hook 'eval-expression-minibuffer-setup-hook #'lispy-mode)
 (add-hook 'ielm-mode-hook             #'lispy-mode)
