@@ -1,10 +1,13 @@
-;;; General Tweaks
+;;; general Tweaks
 (setq inhibit-startup-screen t)
 (scroll-bar-mode -1)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (blink-cursor-mode 0)
 (server-start)
+;; (set-frame-font "Source Code Pro" nil t)
+(set-frame-font "Fira Code" nil t)
+(set-face-attribute 'default t :font "Fira Code")
 
 ;;; Backup
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
@@ -30,15 +33,14 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
- '(global-prettify-symbols-mode t)
+    ("84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
  '(haskell-interactive-popup-errors 0)
  '(haskell-process-auto-import-loaded-modules t)
  '(haskell-process-log t)
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-    (matrix-client ht esxml tracking ov a request quelpa-use-package quelpa pretty-mode lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (counsel-notmuch circe-notifications circe pretty-mode lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(show-paren-mode t)
  '(tramp-syntax (quote default) nil (tramp)))
@@ -47,7 +49,10 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(circe-highlight-nick-face ((t (:foreground "red" :weight bold))))
+ '(circe-prompt-face ((t (:foreground "dim gray" :weight bold))))
+ '(circe-server-face ((t (:foreground "olive drab"))))
+ '(lui-irc-colors-fg-2-face ((t (:foreground "dim gray")))))
 
 (defun unpop-to-mark-command ()
   "Unpop off mark ring. Does nothing if mark ring is empty."
@@ -213,27 +218,42 @@
 ;; 	    107))
 ;; 	 nil))))))
 
-(defmacro replace-seqs (chars modes)
-  `(progn ,@(loop for char in chars collect `(replace-seq ,(first char) ,(second char) ,modes))
-	  nil))
+;; (defmacro replace-seqs (chars modes)
+;;   `(progn ,@(loop for char in chars collect `(replace-seq ,(first char) ,(second char) ,modes))
+;; 	  nil))
 
-(defmacro replace-seq (char replacement modes)
-  (let ((fname (gensym)))
-    `(progn
-       (defun ,fname ()
-	 (font-lock-add-keywords
-	  nil
-	  '((,char (0
-		    (progn
-		      (compose-region (match-beginning 0)
-				      (match-end 0)
-				      ,replacement)
-		      nil))))))
+;; (defmacro replace-seq (char replacement modes)
+;;   (let ((fname (gensym)))
+;;     `(progn
+;;        (defun ,fname ()
+;; 	 (font-lock-add-keywords
+;; 	  nil
+;; 	  '((,char (0
+;; 		    (progn
+;; 		      (compose-region (match-beginning 0)
+;; 				      (match-end 0)
+;; 				      ,replacement)
+;; 		      nil))))))
        
-       ,@(loop for mode in modes collect `(add-hook ,mode (quote ,fname)))
-       nil)))
+;;        ,@(loop for mode in modes collect `(add-hook ,mode (quote ,fname)))
+;;        nil)))
 
-(replace-seqs (("#'" "⍘") ("\\<lambda\\>" "λ") ("\\<funcall\\>" "⨐")) ('slime-mode-hook 'emacs-lisp-mode-hook 'slime-repl-mode-hook))
+;; (replace-seqs (("#'" "⍘") ("\\<lambda\\>" "λ") ("\\<funcall\\>" "⨐")) ('slime-mode-hook 'emacs-lisp-mode-hook 'slime-repl-mode-hook))
+
+(defun my-add-to-multiple-hooks (function hooks)
+  (mapc (lambda (hook)
+          (add-hook hook function))
+        hooks))
+
+(my-add-to-multiple-hooks
+ #'(lambda ()
+    (mapc (lambda (pair) (push pair prettify-symbols-alist))
+          '(;; Syntax
+            ("funcall" . #x2A10)
+	    ("#'" . #x2358))))
+ '(emacs-lisp-mode-hook
+   lisp-mode-hook
+   lisp-interaction-mode-hook))
 
 (add-hook 'emacs-lisp-mode-hook       #'lispy-mode)
 (add-hook 'eval-expression-minibuffer-setup-hook #'lispy-mode)
@@ -241,6 +261,7 @@
 (add-hook 'lisp-mode-hook             #'lispy-mode)
 (add-hook 'lisp-interaction-mode-hook #'lispy-mode)
 (add-hook 'scheme-mode-hook           #'lispy-mode)
+
 (with-eval-after-load 'lispy
   (define-key lispy-mode-map (kbd "M-(") #'lispy-parens-auto-wrap))
 
@@ -346,6 +367,7 @@
 ;;; Email
 ;;use org mode for eml files (useful for thunderbird plugin)
 (add-to-list 'auto-mode-alist '("\\.eml\\'" . org-mode))
+(global-prettify-symbols-mode 1)
 
 ;;; Ricing
 ;;(require 'xresources-theme)
@@ -353,11 +375,22 @@
 (powerline-default-theme)
 (global-set-key (kbd "M-g w") 'avy-goto-word-1)
 (put 'upcase-region 'disabled nil)
+(global-pretty-mode t)
+(pretty-activate-groups
+ '(:sub-and-superscripts :greek :arithmetic-nary :arrows :arithmetic))
 
 ;;; Avy
 (global-set-key (kbd "M-g w") 'avy-goto-word-1)
 (global-set-key (kbd "M-g f") 'avy-goto-line)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
 
-;;; Matrix
-(require 'matrix-client)
+;;; IRC
+(setq circe-network-options
+      '(("Freenode"
+         :tls t
+         :nick "hiro98"
+         :sasl-username "hiro98"
+         :sasl-password "valentin981"
+         :channels ("#emacs-circe")
+         )))
+
