@@ -33,15 +33,10 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
- '(global-prettify-symbols-mode t)
- '(haskell-interactive-popup-errors 0)
- '(haskell-process-auto-import-loaded-modules t)
- '(haskell-process-log t)
- '(haskell-process-suggest-remove-import-lines t)
+    ("84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
  '(package-selected-packages
    (quote
-    (common-lisp-snippets circe-notifications circe company-tabnine matrix-client ht esxml tracking ov a request quelpa-use-package quelpa pretty-mode lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (all-the-icons ivy-rich ansible sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine meson-mode counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk indium ag js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(show-paren-mode t)
  '(tramp-syntax (quote default) nil (tramp)))
@@ -83,11 +78,19 @@
 
 ;;;; Company
 (with-eval-after-load 'company
+  ;; (add-to-list 'company-backends #'company-tabnine)
   (global-company-mode)
   (add-to-list 'company-backends #'company-tabnine)
+  (setq company-show-numbers t)
+  (setq company-idle-delay 0)
   (global-set-key (kbd "<C-tab>") 'company-complete)
   (define-key company-active-map (kbd "C-n") 'company-select-next-or-abort)
-  (define-key company-active-map (kbd "C-p") 'company-select-previous-or-abort))
+  (define-key company-active-map (kbd "C-p") 'company-select-previous-or-abort)
+  (company-tng-configure-default)
+  (setq company-frontends
+	'(company-tng-frontend
+	  company-pseudo-tooltip-frontend
+	  company-echo-metadata-frontend)))
 
 ;;;; Magit
 (global-set-key (kbd "C-x g") 'magit-status)
@@ -194,15 +197,6 @@
 
 (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
 
-;;; Haskell
-(require 'haskell-interactive-mode)
-(require 'haskell-process)
-(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-
-;;; LISP
-(load (expand-file-name "~/.roswell/helper.el"))
-(slime-setup '(slime-company))
-
 ;; (defun sm-greek-lambda ()
 ;;   (font-lock-add-keywords
 ;;    nil
@@ -237,7 +231,7 @@
 ;;        ,@(loop for mode in modes collect `(add-hook ,mode (quote ,fname)))
 ;;        nil)))
 
-;; (replace-seqs (("#'" "⍘") ("\\<lambda\\>" "λ") ("\\<funcall\\>" "⨐")) ('slime-mode-hook 'emacs-lisp-mode-hook 'slime-repl-mode-hook))
+;; (replace-seqs (("#'" "⍘") ("\\<lambda\\>" "λ") ("\\<funcall\\>" "⨐")) ('emacs-lisp-mode-hook 'slime-repl-mode-hook))
 
 (defun my-add-to-multiple-hooks (function hooks)
   (mapc (lambda (hook)

@@ -265,6 +265,6 @@ exec --no-startup-id xfce4-clipman
 exec --no-startup-id udiskie
 exec --no-startup-id ~/.scripts ec -e ''
 exec --no-startup-id setxkbmap -layout us -option ctrl:nocaps
-exec --no-startup-id xmodmap -e "keycode 107 = Super_L"
+exec --no-startup-id setxkbmap -option ctrl:nocaps
 exec --no-startup-id kdeconnect-indicator
 exec --no-startup-id xset dpms 600
