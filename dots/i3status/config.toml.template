@@ -58,9 +58,9 @@ device = "{{.}}"
 [[block]]
 block = "toggle"
 
-text = "NEO"
-command_state = "setxkbmap -query | grep neo"
-command_on = "setxkbmap de -variant neo"
+text = "WM"
+command_state = "setxkbmap -query | ag workman"
+command_on = "setxkbmap us -variant workman"
 command_off = "setxkbmap us"
 interval = 5
 
