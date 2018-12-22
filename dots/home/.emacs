@@ -33,14 +33,15 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
+    ("8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
+ '(global-prettify-symbols-mode t)
  '(haskell-interactive-popup-errors 0)
  '(haskell-process-auto-import-loaded-modules t)
  '(haskell-process-log t)
  '(haskell-process-suggest-remove-import-lines t)
  '(package-selected-packages
    (quote
-    (counsel-notmuch circe-notifications circe pretty-mode lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (common-lisp-snippets circe-notifications circe company-tabnine matrix-client ht esxml tracking ov a request quelpa-use-package quelpa pretty-mode lispy slime-company slime info-beamer auctex-latexmk indium ag flow-minor-mode company-flow flycheck-flow js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode frames-only-mode dummyparens anaconda-mode magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit php-mode flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(show-paren-mode t)
  '(tramp-syntax (quote default) nil (tramp)))
@@ -49,10 +50,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(circe-highlight-nick-face ((t (:foreground "red" :weight bold))))
- '(circe-prompt-face ((t (:foreground "dim gray" :weight bold))))
- '(circe-server-face ((t (:foreground "olive drab"))))
- '(lui-irc-colors-fg-2-face ((t (:foreground "dim gray")))))
+ )
 
 (defun unpop-to-mark-command ()
   "Unpop off mark ring. Does nothing if mark ring is empty."
@@ -86,6 +84,7 @@
 ;;;; Company
 (with-eval-after-load 'company
   (global-company-mode)
+  (add-to-list 'company-backends #'company-tabnine)
   (global-set-key (kbd "<C-tab>") 'company-complete)
   (define-key company-active-map (kbd "C-n") 'company-select-next-or-abort)
   (define-key company-active-map (kbd "C-p") 'company-select-previous-or-abort))
@@ -394,3 +393,9 @@
          :channels ("#emacs-circe")
          )))
 
+
+(eval-after-load "circe-notifications"
+  '(setq circe-notifications-watch-strings
+      '("drmeister" "hiro" "hiro98")))
+
+(add-hook 'circe-server-connected-hook 'enable-circe-notifications)
