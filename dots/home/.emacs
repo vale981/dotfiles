@@ -33,7 +33,8 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd5621b984cded01717930639ded0e569e1724d058af8" default)))
+    ("84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
+21b984cded01717930639ded0e569e1724d058af8" default)))
  '(package-selected-packages
    (quote
     (all-the-icons ivy-rich ansible sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine meson-mode counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk indium ag js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs nix-mode json-mode multiple-cursors swiper ivy xresources-theme powerline)))
@@ -245,8 +246,8 @@
             ("funcall" . #x2A10)
 	    ("#'" . #x2358))))
  '(emacs-lisp-mode-hook
-   lisp-mode-hook
    lisp-interaction-mode-hook))
+
 
 (add-hook 'emacs-lisp-mode-hook       #'lispy-mode)
 (add-hook 'eval-expression-minibuffer-setup-hook #'lispy-mode)
