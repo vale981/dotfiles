@@ -107,7 +107,6 @@
 (with-eval-after-load 'company
   ;; (add-to-list 'company-backends #'company-tabnine)
   (global-company-mode)
-  (add-to-list 'company-backends #'company-tabnine)
   (setq company-show-numbers t)
   (setq company-idle-delay 0)
   (global-set-key (kbd "<C-tab>")
@@ -260,7 +259,7 @@
 				    '( ;; Syntax
 				      ("funcall" . #x2A10)
 				      ("#'" . #x2358))))
-			  '(emacs-lisp-mode-hook lisp-interaction-mode-hook))
+			  '(emacs-lisp-mode-hook lisp-interaction-mode-hook lisp-mode-hook sly-mode-hook))
 
 
 (add-hook 'emacs-lisp-mode-hook #'lispy-mode)

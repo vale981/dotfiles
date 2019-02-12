@@ -46,7 +46,7 @@ function main {
     done
 
     # load the right config
-    if [ -z "$CONFIG"]; then
+    if [ -z "$CONFIG" ]; then
 	source $DOTFILES_DIR/config.sh
     else
 	source $CONFIG
@@ -64,11 +64,16 @@ function main {
     
     # Install Stuff
     autolink
+
+    if ! [ -z "$SCREEN_LAYOUT" ]; then
+	printHeading "Setting up Screens"
+	$($SCREEN_LAYOUT)
+    fi
     
     # Reload
     printHeading "Reloading"
     xrdb -load ${HOME}/.Xresources >/dev/null 2>&1
-    killall -s USR1 st >/dev/null 2>&1
+    killall -s USR1 xst >/dev/null 2>&1
     i3-msg restart >/dev/null 2>&1
     gtkrc-reload >/dev/null 2>&1
     $HOME/.scripts/wallp

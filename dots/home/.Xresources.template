@@ -46,6 +46,7 @@ rofi.run-list-command: 'fish -c functions'
 *color15: S_base3
 
 URxvt*font: xft:Source Code Pro for Powerline:style=medium:size=9
+st.termname: xterm-256color
 st.font: Source Code Pro for Powerline:style=medium:size=9
 st.borderpx: 0
 URxvt.scrollBar: false
