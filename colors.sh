@@ -62,8 +62,8 @@ EOF
     sed -i -s 's/#//' $OOMOXCONF
 
     # make the theme
-    tools/oomox-gtk-theme/change_color.sh $OOMOXCONF >/dev/null 2>&1
-    tools/oomox-archdroid-icon-theme/change_color.sh $OOMOXCONF  >/dev/null 2>&1
+    tools/oomox-gtk-theme/change_color.sh $OOMOXCONF; >/dev/null 2>&1
+    tools/oomox-archdroid-icon-theme/change_color.sh $OOMOXCONF;  >/dev/null 2>&1
     fi
     OOMOXTHEME="oomox-"$SCHEME
 }
