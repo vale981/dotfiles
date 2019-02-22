@@ -37,30 +37,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-safe-themes (quote ("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
-			      "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279"
-			      "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e"
-			      "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26"
-			      "065efdd71e6d1502877fd56
-21b984cded01717930639ded0e569e1724d058af8"
-			      default)))
- '(package-selected-packages (quote (srefactor sly-repl-ansi-color sly-quicklisp
-					       sly-macrostep sly ranger company-tabnine counsel-notmuch
-					       circe-notifications circe pretty-mode lispy
-					       info-beamer auctex-latexmk ag indium js-doc
-					       yasnippet-classic-snippets yasnippet-snippets
-					       ivy-yasnippet counsel sage-shell-mode dummyparens
-					       magit-filenotify docker-compose-mode docker
-					       xref-js2 js2-refactor flycheck-rtags flycheck
-					       ivy-rtags rtags auctex magit flycheck-rust
-					       avy-flycheck company racer cargo rust-mode
-					       restart-emacs json-mode multiple-cursors swiper
-					       ivy xresources-theme powerline)))
- '(safe-local-variable-values (quote ((TeX-master . t))))
+ '(custom-safe-themes
+   '("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
+21b984cded01717930639ded0e569e1724d058af8" default))
+ '(package-selected-packages
+   '(smartparens srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline))
+ '(safe-local-variable-values '((TeX-master . t)))
  '(show-paren-mode t)
- '(tramp-syntax (quote default)
-		nil
-		(tramp)))
+ '(tramp-syntax 'default nil (tramp)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
