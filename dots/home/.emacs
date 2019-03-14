@@ -8,19 +8,25 @@
 ;; (set-frame-font "Source Code Pro" nil t)
 (set-frame-font "Fira Code" nil t)
 (set-face-attribute 'default t :font "Fira Code")
+(global-hl-line-mode 1)
+
+(defun set-font ()
+  (interactive)
+  (set-frame-font "Fira Code" nil t))
+;; (add-hook 'after-make-frame-functions #'set-font)
 
 ;;; Backup
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
       backup-by-copying
-      t ; Don't delink hardlinks
+      t                                 ; Don't delink hardlinks
       version-control
-      t ; Use version numbers on backups
+      t                               ; Use version numbers on backups
       delete-old-versions
-      t ; Automatically delete excess backups
+      t                          ; Automatically delete excess backups
       kept-new-versions
-      20 ; how many of the newest versions to keep
+      20                     ; how many of the newest versions to keep
       kept-old-versions
-      5 ; and how many of the old
+      5                                 ; and how many of the old
       )
 
 ;;; Desktop
@@ -29,6 +35,7 @@
 ;;; Custom Scripts
 (load (expand-file-name "~/.roswell/helper.el"))
 (defun close-all-buffers ()
+  "Closes all buffers."
   (interactive)
   (mapc 'kill-buffer
 	(buffer-list)))
@@ -41,7 +48,7 @@
    '("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
 21b984cded01717930639ded0e569e1724d058af8" default))
  '(package-selected-packages
-   '(web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker xref-js2 js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline))
+   '(htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline))
  '(safe-local-variable-values '((TeX-master . t)))
  '(show-paren-mode t)
  '(tramp-syntax 'default nil (tramp)))
@@ -76,11 +83,11 @@
 	     '("melpa" . "http://melpa.org/packages/"))
 (package-initialize)
 
-					; fetch the list of packages available 
+;; fetch the list of packages available
 (unless package-archive-contents
   (package-refresh-contents))
 
-					; install the missing packages
+;; install the missing packages
 (dolist (package package-selected-packages)
   (unless (package-installed-p package)
     (package-install package)))
@@ -90,6 +97,7 @@
 ;;;; Company
 (with-eval-after-load 'company
   ;; (add-to-list 'company-backends #'company-tabnine)
+  (add-to-list 'company-backends 'company-tern)
   (global-company-mode)
   (setq company-show-numbers t)
   (setq company-idle-delay 0)
@@ -100,7 +108,6 @@
   (company-tng-configure-default)
   (setq company-frontends '(company-tng-frontend company-pseudo-tooltip-frontend
 						 company-echo-metadata-frontend)))
-
 ;;;; Magit
 (global-set-key (kbd "C-x g")
 		'magit-status)
@@ -147,7 +154,10 @@
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
+(with-eval-after-load 'recentf
+  (setq ivy-use-virtual-buffers nil))
 (global-set-key "\C-s" 'swiper)
+(global-set-key (kbd "\C-x r") 'counsel-recentf)
 
 ;;;; Rust
 (add-hook 'rust-mode-hook 'cargo-minor-mode)
@@ -171,22 +181,22 @@
 
 ;;;; JavasScipt
 (require 'js2-refactor)
-(require 'xref-js2)(add-hook 'js2-mode-hook #'js2-refactor-mode)
+(add-hook 'js2-mode-hook #'js2-refactor-mode)
 
 (add-to-list 'auto-mode-alist
 	     '("\\.js\\'" . js2-mode))
 (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
 
 (js2r-add-keybindings-with-prefix "C-c C-r")
-(add-hook 'js2-mode-hook #'indium-interaction-mode)
+;; (add-hook 'js2-mode-hook #'indium-interaction-mode)
 ;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
 ;; unbind it.
-(define-key js-mode-map (kbd "M-.") nil)
+;; (define-key js-mode-map (kbd "M-.") nil)
 
-(add-hook 'js2-mode-hook
-	  (lambda ()
-	    (add-hook 'xref-backend-functions #'xref-js2-xref-backend
-		      nil t)))
+;; (add-hook 'js2-mode-hook
+;; 	  (lambda ()
+;; 	    (add-hook 'xref-backend-functions #'xref-js2-xref-backend
+;; 		      nil t)))
 
 (add-hook 'js2-mode-hook
 	  #'(lambda ()
@@ -237,11 +247,11 @@
 	hooks))
 
 (my-add-to-multiple-hooks #'(lambda ()
-			      (mapc (lambda (pair)
-				      (push pair prettify-symbols-alist))
-				    '( ;; Syntax
-				      ("funcall" . #x2A10)
-				      ("#'" . #x2358))))
+			     (mapc (lambda (pair)
+				     (push pair prettify-symbols-alist))
+				   '(;; Syntax
+				     ("funcall" . #x2A10)
+				     ("#'" . #x2358))))
 			  '(emacs-lisp-mode-hook lisp-interaction-mode-hook lisp-mode-hook sly-mode-hook))
 
 
@@ -263,7 +273,7 @@
 
 (require 'doc-view)
 (setq doc-view-resolution 144)
-
+(setq org-src-fontify-natively t)
 
 (setq org-treat-S-cursor-todo-selection-as-state-change
       nil)
@@ -356,7 +366,7 @@
 ;;;; Refile settings
                                         ; Exclude DONE state tasks from refile targets
 (defun bh/verify-refile-target ()
-  "Exclude todo keywords with a done state from refile targets"
+  "Exclude todo keywords with a done state from refile targets."
   (not (member (nth 2
 		  (org-heading-components))
 	     org-done-keywords)))
@@ -421,9 +431,18 @@
 ;; (require 'xresources-theme)
 (load-theme 'solarized t)
 (powerline-default-theme)
-(global-set-key (kbd "M-g w")
-		'avy-goto-word-1)
-(put 'upcase-region 'disabled nil)
+;; (doom-modeline-mode 1)
+;; (global-set-key (kbd "M-g w")
+;; 		'avy-goto-word-1)
+;; (setq doom-modeline-height 5)
+;; (setq doom-modeline-buffer-file-name-style 'truncate-upto-project)
+;; (setq doom-modeline-icon t)
+;; (setq doom-modeline-major-mode-icon t)
+;; (setq doom-modeline-major-mode-color-icon t)
+;; (setq doom-modeline-persp-name t)
+;; (setq doom-modeline-lsp t)
+;; (setq doom-modeline-irc t)
+;; (put 'upcase-region 'disabled nil)
 (global-pretty-mode t)
 (pretty-activate-groups '(:sub-and-superscripts :greek :arithmetic-nary
 						:arrows :arithmetic))
@@ -435,6 +454,7 @@
 		'avy-goto-line)
 (global-set-key (kbd "C-'")
 		'avy-goto-char-2)
+(global-set-key (kbd "C-;") 'avy-goto-char-2)
 
 ;;; IRC
 (setq circe-network-options '(("Freenode" :tls t
@@ -511,3 +531,158 @@
           (rename-buffer new-name)
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil))))))
+
+;; Emmet
+(add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+(add-hook 'rjsx-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+(add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+
+;; Tree
+(setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+(setq projectile-switch-project-action 'neotree-projectile-action)
+
+(global-set-key [f8] 'neotree-toggle)
+
+;; Persp
+(add-hook 'after-init-hook #'persp-mode)
+(define-key projectile-mode-map (kbd "s-s") 'projectile-persp-switch-project)
+
+;; Flycheck
+(add-hook 'after-init-hook #'global-flycheck-mode)
+(with-eval-after-load 'flycheck
+  (flycheck-pos-tip-mode))
+
+;; Tabs
+(setq-default indent-tabs-mode nil)
+
+;; Tern
+(add-to-list 'load-path "~/src/tern")
+(autoload 'tern-mode "tern.el" nil t)
+(add-hook 'js2-mode-hook #'tern-mode)
+
+;; Modalka
+(defmacro mk-translate-kbd (from to)
+  "Translate combinations of keys FROM to TO combination.
+Effect of this translation is global."
+  `(define-key key-translation-map (kbd ,from) (kbd ,to)))
+;; (mk-translate-kbd "C-c C-p C-s C-s" "C-c p s s")
+
+(modalka-define-kbd "SPC" "C-SPC")
+;; '
+(modalka-define-kbd "," "C-,")
+;; -
+(modalka-define-kbd "/" "M-.")
+(modalka-define-kbd "." "C-.")
+(modalka-define-kbd ":" "M-;")
+(modalka-define-kbd ";" "C-;")
+(modalka-define-kbd "?" "M-,")
+
+(modalka-define-kbd "0" "C-0")
+(modalka-define-kbd "1" "C-1")
+(modalka-define-kbd "2" "C-2")
+(modalka-define-kbd "3" "C-3")
+(modalka-define-kbd "4" "C-4")
+(modalka-define-kbd "5" "C-5")
+(modalka-define-kbd "6" "C-6")
+(modalka-define-kbd "7" "C-7")
+(modalka-define-kbd "8" "C-8")
+(modalka-define-kbd "9" "C-9")
+
+(modalka-define-kbd "a" "C-a")
+(modalka-define-kbd "b" "C-b")
+;; (modalka-define-kbd "c b" "C-c C-b")
+;; (modalka-define-kbd "c c" "C-c C-c")
+;; (modalka-define-kbd "c k" "C-c C-k")
+;; (modalka-define-kbd "c n" "C-c C-n")
+;; (modalka-define-kbd "c s" "C-c C-s")
+;; (modalka-define-kbd "c u" "C-c C-u")
+;; (modalka-define-kbd "c v" "C-c C-v")
+;; (modalka-define-kbd "c p p" "C-c p p")
+(modalka-define-kbd "c p s" "C-c p s s")
+(modalka-define-kbd "c p p" "C-c p p")
+(modalka-define-kbd "c p f" "C-c p f")
+(modalka-define-kbd "c p c" "C-c p O c")
+(modalka-define-kbd "d" "C-d")
+(modalka-define-kbd "e" "C-e")
+(modalka-define-kbd "f" "C-f")
+(modalka-define-kbd "g" "C-g")
+(modalka-define-kbd "h" "M-h")
+(modalka-define-kbd "i" "C-i")
+(modalka-define-kbd "j" "M-j")
+(modalka-define-kbd "k" "C-k")
+(modalka-define-kbd "l" "C-l")
+(modalka-define-kbd "m" "C-m")
+(modalka-define-kbd "n" "C-n")
+(modalka-define-kbd "o" "C-o")
+(modalka-define-kbd "p" "C-p")
+(modalka-define-kbd "q" "M-q")
+(define-key modalka-mode-map (kbd "Q x") #'persp-switch)
+(modalka-define-kbd "r" "C-r")
+(modalka-define-kbd "s" "C-s")
+(modalka-define-kbd "t" "C-t")
+(modalka-define-kbd "u" "C-u")
+(modalka-define-kbd "v" "C-v")
+(modalka-define-kbd "w" "C-w")
+(modalka-define-kbd "x ;" "C-x C-;")
+(modalka-define-kbd "x e" "C-x C-e")
+(modalka-define-kbd "x o" "C-x o")
+(modalka-define-kbd "x f" "C-x C-f")
+(modalka-define-kbd "x g" "C-x g")
+(modalka-define-kbd "x b" "C-x b")
+(modalka-define-kbd "x s" "C-x C-s")
+(modalka-define-kbd "x S" "C-x s")
+(modalka-define-kbd "x x s" "C-x x s")
+(modalka-define-kbd "x 1" "C-x 1")
+(modalka-define-kbd "x 2" "C-x 2")
+(modalka-define-kbd "x 3" "C-x 3")
+(modalka-define-kbd "x 4" "C-x 4")
+(modalka-define-kbd "x <left>" "C-x <left>")
+(modalka-define-kbd "x x <left>" "C-x x <left>")
+(modalka-define-kbd "x <right>" "C-x <right>")
+(modalka-define-kbd "x x <right>" "C-x x <right>")
+(modalka-define-kbd "y" "C-y")
+(modalka-define-kbd "z" "M-z")
+
+(modalka-define-kbd "A" "M-SPC")
+(modalka-define-kbd "B" "M-b")
+(modalka-define-kbd "C" "M-c")
+(modalka-define-kbd "D" "M-d")
+(modalka-define-kbd "E" "M-e")
+(modalka-define-kbd "F" "M-f")
+(modalka-define-kbd "G" "C-`")
+(modalka-define-kbd "H" "M-H")
+;; J
+(modalka-define-kbd "K" "M-k")
+(modalka-define-kbd "L" "M-l")
+(modalka-define-kbd "M" "M-m")
+(modalka-define-kbd "N" "M-n")
+(modalka-define-kbd "O" "M-o")
+(modalka-define-kbd "P" "M-p")
+(modalka-define-kbd "R" "M-r")
+(modalka-define-kbd "S" "M-S")
+(modalka-define-kbd "T" "M-t")
+(modalka-define-kbd "U" "M-u")
+(modalka-define-kbd "V" "M-v")
+(modalka-define-kbd "W" "M-w")
+;; X
+(modalka-define-kbd "Y" "M-y")
+(modalka-define-kbd "Z" "C-z")
+(modalka-define-kbd "<" "M-<")
+(modalka-define-kbd ">" "M->")
+(global-set-key (kbd "<escape>") #'modalka-mode)
+
+(setq-default cursor-type 'box)
+(setq modalka-cursor-type '(bar . 1))
+
+;; Gutter
+(require 'git-gutter-fringe+)
+(global-git-gutter+-mode 1)
+(git-gutter-fr+-minimal)
+(git-gutter+-turn-on)
+
+;; KBD Macros
+(fset 'create-intl
+   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item '([23 backspace 60 70 111 114 109 97 116 116 101 100 77 101 115 115 97 103 101 32 105 100 61 21 134217786 105 100 return 32 24 111 5 return 21 134217786 105 100 return 58 32 39 25 6 44 24 111] 0 "%d") arg)))
+
+;; Python
+(add-hook 'python-mode-hook 'anaconda-mode)
