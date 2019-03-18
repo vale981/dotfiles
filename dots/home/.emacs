@@ -199,11 +199,6 @@
 ;; 	    (add-hook 'xref-backend-functions #'xref-js2-xref-backend
 ;; 		      nil t)))
 
-(add-hook 'js2-mode-hook
-	  #'(lambda ()
-	      (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
-	      (define-key js2-mode-map "@" 'js-doc-insert-tag)))
-
 (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
 
 ;; (defun sm-greek-lambda ()
@@ -492,6 +487,11 @@
       js-doc-author (format "Valentin Boettcher <%s>" js-doc-mail-address)
       js-doc-url "protagon.space"
       js-doc-license "MIT")
+
+(add-hook 'js2-mode-hook
+	  #'(lambda ()
+	     (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
+	     (define-key js2-mode-map "@" 'js-doc-insert-tag)))
 
 ;; Keybindings
 (progn
