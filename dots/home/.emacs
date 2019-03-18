@@ -48,7 +48,7 @@
    '("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
 21b984cded01717930639ded0e569e1724d058af8" default))
  '(package-selected-packages
-   '(htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline))
+   '(ethan-wspace sphinx-doc python-docstring elpy htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline))
  '(safe-local-variable-values '((TeX-master . t)))
  '(show-paren-mode t)
  '(tramp-syntax 'default nil (tramp)))
@@ -98,6 +98,7 @@
 (with-eval-after-load 'company
   ;; (add-to-list 'company-backends #'company-tabnine)
   (add-to-list 'company-backends 'company-tern)
+  (add-to-list 'company-backends 'company-anaconda)
   (global-company-mode)
   (setq company-show-numbers t)
   (setq company-idle-delay 0)
@@ -686,3 +687,21 @@ Effect of this translation is global."
 
 ;; Python
 (add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook (lambda ()
+                              (require 'sphinx-doc)
+                              (sphinx-doc-mode t)
+                              (whitespace-mode 1)
+                              (python-docstring-mode 1)))
+(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+
+(setq whitespace-line-collumn 79)
+(setq whitespace-style '(face empty tabs lines-tail trailing))
+
+
+
+;; YAS
+(yas-global-mode 1)
+
+;; Whitespace and teaks
+(global-ethan-wspace-mode 1)
+(electric-pair-mode 1)
