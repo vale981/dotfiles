@@ -34,7 +34,7 @@ hide_edge_borders both
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec xst
+bindsym $mod+Return exec WINIT_HIDPI_FACTOR=1.0 alacritty
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -258,11 +258,9 @@ bindsym $mod+Shift+P exec --no-startup-id gopass ls --flat | rofi -dmenu | xargs
 
 #exec --no-startup-id i3-msg 'workspace 4; exec st -hold -e ssh chat@ssh.protagon.space -p 5123'
 {{ #XRANDR }}
-exec .sceenlayout/test.sh
+exec {{ SCREENLAYOUT }}
 {{ /XRANDR }}
 
-exec --no-startup-id sudo skiller-ctl -p 1
-exec --no-startup-id sudo skiller-ctl -w 1
 exec --no-startup-id udiskie
 exec --no-startup-id xfce4-clipman
 exec --no-startup-id udiskie

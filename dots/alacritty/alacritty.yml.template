@@ -17,22 +17,24 @@ env:
 
 # Window dimensions in character columns and lines
 # (changes require restart)
-dimensions:
-  columns: 80
-  lines: 24
+window:
+  dimensions:
+    columns: 80
+    lines: 24
+
+  padding:
+    x: 0
+    y: 0
 
 # Adds this many blank pixels of padding around the window
 # Units are physical pixels; this is not DPI aware.
 # (change requires restart)
-padding:
-  x: 0
-  y: 0
 
 # The FreeType rasterizer needs to know the device DPI for best results
 # (changes require restart)
 dpi:
-  x: 96.0
-  y: 96.0
+  x: 157.0
+  y: 157.0
 
 # Display tabs using this many cells (changes require restart)
 tabspaces: 8
@@ -43,7 +45,6 @@ draw_bold_text_with_bright_colors: true
 # Font configuration (changes require restart)
 font:
   # The normal (roman) font face to use.
-  
   normal:
     family: Source Code Pro for Powerline
     # Style can be specified to pick a specific
@@ -62,20 +63,20 @@ font:
     style: italic
 
   # Point size of the font
-  size: 9
+  size: 9.9
 
   # Offset is the extra space around each character. offset.y can be thought of
   # as modifying the linespacing, and offset.x as modifying the letter spacing.
   offset:
-    x: 0.0
-    y: 0.0
+    x: 0
+    y: 0
 
   # Glyph offset determines the locations of the glyphs within their cells with
   # the default being at the bottom. Increase the x offset to move the glyph to
   # the right, increase the y offset to move the glyph upward.
   glyph_offset:
-    x: 0.0
-    y: 0.0
+    x: 0
+    y: 0
 
   # OS X only: use thin stroke font rendering. Thin strokes are suitable
   # for retina displays, but for non-retina you probably want this set to
@@ -84,39 +85,6 @@ font:
 
 # Should display the render timer
 render_timer: false
-
-# Use custom cursor colors. If true, display the cursor in the cursor.foreground
-# and cursor.background colors, otherwise invert the colors of the cursor.
-custom_cursor_colors: false
-
-# Colors (Tomorrow Night Bright)
-colors:
-  # Default colors
-  primary:
-    background: '0x{{ S_base03 }}'
-    foreground: '0x{{ S_base0 }}'
-
-  # Normal colors
-  normal:
-    black:   '0x{{ S_base2 }}'
-    red:     '0x{{ S_red }}'
-    green:   '0x{{ S_green }}'
-    yellow:  '0x{{ S_yellow }}'
-    blue:    '0x{{ S_blue }}'
-    magenta: '0x{{ S_magenta }}'
-    cyan:    '0x{{ S_cyan }}'
-    white:   '0x{{ S_base02 }}'
-
-  # Bright colors
-  bright:
-    black:   '0x{{ S_base3 }}'
-    red:     '0xcb4b16'
-    green:   '0x{{ S_base1 }}'
-    yellow:  '0x{{ S_base0 }}'
-    blue:    '0x{{ S_base00 }}'
-    magenta: '0x{{ S_violet }}'
-    cyan:    '0x{{ S_base01 }}'
-    white:   '0x{{ S_base03 }}'
 
 # Visual Bell
 #
@@ -258,11 +226,12 @@ mouse_bindings:
 mouse:
   double_click: { threshold: 300 }
   triple_click: { threshold: 300 }
+  hide_cursor_when_typing: false
 
 selection:
   semantic_escape_chars: ",│`|:\"' ()[]{}<>"
 
-hide_cursor_when_typing: false
+
 
 # Live config reload (changes require restart)
 live_config_reload: true
@@ -275,3 +244,32 @@ live_config_reload: true
 #  program: /bin/bash
 #  args:
 #    - --login
+
+
+colors:
+  # Default colors
+  primary:
+    background: '0x{{ S_base03 }}'
+    foreground: '0x{{ S_base0 }}'
+
+  # Normal colors
+  normal:
+    black:   '0x{{ S_base2 }}'
+    red:     '0x{{ S_red }}'
+    green:   '0x{{ S_green }}'
+    yellow:  '0x{{ S_yellow }}'
+    blue:    '0x{{ S_blue }}'
+    magenta: '0x{{ S_magenta }}'
+    cyan:    '0x{{ S_cyan }}'
+    white:   '0x{{ S_base02 }}'
+
+  # Bright colors
+  bright:
+    black:   '0x{{ S_base3 }}'
+    red:     '0xcb4b16'
+    green:   '0x{{ S_base1 }}'
+    yellow:  '0x{{ S_base0 }}'
+    blue:    '0x{{ S_base00 }}'
+    magenta: '0x{{ S_violet }}'
+    cyan:    '0x{{ S_base01 }}'
+    white:   '0x{{ S_base03 }}'

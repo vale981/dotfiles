@@ -26,12 +26,12 @@ ncmpcpp_directory = "~/.ncmpcpp"
 #
 ##### connection settings #####
 #
-mpd_host = localhost
-mpd_port = 6600
-mpd_connection_timeout = 5
+mpd_host = ~/.mpd/socket
+#mpd_port = 6600
+#mpd_connection_timeout = 5
 ## Needed for tag editor and file operations to work.
 ##
-mpd_music_dir = "~/music"
+mpd_music_dir = "~/Music"
 #mpd_music_dir = "Y:\\stor\\music"
 mpd_crossfade_time = 5
 #
@@ -364,13 +364,13 @@ user_interface = classic
 #
 #default_tag_editor_pattern = %n - %t
 #
-header_visibility = no
+header_visibility = yes
 #
-statusbar_visibility = no
+statusbar_visibility = yes
 #
-#titles_visibility = yes
+titles_visibility = yes
 #
-#header_text_scrolling = yes
+header_text_scrolling = yes
 #
 #cyclic_scrolling = no
 #
@@ -454,7 +454,7 @@ playlist_show_remaining_time = no
 #
 #block_search_constraints_change_if_items_found = yes
 #
-mouse_support = no
+mouse_support = yes
 #
 #mouse_list_scroll_whole_page = yes
 #
@@ -490,22 +490,22 @@ use_console_editor = yes
 #
 ##### colors definitions #####
 #
-colors_enabled = yes
-empty_tag_color = "white"
-header_window_color = "white"
-volume_color = "white"
-state_line_color = "black"
-state_flags_color = "white"
-main_window_color = "white"
-color1 = "white"
-color2 = "green"
-main_window_highlight_color = "black"   ###
-progressbar_color = 9
-progressbar_elapsed_color = "white"
-statusbar_color = "white"
-alternative_ui_separator_color = "black"
-active_column_color = "black"           ###
-visualizer_color = "magenta"
-window_border_color = "white"
-active_window_border = "white"
-#
+# colors_enabled = yes
+# empty_tag_color = "white"
+# header_window_color = "white"
+# volume_color = "white"
+# state_line_color = "black"
+# state_flags_color = "white"
+# main_window_color = "white"
+# color1 = "white"
+# color2 = "green"
+# main_window_highlight_color = "black"   ###
+# progressbar_color = 9
+# progressbar_elapsed_color = "white"
+# statusbar_color = "white"
+# alternative_ui_separator_color = "black"
+# active_column_color = "black"           ###
+# visualizer_color = "magenta"
+# window_border_color = "white"
+# active_window_border = "white"
+# #
