@@ -19,21 +19,21 @@
 # You may also want to stop the output from returning to the terminal, like
 # ec -e "(message \"Hello\")" > /dev/null
 
-# remacsclient options for reference
-# -a "" starts remacs daemon and reattaches
+# emacsclient options for reference
+# -a "" starts emacs daemon and reattaches
 # -c creates a new frame
 # -n returns control back to the terminal
 # -e eval the script
 
 # Number of current visible frames,
-# Remacs daemon always has a visible frame called F1
+# Emacs daemon always has a visible frame called F1
    
 visible_frames() {
-  remacsclient -a "" -e '(length (visible-frame-list))'
+  emacsclient -a "" -e '(length (visible-frame-list))'
 }
 
 change_focus() {
-  remacsclient -n -e "(select-frame-set-input-focus (selected-frame))" > /dev/null
+  emacsclient -n -e "(select-frame-set-input-focus (selected-frame))" > /dev/null
 }
 
 # try switching to the frame incase it is just minimized
@@ -42,9 +42,9 @@ test "$(visible_frames)" -eq "1" && change_focus
 
 if [ "$(visible_frames)" -lt  "2" ]; then # need to create a frame
   # -c $@ with no args just opens the scratch buffer
-  remacsclient -n -c "$@" && change_focus
+  emacsclient -n -c "$@" && change_focus
 else # there is already a visible frame besides the daemon, so
   change_focus
   # -n $@ errors if there are no args
-  test  "$#" -ne "0" && remacsclient -n "$@"
+  test  "$#" -ne "0" && emacsclient -n "$@"
 fi

@@ -211,8 +211,6 @@ bar {
       }
 }
 
-# XRandR
-exec --no-startup-id sh {{ HOME }}/.screenlayout/{{ SCREENLAYOUT }}.sh
 {{/MONITORS[*]}}
 
 # Rygel
@@ -257,9 +255,9 @@ client.urgent {{S_orange}} {{S_base03}} {{S_base00}} #dc322f
 bindsym $mod+Shift+P exec --no-startup-id gopass ls --flat | rofi -dmenu | xargs --no-run-if-empty gopass show -c
 
 #exec --no-startup-id i3-msg 'workspace 4; exec st -hold -e ssh chat@ssh.protagon.space -p 5123'
-{{ #XRANDR }}
+{{ #SCREENLAYOUT }}
 exec {{ SCREENLAYOUT }}
-{{ /XRANDR }}
+{{ /SCREENLAYOUT }}
 
 exec --no-startup-id udiskie
 exec --no-startup-id xfce4-clipman

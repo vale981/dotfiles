@@ -45,13 +45,15 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
-21b984cded01717930639ded0e569e1724d058af8" default))
+   (quote
+    ("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
+21b984cded01717930639ded0e569e1724d058af8" default)))
  '(package-selected-packages
-   '(ethan-wspace sphinx-doc python-docstring elpy htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline))
- '(safe-local-variable-values '((TeX-master . t)))
+   (quote
+    (fish-mode pkgbuild-mode realgud fzf ein org-super-agenda company-lsp dap-mode lsp-ui lsp-mode elixir-yasnippets alchemist ethan-wspace sphinx-doc python-docstring elpy htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+ '(safe-local-variable-values (quote ((TeX-master . t))))
  '(show-paren-mode t)
- '(tramp-syntax 'default nil (tramp)))
+ '(tramp-syntax (quote default) nil (tramp)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -99,6 +101,8 @@
   ;; (add-to-list 'company-backends #'company-tabnine)
   (add-to-list 'company-backends 'company-tern)
   (add-to-list 'company-backends 'company-anaconda)
+  (add-to-list 'company-backends 'company-lsp)
+
   (global-company-mode)
   (setq company-show-numbers t)
   (setq company-idle-delay 0)
@@ -178,6 +182,7 @@
 
 ;;;; Latex
 (auctex-latexmk-setup)
+(setq LaTeX-electric-left-right-brace t)
 
 
 ;;;; JavasScipt
@@ -371,22 +376,34 @@
 (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
 (global-set-key (kbd "C-c a")
 		'org-agenda)
+(setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t% s")
+         (timeline . "  % s")
+         (todo .
+               " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+         (tags .
+               " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+         (search . " %i %-12:c"))
+      )
+
 ;; (org-super-agenda--def-auto-group path "their path in the outline"
 ;;   :key-form (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
 ;;               (when (org-up-heading-safe)
 ;; 		(org-format-outline-path (org-get-outline-path t t))
 ;;                 )))
-;; (setq org-super-agenda-groups
-;;       '(;; Each group has an implicit boolean OR operator between its selectors.
-;; 	;; (:auto-parent t)
+(setq org-super-agenda-groups
+      '(;; Each group has an implicit boolean OR operator between its selectors.
+	(:name "NEXT"
+               :order 1
+               :todo "NEXT")
+        (:name "WAITING"
+               :order 2
+               :todo "WAITING")
+	(:name "TODO"
+               :order 3
+               :todo "TODO")	   ; Items that have this TODO keyword
+	))
 
-	
-;; 	(:name "NEXT"		     ; Optionally specify section name
-;; 	       ;; :auto-path t
-;;                :todo "NEXT")
-;; 	(:name "TODO"		     ; Optionally specify section name
-;;                :todo "TODO")	   ; Items that have this TODO keyword
-;; 	))
+(org-super-agenda-mode 1)
 
 (setq org-agenda-custom-commands '(("X" agenda
 				    ""
@@ -441,7 +458,25 @@
 ;; (put 'upcase-region 'disabled nil)
 (global-pretty-mode t)
 (pretty-activate-groups '(:sub-and-superscripts :greek :arithmetic-nary
-						:arrows :arithmetic))
+	                                        r					:arrows :arithmetic))
+(defun my-prettify-symbols-compose-p (start end _match)
+  "Return true iff the symbol MATCH should be composed.
+The symbol starts at position START and ends at position END.
+This is the default for `prettify-symbols-compose-predicate'
+which is suitable for most programming languages such as C or Lisp."
+  ;; Check that the chars should really be composed into a symbol.
+  (let* ((syntaxes-beg (if (memq (char-syntax (char-after start)) '(?w ?_))
+                           '(?w ?_) '(?. ?\\)))
+         (syntaxes-end (if (memq (char-syntax (char-before end)) '(?w ?_))
+                           '(?w ?_) '(?. ?\\))))
+    (not (or (and
+               (null (memq (char-before start) '(?_)))
+               (memq (char-syntax (or (char-before start) ?\s)) syntaxes-beg))
+             (and
+               (null (memq (char-after end) '(?_)))
+               (memq (char-syntax (or (char-after end) ?\s)) syntaxes-end))
+             (nth 8 (syntax-ppss))))))
+(setq prettify-symbols-compose-predicate #'my-prettify-symbols-compose-p)
 
 ;;; Avy
 (global-set-key (kbd "M-g w")
@@ -592,7 +627,7 @@ Effect of this translation is global."
 (modalka-define-kbd "a" "C-a")
 (modalka-define-kbd "b" "C-b")
 ;; (modalka-define-kbd "c b" "C-c C-b")
-;; (modalka-define-kbd "c c" "C-c C-c")
+(modalka-define-kbd "c c" "C-c C-c")
 ;; (modalka-define-kbd "c k" "C-c C-k")
 ;; (modalka-define-kbd "c n" "C-c C-n")
 ;; (modalka-define-kbd "c s" "C-c C-s")
@@ -693,7 +728,7 @@ Effect of this translation is global."
                               (whitespace-mode 1)
                               (python-docstring-mode 1)))
 (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-
+(require 'dap-python)
 (setq whitespace-line-collumn 79)
 (setq whitespace-style '(face empty tabs lines-tail trailing))
 
@@ -704,4 +739,29 @@ Effect of this translation is global."
 
 ;; Whitespace and teaks
 (global-ethan-wspace-mode 1)
+(setq mode-require-final-newline nil)
 (electric-pair-mode 1)
+
+;; EIN
+(setq ein:output-type-preference
+      '(emacs-lisp svg png jpeg html text latex javascript))
+
+;; Elixir
+(add-hook 'elixir-mode-hook #'lsp)
+(setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/rel/language_server.sh")
+
+(setq lsp-prefer-flymake nil)
+(setq lsp-ui-doc-enable t
+        lsp-ui-doc-use-childframe t
+        lsp-ui-doc-position 'top
+        lsp-ui-doc-include-signature t
+        lsp-ui-sideline-enable nil
+        lsp-ui-flycheck-enable t
+        lsp-ui-flycheck-list-position 'right
+        lsp-ui-flycheck-live-reporting t
+        lsp-ui-peek-enable t
+        lsp-ui-peek-list-width 60
+        lsp-ui-peek-peek-height 25)
+
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
+(add-to-list 'exec-path "/home/hiro/src/elixir-ls/rel/language_server.sh")

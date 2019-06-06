@@ -12,6 +12,10 @@ block = "focused_window"
 max_width = 21
 
 [[block]]
+block = "music"
+buttons = ["play", "next"]
+
+[[block]]
 block = "disk_space"
 path = "/"
 alias = "/"
@@ -37,11 +41,6 @@ format = "{1m}"
 
 # [[block]]
 # block = "sound"
-
-# [[block]]
-# block = "music"
-# player = "google-play-music-desktop-player"
-# buttons = ["play", "next"]
 
 [[block]]
 block = "net"
