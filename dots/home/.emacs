@@ -45,15 +45,13 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   (quote
-    ("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
-21b984cded01717930639ded0e569e1724d058af8" default)))
+   '("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "065efdd71e6d1502877fd56
+21b984cded01717930639ded0e569e1724d058af8" default))
  '(package-selected-packages
-   (quote
-    (fish-mode pkgbuild-mode realgud fzf ein org-super-agenda company-lsp dap-mode lsp-ui lsp-mode elixir-yasnippets alchemist ethan-wspace sphinx-doc python-docstring elpy htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline)))
- '(safe-local-variable-values (quote ((TeX-master . t))))
+   '(ccls lsp-treemacs smartparens rainbow-delimiters emojify fish-mode pkgbuild-mode realgud fzf ein org-super-agenda company-lsp dap-mode lsp-ui lsp-mode elixir-yasnippets alchemist ethan-wspace sphinx-doc python-docstring elpy htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline))
+ '(safe-local-variable-values '((TeX-master . t)))
  '(show-paren-mode t)
- '(tramp-syntax (quote default) nil (tramp)))
+ '(tramp-syntax 'default nil (tramp)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -102,6 +100,8 @@
   (add-to-list 'company-backends 'company-tern)
   (add-to-list 'company-backends 'company-anaconda)
   (add-to-list 'company-backends 'company-lsp)
+  (setq company-lsp-cache-candidates 'auto)
+
 
   (global-company-mode)
   (setq company-show-numbers t)
@@ -128,6 +128,8 @@
 
 (require 'flycheck)
 (require 'company)
+
+
 (require 'flycheck-rtags)
 (defun c++-config ()
   "For use in `c++-mode-hook'."
@@ -152,8 +154,9 @@
 	      nil)
   (flycheck-mode))
 
-(add-hook 'c-mode-hook 'c++-config)
-(add-hook 'c++-mode-hook 'c++-config)
+;; (add-hook 'c-mode-hook 'c++-config)
+;; (add-hook 'c++-mode-hook 'c++-config)
+(add-hook 'c++-mode-hook #'lsp)
 
 ;;;; Ivy
 (ivy-mode 1)
@@ -163,7 +166,29 @@
   (setq ivy-use-virtual-buffers nil))
 (global-set-key "\C-s" 'swiper)
 (global-set-key (kbd "\C-x r") 'counsel-recentf)
-
+(setq ibuffer-saved-filter-groups
+      (quote (("default"
+               ("Org" ;; all org-related buffers
+                (mode . org-mode))
+               ("Programming" ;; prog stuff not already in MyProjectX
+                (or
+                 (mode . c-mode)
+                 (mode . c++-mode)
+                 (mode . perl-mode)
+                 (mode . python-mode)
+                 (mode . emacs-lisp-mode)))
+               ("Matrix"
+                (mode . matrix-client-mode))
+               ("LaTeX"
+                (mode . latex-mode))
+               ("Directories"
+                (mode . dired-mode))
+               ))))
+(global-set-key (kbd "\C-x b") 'counsel-ibuffer)
+(add-hook 'ibuffer-mode-hook
+              (lambda ()
+                (ibuffer-switch-to-saved-filter-groups "default")))
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 ;;;; Rust
 (add-hook 'rust-mode-hook 'cargo-minor-mode)
 (add-hook 'rust-mode-hook
@@ -438,6 +463,20 @@
 ;;use org mode for eml files (useful for thunderbird plugin)
 (add-to-list 'auto-mode-alist
 	     '("\\.eml\\'" . org-mode))
+
+(add-hook
+ 'elixir-mode-hook
+ (lambda ()
+   (mapc (lambda (pair) (push pair prettify-symbols-alist))
+         '(;; Syntax
+           ("do" .      #x2770)
+           ("|>" .      #x2A20)
+           ("->" .      #x21A6)
+           ("fn" .      #x03BB)
+           ("quote" .      #x2358)
+           ("unquote" .      #x236A)
+           ("end" .      #x2771)))))
+
 (global-prettify-symbols-mode 1)
 
 ;;; Ricing
@@ -748,10 +787,10 @@ Effect of this translation is global."
 
 ;; Elixir
 (add-hook 'elixir-mode-hook #'lsp)
-(setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/rel/language_server.sh")
+(setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
 
 (setq lsp-prefer-flymake nil)
-(setq lsp-ui-doc-enable t
+(setq lsp-ui-doc-enable nil
         lsp-ui-doc-use-childframe t
         lsp-ui-doc-position 'top
         lsp-ui-doc-include-signature t
@@ -765,3 +804,32 @@ Effect of this translation is global."
 
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 (add-to-list 'exec-path "/home/hiro/src/elixir-ls/rel/language_server.sh")
+(require 'smartparens-elixir)
+
+;; lines
+(mapatoms (lambda (atom)
+            (let ((underline nil))
+              (when (and (facep atom)
+                         (setq underline
+                               (face-attribute atom
+                                               :underline))
+                         (eq (plist-get underline :style) 'wave))
+                (plist-put underline :style 'line)
+                (set-face-attribute atom nil
+                                    :underline underline)))))
+
+;; speed up cursor movement, from https://github.com/Atman50/emacs-config
+(setq auto-window-vscroll nil)
+(use-package diminish
+  :defer t)
+
+;; https://github.com/Atman50/emacs-config
+;; https://thewanderingcoder.com/2015/02/literate-emacs-configuration/
+;; https://jamiecollinson.com/blog/my-emacs-config/
+;; https://wolfecub.github.io/dotfiles/
+
+;; unprettify
+(setq prettify-symbols-unprettify-at-point t)
+
+;; no gc on font cache
+(setq inhibit-compacting-font-caches t)

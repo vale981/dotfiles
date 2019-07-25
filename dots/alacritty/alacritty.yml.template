@@ -83,9 +83,6 @@ font:
   # false.
   use_thin_strokes: true
 
-# Should display the render timer
-render_timer: false
-
 # Visual Bell
 #
 # Any time the BEL code is received, Alacritty "rings" the visual bell. Once
