@@ -83,7 +83,6 @@ font:
   # false.
   use_thin_strokes: true
 
-
 # Visual Bell
 #
 # Any time the BEL code is received, Alacritty "rings" the visual bell. Once
