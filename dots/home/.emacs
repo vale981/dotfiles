@@ -50,7 +50,7 @@
 21b984cded01717930639ded0e569e1724d058af8" default)))
  '(package-selected-packages
    (quote
-    (fish-mode pkgbuild-mode realgud fzf ein org-super-agenda company-lsp dap-mode lsp-ui lsp-mode elixir-yasnippets alchemist ethan-wspace sphinx-doc python-docstring elpy htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline)))
+    (company-lsp poly-org which-key ethan-wspace sphinx-doc python-docstring elpy htmlize company-anaconda anaconda-mode graphql-mode graphql git-gutter-fringe+ git-timemachine flycheck-pos-tip modalka doom-modeline company-tern persp-projectile perspective all-the-icons-ivy all-the-icons-dired all-the-icons neotree rjsx-mode emmet-mode web-mode counsel-projectile jade-mode srefactor sly-repl-ansi-color sly-quicklisp sly-macrostep sly ranger company-tabnine counsel-notmuch circe-notifications circe pretty-mode lispy info-beamer auctex-latexmk ag indium js-doc yasnippet-classic-snippets yasnippet-snippets ivy-yasnippet counsel sage-shell-mode dummyparens magit-filenotify docker-compose-mode docker js2-refactor flycheck-rtags flycheck ivy-rtags rtags auctex magit flycheck-rust avy-flycheck company racer cargo rust-mode restart-emacs json-mode multiple-cursors swiper ivy xresources-theme powerline)))
  '(safe-local-variable-values (quote ((TeX-master . t))))
  '(show-paren-mode t)
  '(tramp-syntax (quote default) nil (tramp)))
@@ -74,8 +74,6 @@
 	(setq mark-ring (nbutlast mark-ring))
 	(goto-char (marker-position (car (last mark-ring))))))))
 (global-set-key (kbd "C-c m c")
-		'mc/edit-lines)
-(global-set-key (kbd "C-x <spc>")
 		'mc/edit-lines)
 
 
@@ -765,3 +763,10 @@ Effect of this translation is global."
 
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 (add-to-list 'exec-path "/home/hiro/src/elixir-ls/rel/language_server.sh")
+
+(use-package multiple-cursors
+    :ensure t
+    :bind (("M-<mouse-1>" . mc/add-cursor-on-click)
+           :prefix "C-c m"
+           :prefix-map my/mc-map
+           ("c" . mc/edit-lines)))
