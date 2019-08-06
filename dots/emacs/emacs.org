@@ -1,0 +1,969 @@
+#+TITLE: Hiro's Emacs Config
+
+* Hiro's Emacs Config
+** General Stuff
+*** Edit Config
+Shortcut to edit this file.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun find-config ()
+    "Edit config.org"
+    (interpactive)
+    (find-file "~/.emacs/emacs.org"))
+
+  (global-set-key (kbd "C-c I") 'find-config)
+#+END_SRC
+
+*** Start Server
+Starts the emacs server.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (server-start)
+#+END_SRC
+
+*** Desktop
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (desktop-save-mode 1)
+#+END_SRC
+
+** Hacks
+*** Speed up Cursor Movement
+Taken from https://github.com/Atman50/emacs-config.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq auto-window-vscroll nil)
+#+END_SRC
+
+*** Disable Garbage Collection on Fontcache
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq inhibit-compacting-font-caches t)
+#+END_SRC
+
+** Packages
+*** Packages
+Set up package sources.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+  (require 'package)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+  (package-initialize)
+#+END_SRC
+
+*** Bootstrap Use-Package
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+#+END_SRC
+
+Allways ensure:
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (customize-set-variable 'use-package-always-ensure t)
+#+END_SRC
+
+Install diminish:
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package diminish)
+#+END_SRC
+
+** Preferences
+*** Custom
+Prevent custom from preserving state.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq custom-file (make-temp-file "emacs-custom"))
+#+END_SRC
+
+*** General
+ No startup screen.
+ #+BEGIN_SRC emacs-lisp :tangle yes
+   (setq inhibit-startup-screen t)
+ #+END_SRC
+
+ Hide obstractions.
+ #+BEGIN_SRC emacs-lisp :tangle yes
+   (scroll-bar-mode -1)
+   (menu-bar-mode -1)
+   (tool-bar-mode -1)
+ #+END_SRC
+
+ No cursor blink.
+ #+BEGIN_SRC emacs-lisp :tangle yes
+   (blink-cursor-mode 0)
+ #+END_SRC
+
+*** Modeline
+Use the neat powerline.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package powerline
+    :config (powerline-default-theme))
+#+END_SRC
+
+*** Font and Editor
+- Set font to Fira Code.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (set-frame-font "Fira Code" nil t)
+  (set-face-attribute 'default t :font "Fira Code")
+#+END_SRC
+
+ - Highlight current line.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-hl-line-mode 1)
+#+END_SRC
+*** Sound
+No terminal bell.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq ring-bell-function 'ignore)
+#+END_SRC
+
+*** Whitespace
+Ethan wspace mode resolves the nightmare of mixed whitespace.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package ethan-wspace
+    :config (global-ethan-wspace-mode 1)
+    (setq mode-require-final-newline nil))
+#+END_SRC
+
+**** Tabs
+Don't use 'em.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+
+*** Pairs
+Enable electric pairs.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (electric-pair-mode 1)
+#+END_SRC
+
+Use smartparens.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package smartparens
+    :diminish
+    :config
+    (smartparens-global-mode)
+    (show-smartparens-global-mode +1))
+#+END_SRC
+
+*** Theme
+We use solarized light.
+#+begin_src emacs-lisp :tangle yes
+  (use-package color-theme-solarized
+    :config (load-theme 'solarized t))
+#+end_src
+
+** Interface
+*** General Tweaks
+Short =yes-no=.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+*** Multiple Cursors
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package multiple-cursors
+    :bind (("M-<mouse-1>" . mc/add-cursor-on-click)
+           ("C->" . mc/mark-next-like-this)
+           ("C-<" . mc/mark-previous-like-this)
+           :prefix "C-c m"
+           :prefix-map my/mc-map
+           ("c" . mc/edit-lines)
+           ("<" . mc/mark-all-like-this)))
+  :config (put 'narrow-to-region 'disabled nil)
+#+END_SRC
+
+*** Misc
+Centralize the backup location.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
+        backup-by-copying t      ; Don't delink hardlinks
+        version-control t        ; Use version numbers on backups
+        delete-old-versions t    ; Automatically delete excess backups
+        kept-new-versions 20 ; how many of the newest versions to keep
+        kept-old-versions 5  ; and how many of the old
+        )
+#+END_SRC
+
+*** Ibuffer
+Nicer buffer menu. Set up some custom filters.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq ibuffer-saved-filter-groups
+        (quote (("default"
+                 ("Org" ;; all org-related buffers
+                  (mode . org-mode))
+                 ("Programming" ;; prog stuff not already in MyProjectX
+                  (or
+                   (mode . c-mode)
+                   (mode . c++-mode)
+                   (mode . perl-mode)
+                   (mode . python-mode)
+                   (mode . emacs-lisp-mode)))
+                 ("Matrix"
+                  (mode . matrix-client-mode))
+                 ("LaTeX"
+                  (mode . latex-mode))
+                 ("Directories"
+                  (mode . dired-mode))
+                 ))))
+
+  (add-hook 'ibuffer-mode-hook
+            (lambda ()
+              (ibuffer-switch-to-saved-filter-groups "default")))
+#+END_SRC
+
+*** Pretty Symbols
+Some basic set-up for ~pretty-mode~ and ~prettify-symbols-mode~. The
+details are handled on a per-mode base.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package pretty-mode
+    :config
+    (global-pretty-mode t)
+    (pretty-activate-groups
+     '(:sub-and-superscripts :greek :arithmetic-nary :arrows :arithmetic)))
+  (global-prettify-symbols-mode 1)
+#+END_SRC
+
+Unprettify on hover.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq prettify-symbols-unprettify-at-point t)
+#+END_SRC
+
+*** Navigation
+**** Avy
+Jump to char.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package avy
+    :bind (("M-g w" . avy-goto-word-1)
+           ("M-g f" . avy-goto-line)
+           ("C-'" . avy-goto-char)
+           ("C-;" . avy-goto-char-2)))
+#+END_SRC
+**** Modalka
+Modal editing graduallt integrated.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package modalka
+    :bind ("<escape>" . modalka-mode)
+    :config
+    ;; cursor
+    (setq-default cursor-type 'box)
+    (setq modalka-cursor-type '(bar . 1))
+
+    ;; bindings
+    (modalka-define-kbd "SPC" "C-SPC")
+    (modalka-define-kbd "," "C-,")
+
+    (modalka-define-kbd "/" "M-.")
+    (modalka-define-kbd "." "C-.")
+    (modalka-define-kbd ":" "M-;")
+    (modalka-define-kbd ";" "C-;")
+    (modalka-define-kbd "?" "M-,")
+
+    (modalka-define-kbd "0" "C-0")
+    (modalka-define-kbd "1" "C-1")
+    (modalka-define-kbd "2" "C-2")
+    (modalka-define-kbd "3" "C-3")
+    (modalka-define-kbd "4" "C-4")
+    (modalka-define-kbd "5" "C-5")
+    (modalka-define-kbd "6" "C-6")
+    (modalka-define-kbd "7" "C-7")
+    (modalka-define-kbd "8" "C-8")
+    (modalka-define-kbd "9" "C-9")
+
+    (modalka-define-kbd "a" "C-a")
+    (modalka-define-kbd "b" "C-b")
+    ;; (modalka-define-kbd "c b" "C-c C-b")
+    (modalka-define-kbd "c c" "C-c C-c")
+    ;; (modalka-define-kbd "c k" "C-c C-k")
+    ;; (modalka-define-kbd "c n" "C-c C-n")
+    ;; (modalka-define-kbd "c s" "C-c C-s")
+    ;; (modalka-define-kbd "c u" "C-c C-u")
+    ;; (modalka-define-kbd "c v" "C-c C-v")
+    ;; (modalka-define-kbd "c p p" "C-c p p")
+    (modalka-define-kbd "c p s" "C-c p s s")
+    (modalka-define-kbd "c p p" "C-c p p")
+    (modalka-define-kbd "c p f" "C-c p f")
+    (modalka-define-kbd "c p c" "C-c p O c")
+    (modalka-define-kbd "d" "C-d")
+    (modalka-define-kbd "e" "C-e")
+    (modalka-define-kbd "f" "C-f")
+    (modalka-define-kbd "g" "C-g")
+    (modalka-define-kbd "h" "M-h")
+    (modalka-define-kbd "i" "C-i")
+    (modalka-define-kbd "j" "M-j")
+    (modalka-define-kbd "k" "C-k")
+    (modalka-define-kbd "l" "C-l")
+    (modalka-define-kbd "m" "C-m")
+    (modalka-define-kbd "n" "C-n")
+    (modalka-define-kbd "o" "C-o")
+    (modalka-define-kbd "p" "C-p")
+    (modalka-define-kbd "q" "M-q")
+    (define-key modalka-mode-map (kbd "Q x") #'persp-switch)
+    (modalka-define-kbd "r" "C-r")
+    (modalka-define-kbd "s" "C-s")
+    (modalka-define-kbd "t" "C-t")
+    (modalka-define-kbd "u" "C-u")
+    (modalka-define-kbd "v" "C-v")
+    (modalka-define-kbd "w" "C-w")
+    (modalka-define-kbd "x ;" "C-x C-;")
+    (modalka-define-kbd "x e" "C-x C-e")
+    (modalka-define-kbd "x o" "C-x o")
+    (modalka-define-kbd "x f" "C-x C-f")
+    (modalka-define-kbd "x g" "C-x g")
+    (modalka-define-kbd "x b" "C-x b")
+    (modalka-define-kbd "x s" "C-x C-s")
+    (modalka-define-kbd "x S" "C-x s")
+    (modalka-define-kbd "x x s" "C-x x s")
+    (modalka-define-kbd "x 1" "C-x 1")
+    (modalka-define-kbd "x 2" "C-x 2")
+    (modalka-define-kbd "x 3" "C-x 3")
+    (modalka-define-kbd "x 4" "C-x 4")
+    (modalka-define-kbd "x <left>" "C-x <left>")
+    (modalka-define-kbd "x x <left>" "C-x x <left>")
+    (modalka-define-kbd "x <right>" "C-x <right>")
+    (modalka-define-kbd "x x <right>" "C-x x <right>")
+    (modalka-define-kbd "y" "C-y")
+    (modalka-define-kbd "z" "M-z")
+
+    (modalka-define-kbd "A" "M-SPC")
+    (modalka-define-kbd "B" "M-b")
+    (modalka-define-kbd "C" "M-c")
+    (modalka-define-kbd "D" "M-d")
+    (modalka-define-kbd "E" "M-e")
+    (modalka-define-kbd "F" "M-f")
+    (modalka-define-kbd "G" "C-`")
+    (modalka-define-kbd "H" "M-H")
+    ;; J
+    (modalka-define-kbd "K" "M-k")
+    (modalka-define-kbd "L" "M-l")
+    (modalka-define-kbd "M" "M-m")
+    (modalka-define-kbd "N" "M-n")
+    (modalka-define-kbd "O" "M-o")
+    (modalka-define-kbd "P" "M-p")
+    (modalka-define-kbd "R" "M-r")
+    (modalka-define-kbd "S" "M-S")
+    (modalka-define-kbd "T" "M-t")
+    (modalka-define-kbd "U" "M-u")
+    (modalka-define-kbd "V" "M-v")
+    (modalka-define-kbd "W" "M-w")
+    ;; X
+    (modalka-define-kbd "Y" "M-y")
+    (modalka-define-kbd "Z" "C-z")
+    (modalka-define-kbd "<" "M-<")
+    (modalka-define-kbd ">" "M->")
+    )
+#+END_SRC
+
+*** Move Lines
+Move whole lines easily.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package move-text
+    :diminish
+    :config (move-text-default-bindings))
+#+END_SRC
+*** TODO Tree, Replace with Treemacs
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package neotree
+    :config
+    (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+    ;; Set tree-root to the current Project
+    (setq projectile-switch-project-action 'neotree-projectile-action))
+#+END_SRC
+
+*** Rainbow Delimiters
+Color code matching delimiters.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;;(use-package rainbow-delimiters
+    ;;:hook prog-mode)
+#+END_SRC
+
+** Programming / Language Support
+*** LSP
+Support for the =Language Server Protocol=.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package lsp-ui)
+  (use-package lsp-treemacs)
+  (use-package lsp-mode
+    :after (lsp-ui elixir-mode)
+    :config
+    (setq lsp-prefer-flymake nil)
+    (setq lsp-ui-doc-enable nil
+          lsp-ui-doc-use-childframe t
+          lsp-ui-doc-position 'top
+          lsp-ui-doc-include-signature t
+          lsp-ui-sideline-enable nil
+          lsp-ui-flycheck-enable t
+          lsp-ui-flycheck-list-position 'right
+          lsp-ui-flycheck-live-reporting t
+          lsp-ui-peek-enable t
+          lsp-ui-peek-list-width 60
+          lsp-ui-peek-peek-height 25)
+    (setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
+    :hook ((elixir-mode . lsp)
+           (lsp-mode . lsp-ui-mode)))
+#+END_SRC
+
+*** Company
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package company
+    :diminish
+    :bind (("<C-tab>" . company-complete)
+           :map company-active-map
+           ("C-n" . company-select-next-or-abort)
+           ("C-p" . company-select-previous-or-abort))
+    :config
+    (setq company-show-numbers t)
+    (setq company-idle-delay 0)
+    (setq company-lsp-cache-candidates 'auto)
+    (company-tng-configure-default)
+    (setq company-frontends
+          '(company-tng-frontend
+            company-pseudo-tooltip-frontend
+            company-echo-metadata-frontend))
+
+    :hook (after-init . global-company-mode))
+#+END_SRC
+
+Set up the company backends: (maybe do it the other way around...)
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package company-tern
+    :config (add-to-list 'company-backends 'company-tern))
+  (use-package company-anaconda
+    :config (add-to-list 'company-backends 'company-anaconda))
+  (use-package company-lsp
+    :config (add-to-list 'company-backends 'company-lsp))
+#+END_SRC
+
+*** Lisp
+**** Roswell
+Support for the roswell package manager.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (load (expand-file-name "~/.roswell/helper.el"))
+#+END_SRC
+
+**** Lispy Mode
+A lisp code navigation extension that exploits the syntax of lisp to
+avoid modifiers.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package lispy
+    :diminish
+    :bind (("M-(" . lispy-parens-auto-wrap))
+    :config (setq lispy-use-sly t)
+    :hook ((emacs-lisp-mode . lispy-mode)
+           (eval-expression-minibuffer-setup . lispy-mode)
+           (ielm-mode . lispy-mode)
+           (lisp-mode . lispy-mode)
+           (common-lisp-mode . lispy-mode)
+           (lisp-interaction-mode . lispy-mode)
+           (scheme-mode . lispy-mode)))
+#+END_SRC
+
+**** Sly
+Slime fork with new features.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package sly)
+  (use-package sly-repl-ansi-color
+    :after sly)
+  (use-package sly-quicklisp
+    :after sly)
+  (use-package sly-macrostep
+    :after sly)
+#+END_SRC
+
+*** Poly Mode
+Multiple major modes in one buffer.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package polymode
+    :config
+    (use-package poly-markdown)
+    (use-package poly-org))
+#+END_SRC
+
+*** Org Mode
+**** General Tweaks
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-treat-S-cursor-todo-selection-as-state-change nil)
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
+#+END_SRC
+**** Refile
+
+ - Targets include this file and any file contributing to the agenda - up to 9 levels deep
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-refile-targets
+        (quote
+         ((nil :maxlevel . 9)
+          (org-agenda-files :maxlevel . 9))))
+#+END_SRC
+
+ - Use full outline paths for refile targets - we file directly with IDO
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-refile-use-outline-path t)
+#+END_SRC
+
+ - Targets complete directly with IDO
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-outline-path-complete-in-steps nil)
+#+END_SRC
+
+ - Allow refile to create parent tasks with confirmation
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-refile-allow-creating-parent-nodes (quote confirm))
+#+END_SRC
+
+ - Use the current window for indirect buffer display
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-indirect-buffer-display 'current-window)
+#+END_SRC
+
+ - Exclude DONE state tasks from refile targets
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun bh/verify-refile-target ()
+    "Exclude todo keywords with a done state from refile targets."
+    (not (member (nth 2
+                    (org-heading-components))
+               org-done-keywords)))
+  (setq org-refile-target-verify-function 'bh/verify-refile-target)
+#+END_SRC
+
+**** Agenda
+ - Formatting: Add path to Items
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-agenda-prefix-format
+        '((agenda . " %i %-12:c%?-12t% s")
+          (timeline . "  % s")
+          (todo .
+                " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+          (tags .
+                " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+          (search . " %i %-12:c")))
+#+END_SRC
+
+ - Custom Agenda Commands
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-agenda-custom-commands
+        '(("X" agenda
+           ""
+           nil
+           ("~/Documents/org/out/agenda.html"))
+          ("n" "Notes"
+           tags
+           "NOTE"
+           ((org-agenda-overriding-header "Notes")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/notes.html"))
+          ("s" "Next"
+           todo
+           "NEXT"
+           ((org-agenda-overriding-header "Next")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/next.html"))
+          ("f" "Questions"
+           tags
+           "QUESTION"
+           ((org-agenda-overriding-header "Questions")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/question.html"))
+          ("l" "Einkaufsliste"
+           todo
+           "OUTOFSTOCK"
+           ((org-agenda-overriding-header "Einkaufsliste")
+            (org-tags-match-list-sublevels t))
+           ("~/Documents/org/out/einkaufsliste.html"))))
+#+END_SRC
+
+**** Super Agenda
+Buff the agenda to use Groups.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package org-super-agenda
+    :config
+    (setq org-super-agenda-groups
+          '((:name "NEXT"
+                   :order 1
+                   :todo "NEXT")
+            (:name "WAITING"
+                   :order 2
+                   :todo "WAITING")
+            (:name "TODO"
+                   :order 3
+                   :todo "TODO")))
+    (org-super-agenda-mode 1))
+#+END_SRC
+
+**** Keybindings
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-set-key (kbd "C-c c") 'org-capture)
+#+END_SRC
+
+**** Directories
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-directory "~/Documents/org")
+  (setq org-default-notes-file "~/Documents/org/refile.org")
+#+END_SRC
+
+Agenda Files:
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-agenda-files (list "~/Documents/org/todo.org" "~/Documents/org/calendar.org"))
+#+END_SRC
+
+**** Custom States
+ - states
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq org-todo-keywords
+      '((sequence "TODO" "WAITING" "NEXT" "HOLD" "|"
+                  "DONE")
+        (sequence "BESORGEN" "WARTEN" "|" "BESORGT")
+        (sequence "OUTOFSTOCK" "|" "INSTOCK")
+        (sequence "RESOLVE" "ASK" "RESEARCH" "|" "RESOLVED")
+        (sequence "HOMEWORK" "ACTIVE" "|" "FINISHED")))
+#+END_SRC
+
+ - triggers
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-todo-state-tags-triggers
+        (quote
+         (("CANCELLED"
+           ("CANCELLED" . t))
+          ("WAITING"
+           ("WAITING" . t))
+          ("HOLD"
+           ("WAITING")
+           ("HOLD" . t))
+          (done ("WAITING")
+                ("HOLD"))
+          ("TODO"
+           ("WAITING")
+           ("CANCELLED")
+           ("HOLD"))
+          ("NEXT"
+           ("WAITING")
+           ("CANCELLED")
+           ("HOLD"))
+          ("DONE"
+           ("WAITING")
+           ("CANCELLED")
+           ("HOLD")))))
+#+END_SRC
+**** Capture Templates
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq org-capture-templates
+        (quote
+         (("t" "Todo"
+           entry
+           (file org-default-notes-file)
+           "* TODO %?\n%U\n%a\n")
+          ("n" "Note"
+           entry
+           (file org-default-notes-file)
+           "* %? :NOTE:\n%U\n%a\n")
+          ("q" "Question"
+           entry
+           (file "~/Documents/org/refile/questions.org")
+           "* RESOLVE %? :QUESTION:\n%U\n%a\n")
+          ("e" "Exercise"
+           entry
+           (file "~/Documents/org/refile/exercises.org")
+           "* HOMEWORK %? :EXERCISE:\n%a\n")
+          ("j" "Journal"
+           entry
+           (file+datetree "~/Documents/org/diary.org")
+           "**** %?\n%U\n")
+          ("m" "Meeting"
+           entry
+           (file org-default-notes-file)
+           "** %? :MEETING:\n"))))
+#+END_SRC
+**** Babel
+*** Git
+**** Magit
+ - Just load magit and give it a key.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package magit
+    :bind ("C-x g" . magit-status))
+#+END_SRC
+
+ - Reload files on git change.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package magit-filenotify)
+#+END_SRC
+
+**** Gutter
+Mark changed lines on the fringes.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package git-gutter-fringe+
+    ;:diminish
+    :config
+    (global-git-gutter+-mode 1)
+    (git-gutter-fr+-minimal)
+    (git-gutter+-turn-on))
+#+END_SRC
+*** Sage Math
+CAS for some annoying calculations.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package sage-shell-mode
+    :hook (sage-shell-after-prompt . sage-shell-view-mode))
+#+END_SRC
+
+*** Ivy
+Make mini-buffers and search nicer.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package ivy
+    :bind (("C-s" . swiper)
+           ("C-x r" . counsel-recentf)
+           ("C-x b" . counsel-ibuffer))
+    :config
+    (ivy-mode 1)
+    (setq ivy-use-virtual-buffers t)
+    (setq enable-recursive-minibuffers t)
+    (with-eval-after-load 'recentf
+      (setq ivy-use-virtual-buffers nil)))
+#+END_SRC
+
+*** LaTeX
+Enable electric braces for math mode: ~\( \)~
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq LaTeX-electric-left-right-brace t)
+#+END_SRC
+
+**** Latexmk
+Set up latexmk for easier making.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package auctex-latexmk
+    :config
+    (auctex-latexmk-setup))
+#+END_SRC
+
+**** TODO Use Tectonic
+*** Javascript
+**** JS2
+Nicer JS mode.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package js2-mode
+    :hook (js2-mode . js2-imenu-extras-mode))
+#+END_SRC
+
+Refactoring and some simple goodies, like killing a semantic entity
+rather than a line.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package js2-refactor
+    :config (js2r-add-keybindings-with-prefix "C-c C-r")
+    :bind (:map js2-mode-map
+                ("C-k" . js2r-kill))
+    :hook (js2-mode . js2-refactor-mode))
+#+END_SRC
+
+**** RJSX
+A js2 mode for a =jsx=.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package rjsx-mode)
+#+END_SRC
+
+**** JS-Doc
+Documentation comment helper.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package js-doc
+    :bind (:map js2-mode-map
+                ("C-c i" . js-doc-insert-function-doc)
+                ("@" . js-doc-insert-tag))
+    :config
+    (setq js-doc-mail-address "hiro@protagon.space"
+          js-doc-author (format "Valentin Boettcher <%s>" js-doc-mail-address)
+          js-doc-url "protagon.space"
+          js-doc-license "MIT"))
+#+END_SRC
+
+**** JSON
+Json mode package.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package json-mode)
+#+END_SRC
+
+**** TODO Tern
+JS Ide feautures. May be replaced by LSP.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-to-list 'load-path "~/src/tern")
+  (autoload 'tern-mode "tern.el" nil t)
+  (add-hook 'js2-mode-hook #'tern-mode)
+#+END_SRC
+
+*** Elixir
+Some junk for the elixir programming language.
+
+**** Base Mode
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package elixir-mode
+    :config
+    (mapc (lambda (pair) (push pair prettify-symbols-alist))
+          '(;; Syntax
+            ("do" .      #x2770)
+            ("|>" .      #x2A20)
+            ("->" .      #x21A6)
+            ("fn" .      #x03BB)
+            ("quote" .      #x2358)
+            ("unquote" .      #x236A)
+            ("end" .      #x2771))))
+#+END_SRC
+
+*** Projectile
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package projectile
+    :diminish
+    :config
+    (projectile-mode +1)
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    :after ivy)
+
+  (use-package counsel-projectile
+    :after (ivy projectile)
+    :config
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (counsel-projectile-mode))
+#+END_SRC
+
+*** Web Mode
+A very neat mode for editing html and the like.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package web-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode)))
+#+END_SRC
+
+*** Emmet
+Nice html and css snippets.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package emmet-mode
+    :hook ((sgml-mode . emmet-mode)
+           (rjsx-mode . emmet-mode)
+           (css-mode . emmet-mode)))
+#+END_SRC
+
+*** Flycheck
+Syntax checking and linting.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package flycheck
+    :hook ((after-init . global-flycheck-mode)))
+  (use-package avy-flycheck)
+#+END_SRC
+
+*** Python
+**** Anaconda
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package anaconda-mode
+    :after (sphinx-doc python-docstring)
+    :hook ((python-mode . anaconda-mode)
+           (python-mode . anaconda-eldoc-mode)
+           (python-mode .
+                             (lambda ()
+                               (sphinx-doc-mode t)
+                               (whitespace-mode 1)
+                               (python-docstring-mode 1)))))
+  (use-package company-anaconda)
+#+END_SRC
+
+**** Mark overlong Lines
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq whitespace-line-collumn 79)
+  (setq whitespace-style '(face empty tabs lines-tail trailing))
+#+END_SRC
+
+**** Docstrings
+Support for sphinx style docstrings.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package python-docstring)
+  (use-package sphinx-doc)
+#+END_SRC
+
+*** YASnippets
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package yasnippet
+    :diminish
+    :config (yas-global-mode 1))
+  (use-package elixir-yasnippets)
+  (use-package yasnippet-snippets)
+  (use-package yasnippet-classic-snippets)
+  (use-package ivy-yasnippet)
+#+END_SRC
+
+*** Jupyter-Notebooks
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package ein
+    :config (setq ein:output-type-preference
+                  '(emacs-lisp svg png jpeg html text latex javascript)))
+#+END_SRC
+
+*** Fish
+Fish shell script mode.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package fish-mode)
+#+END_SRC
+*** Arch PKGBUILD
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package pkgbuild-mode)
+#+END_SRC
+*** C++
+Set up ~lsp~, ~ccls~.
+#+begin_src emacs-lisp :tangle yes
+  (use-package ccls
+    :ensure t
+    :config
+    (setq ccls-executable "ccls")
+    (setq lsp-prefer-flymake nil)
+    (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc))
+    :hook ((c-mode c++-mode objc-mode) .
+           (lambda () (require 'ccls) (lsp))))
+#+end_src
+** Custom Scripts
+*** TODO Set frame font to FiraCode: Automatically
+Because of a bug, this doesn't work automatically.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun set-font ()
+  (interactive)
+  (set-frame-font "Fira Code" nil t))
+#+END_SRC
+
+*** Close all Buffers
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun close-all-buffers ()
+    "Closes all buffers."
+    (interactive)
+    (mapc 'kill-buffer
+          (buffer-list)))
+#+END_SRC
+*** Rename Buffer and File
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defun rename-file-and-buffer (new-name)
+    "Renames both current buffer and file it's visiting to NEW-NAME."
+    (interactive "sNew name: ")
+    (let ((name (buffer-name))
+          (filename (buffer-file-name)))
+      (if (not filename)
+          (message "Buffer '%s' is not visiting a file!" name)
+        (if (get-buffer new-name)
+            (message "A buffer named '%s' already exists!" new-name)
+          (progn
+            (rename-file filename new-name 1)
+            (rename-buffer new-name)
+            (set-visited-file-name new-name)
+            (set-buffer-modified-p nil))))))
+#+END_SRC
+
+*** Create Common Use-Package declaration
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (defmacro my-create-up-common (name &rest common-args)
+    "Creates a use-package declaration that automatically adds
+    predefined configuration."
+    (declare (indent 1))
+    `(defmacro ,name (package &rest args)
+       (declare (indent 1))
+       `(use-package ,package
+          ,@args
+          ,@',common-args)))
+#+END_SRC

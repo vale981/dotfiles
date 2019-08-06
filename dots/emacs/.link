@@ -1,0 +1,2 @@
+TASKNAME="Install Emacs Literate Config"
+LINKTO=".emacs.d"
