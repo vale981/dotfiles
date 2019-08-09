@@ -96,10 +96,10 @@ Use the neat powerline.
 #+END_SRC
 
 *** Font and Editor
-- Set font to Fira Code.
+- Set font to Fira Code. Is handled in rescources too.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (set-frame-font "Fira Code" nil t)
-  (set-face-attribute 'default t :font "Fira Code")
+  (set-frame-font "Fira Mono" nil t)
+  (set-face-attribute 'default t :font "Fira Mono")
 #+END_SRC
 
  - Highlight current line.
@@ -198,13 +198,17 @@ Nicer buffer menu. Set up some custom filters.
                   (mode . matrix-client-mode))
                  ("LaTeX"
                   (mode . latex-mode))
+                 ("Docker"
+                  (mode . dockerfile-mode))
+                 ("Configs"
+                  (mode . yaml-mode))
                  ("Directories"
-                  (mode . dired-mode))
-                 ))))
+                  (mode . dired-mode))))))
 
   (add-hook 'ibuffer-mode-hook
             (lambda ()
               (ibuffer-switch-to-saved-filter-groups "default")))
+  (global-set-key (kbd "C-x C-b") 'ibuffer-other-window)
 #+END_SRC
 
 *** Pretty Symbols
@@ -357,20 +361,92 @@ Move whole lines easily.
     :diminish
     :config (move-text-default-bindings))
 #+END_SRC
-*** TODO Tree, Replace with Treemacs
+
+*** Treemacs
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package neotree
+  (use-package treemacs
+    :ensure t
+    :defer t
+    :init
+    (with-eval-after-load 'winum
+      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
-    (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
-    ;; Set tree-root to the current Project
-    (setq projectile-switch-project-action 'neotree-projectile-action))
+    (progn
+      (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+            treemacs-deferred-git-apply-delay      0.5
+            treemacs-display-in-side-window        t
+            treemacs-eldoc-display                 t
+            treemacs-file-event-delay              5000
+            treemacs-file-follow-delay             0.2
+            treemacs-follow-after-init             t
+            treemacs-git-command-pipe              ""
+            treemacs-goto-tag-strategy             'refetch-index
+            treemacs-indentation                   2
+            treemacs-indentation-string            " "
+            treemacs-is-never-other-window         nil
+            treemacs-max-git-entries               5000
+            treemacs-missing-project-action        'ask
+            treemacs-no-png-images                 nil
+            treemacs-no-delete-other-windows       t
+            treemacs-project-follow-cleanup        nil
+            treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+            treemacs-position                      'left
+            treemacs-recenter-distance             0.1
+            treemacs-recenter-after-file-follow    nil
+            treemacs-recenter-after-tag-follow     nil
+            treemacs-recenter-after-project-jump   'always
+            treemacs-recenter-after-project-expand 'on-distance
+            treemacs-show-cursor                   nil
+            treemacs-show-hidden-files             t
+            treemacs-silent-filewatch              nil
+            treemacs-silent-refresh                nil
+            treemacs-sorting                       'alphabetic-desc
+            treemacs-space-between-root-nodes      t
+            treemacs-tag-follow-cleanup            t
+            treemacs-tag-follow-delay              1.5
+            treemacs-width                         35)
+
+      ;; The default width and height of the icons is 22 pixels. If you are
+      ;; using a Hi-DPI display, uncomment this to double the icon size.
+      ;;(treemacs-resize-icons 44)
+
+      (treemacs-follow-mode t)
+      (treemacs-filewatch-mode t)
+      (treemacs-fringe-indicator-mode t)
+      (pcase (cons (not (null (executable-find "git")))
+                   (not (null treemacs-python-executable)))
+        (`(t . t)
+         (treemacs-git-mode 'deferred))
+        (`(t . _)
+         (treemacs-git-mode 'simple))))
+    :bind
+    (:map global-map
+          ("M-0"       . treemacs-select-window)
+          ("C-x t 1"   . treemacs-delete-other-windows)
+          ("C-x t t"   . treemacs)
+          ("C-x t B"   . treemacs-bookmark)
+          ("C-x t C-t" . treemacs-find-file)
+          ("C-x t M-t" . treemacs-find-tag)))
+
+  (use-package treemacs-projectile
+    :after treemacs projectile
+    :ensure t)
+
+  (use-package treemacs-icons-dired
+    :after treemacs dired
+    :ensure t
+    :config (treemacs-icons-dired-mode))
+
+  (use-package treemacs-magit
+    :after treemacs magit
+    :ensure t)
 #+END_SRC
 
 *** Rainbow Delimiters
 Color code matching delimiters.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;;(use-package rainbow-delimiters
-    ;;:hook prog-mode)
+;;(use-package rainbow-delimiters
+;;:hook prog-mode)
 #+END_SRC
 
 ** Programming / Language Support
@@ -575,6 +651,7 @@ Buff the agenda to use Groups.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package org-super-agenda
+    :defer t
     :config
     (setq org-super-agenda-groups
           '((:name "NEXT"
@@ -707,6 +784,7 @@ CAS for some annoying calculations.
 Make mini-buffers and search nicer.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package ivy
+    :diminish ivy-mode
     :bind (("C-s" . swiper)
            ("C-x r" . counsel-recentf)
            ("C-x b" . counsel-ibuffer))
@@ -883,7 +961,7 @@ Support for sphinx style docstrings.
 *** YASnippets
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package yasnippet
-    :diminish
+    :diminish yas-global-mode
     :config (yas-global-mode 1))
   (use-package elixir-yasnippets)
   (use-package yasnippet-snippets)
@@ -919,6 +997,19 @@ Set up ~lsp~, ~ccls~.
     :hook ((c-mode c++-mode objc-mode) .
            (lambda () (require 'ccls) (lsp))))
 #+end_src
+*** YAML
+#+begin_src emacs-lisp :tangle yes
+  (use-package yaml-mode)
+#+end_src
+*** Docker
+#+begin_src emacs-lisp :tangle yes
+  (use-package dockerfile-mode)
+#+end_src
+*** Regex
+#+begin_src emacs-lisp :tangle yes
+  (use-package regex-tool)
+#+end_src
+
 ** Custom Scripts
 *** TODO Set frame font to FiraCode: Automatically
 Because of a bug, this doesn't work automatically.
