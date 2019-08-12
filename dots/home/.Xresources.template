@@ -61,4 +61,4 @@ rofi.color-active: S_base03, S_blue, S_base03, S_base02, S_blue
 rofi.color-urgent: S_base03, S_magenta, S_base03, S_base02, S_magenta
 
 Emacs.FontBackend: xft,x
-Emacs.font: Fira Mono:size=15
+Emacs.font: Fira Mono:size=13
