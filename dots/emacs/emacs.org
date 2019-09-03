@@ -64,6 +64,15 @@ Install diminish:
 #+END_SRC
 
 ** Preferences
+*** Xah Ergo Emacs
+#+begin_src emacs-lisp :tangle yes
+  (use-package ergoemacs-mode
+    :config
+    (setq ergoemacs-theme nil)
+    (setq ergoemacs-keyboard-layout "workman")
+    (ergoemacs-mode 1))
+#+end_src
+
 *** Custom
 Prevent custom from preserving state.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -743,7 +752,7 @@ Make mini-buffers and search nicer.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package ivy
     :diminish ivy-mode
-    :bind (("C-s" . swiper)
+    :bind (("M-j" . swiper)
            ("C-x r" . counsel-recentf)
            ("C-x b" . counsel-ibuffer))
     :config
