@@ -68,6 +68,7 @@ Install diminish:
 #+begin_src emacs-lisp :tangle yes
   (use-package ergoemacs-mode
     :config
+    (setq ergoemacs-message-level nil)
     (setq ergoemacs-theme nil)
     (setq ergoemacs-keyboard-layout "workman")
     (ergoemacs-mode 1))
