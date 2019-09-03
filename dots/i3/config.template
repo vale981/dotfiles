@@ -48,10 +48,10 @@ bindsym $mod+d exec rofi -matching fuzzy -show run
 # bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus right
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus down
+bindsym $mod+n focus left
+bindsym $mod+e focus right
+bindsym $mod+o focus up
+bindsym $mod+i focus down
 
 # show border
 bindsym $mod+g exec compton-trans -c 50
@@ -64,10 +64,10 @@ bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 
 # move focused window
-bindsym $mod+Shift+j move left
-bindsym $mod+Shift+k move right
-bindsym $mod+Shift+l move up
-bindsym $mod+Shift+semicolon move down
+bindsym $mod+Shift+n move left
+bindsym $mod+Shift+e move right
+bindsym $mod+Shift+o move up
+bindsym $mod+Shift+i move down
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Shift+Left move left
@@ -87,7 +87,7 @@ bindsym $mod+f fullscreen toggle
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+s layout stacking
 bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
+bindsym $mod+j layout toggle split
 
 # toggle tiling / floating
 bindsym $mod+Shift+space floating toggle
@@ -130,7 +130,7 @@ bindsym $mod+Shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $mod+Shift+f exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -143,7 +143,7 @@ mode "resize" {
         bindsym j resize shrink width ye10 px or 10 ppt
         bindsym k resize grow width 10 px or 10 ppt
         bindsym l resize grow height 10 px or 10 ppt
-        bindsym se4micolon resize shrink height 10 px or 10 ppt
+        bindsym semicolon resize shrink height 10 px or 10 ppt
 
         # same bindings, but for the arrow keys
         bindsym Left resize shrink width 10 px or 10 ppt
