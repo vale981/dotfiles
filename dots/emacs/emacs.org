@@ -506,7 +506,8 @@ Multiple major modes in one buffer.
   (use-package polymode
     :config
     (use-package poly-markdown)
-    (use-package poly-org))
+    (use-package poly-org)
+    (use-package poly-rst))
 #+END_SRC
 
 *** Org Mode
@@ -924,6 +925,8 @@ Support for sphinx style docstrings.
   (use-package yasnippet-snippets)
   (use-package yasnippet-classic-snippets)
   (use-package ivy-yasnippet)
+  (use-package ivy-xref
+    :init (setq xref-show-definitions-function #'ivy-xref-show-defs))
 #+END_SRC
 
 *** Jupyter-Notebooks
