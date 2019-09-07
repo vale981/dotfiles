@@ -634,9 +634,11 @@ Make mini-buffers and search nicer.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package ivy
     :diminish ivy-mode
-    :bind (("M-j" . swiper)
+    :bind (("C-s" . swiper)
            ("C-x r" . counsel-recentf)
-           ("C-x b" . counsel-ibuffer))
+           ("C-x b" . counsel-ibuffer)
+           :map boon-command-map
+           ("w" . swiper))
     :config
     (ivy-mode 1)
     (setq ivy-use-virtual-buffers t)
