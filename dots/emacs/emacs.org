@@ -2,6 +2,12 @@
 
 * Hiro's Emacs Config
 ** General Stuff
+*** Allow Dangerous Stuff
+Allow downcase.
+#+begin_src emacs-lisp :tangle yes
+  (put 'downcase-region 'disabled nil)
+#+end_src
+
 *** Edit Config
 Shortcut to edit this file.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -97,8 +103,8 @@ Prevent custom from preserving state.
 *** Font and Editor
 - Set font to Fira Code. Is handled in rescources too.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (set-frame-font "Fira Mono" nil t)
-  (set-face-attribute 'default t :font "Fira Mono")
+  (set-frame-font "Fira Code" nil t)
+  (set-face-attribute 'default t :font "Fira Code")
 #+END_SRC
 
  - Highlight current line.
@@ -204,6 +210,7 @@ Nicer buffer menu. Set up some custom filters.
                    (mode . c++-mode)
                    (mode . perl-mode)
                    (mode . python-mode)
+                   (mode . lisp-mode)
                    (mode . emacs-lisp-mode)))
                  ("Matrix"
                   (mode . matrix-client-mode))
@@ -289,9 +296,12 @@ Move whole lines easily.
     :ensure t)
 #+END_SRC
 
-*** Rainbow Delimiters
+*** Rainbow Delimiters, Identifiers
 Color code matching delimiters.
 #+BEGIN_SRC emacs-lisp :tangle yes
+  ;; (use-package rainbow-identifiers
+  ;;   :hook prog-mode)
+
 ;;(use-package rainbow-delimiters
 ;;:hook prog-mode)
 #+END_SRC
@@ -611,7 +621,12 @@ Agenda Files:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit-filenotify)
 #+END_SRC
+**** Time-Machine
+View the history of a file.
 
+#+begin_src emacs-lisp :tangle yes
+  (use-package git-timemachine)
+#+end_src
 **** Gutter
 Mark changed lines on the fringes.
 #+BEGIN_SRC emacs-lisp :tangle yes
