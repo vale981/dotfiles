@@ -97,7 +97,7 @@ Prevent custom from preserving state.
 *** Font and Editor
 - Set font to Fira Code. Is handled in rescources too.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (set-frame-font "Fira Code" nil t)
+  (set-frame-font "Fira Code Heavy" nil t)
   (set-face-attribute 'default t :font "Fira Code")
 #+END_SRC
 
