@@ -70,11 +70,14 @@ Install diminish:
 #+END_SRC
 
 ** Preferences
-*** Boon 
+*** Boon
 #+begin_src emacs-lisp :tangle yes
   (use-package boon
     :load-path "~/.emacs.d/boon/"
-    :config (require 'boon-workman))
+    :config (require 'boon-workman)
+    (add-to-list 'boon-special-mode-list 'sly-db-mode)
+    (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
+    (boon-mode))
 #+end_src
 *** Custom
 Prevent custom from preserving state.
@@ -82,7 +85,7 @@ Prevent custom from preserving state.
   (setq custom-file (make-temp-file "emacs-custom"))
 #+END_SRC
 
-*** General
+s*** General
  No startup screen.
  #+BEGIN_SRC emacs-lisp :tangle yes
    (setq inhibit-startup-screen t)
@@ -111,6 +114,7 @@ Prevent custom from preserving state.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-hl-line-mode 1)
 #+END_SRC
+
 *** Sound
 No terminal bell.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -379,6 +383,21 @@ avoid modifiers.
     :diminish
     :bind (("M-(" . lispy-parens-auto-wrap))
     :config (setq lispy-use-sly t)
+    (let ((custom-bindings '(("u" . lispy-up)
+                            ("p" . lispy-down)
+                            ("n" . lispy-left)
+                            ("o" . lispy-right)
+                            ("e" . lispy-flow)
+                            ("i" . lispy-different)
+                            ("j" . lispy-eval-other-window)
+                            ("h" . lispy-eval)
+                            ("l" . lispy-other-mode)
+                            ("f" . lispy-new-copy)
+                            ("F" . lispy-narrow)
+                            ("d" . lispy-undo)
+                            ("k" . lispy-tab))))
+      (dolist (binding custom-bindings)
+        (lispy-define-key lispy-mode-map (car binding) (cdr binding))))
     :hook ((emacs-lisp-mode . lispy-mode)
            (eval-expression-minibuffer-setup . lispy-mode)
            (ielm-mode . lispy-mode)
