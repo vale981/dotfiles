@@ -410,7 +410,8 @@ avoid modifiers.
 **** Sly
 Slime fork with new features.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package sly)
+  (use-package sly
+    :config (setenv "APP_ENV" "development"))
   (use-package sly-repl-ansi-color
     :after sly)
   (use-package sly-quicklisp
