@@ -37,6 +37,11 @@ Taken from https://github.com/Atman50/emacs-config.
   (setq auto-window-vscroll nil)
 #+END_SRC
 
+*** Tune GC
+#+begin_src emacs-lisp :tangle yes
+  (setq gc-cons-threshold 20000000)
+#+end_src
+
 *** Disable Garbage Collection on Fontcache
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq inhibit-compacting-font-caches t)
@@ -355,6 +360,9 @@ Support for the =Language Server Protocol=.
             company-echo-metadata-frontend))
 
     :hook (after-init . global-company-mode))
+  (use-package company-flx
+    :after company
+    :config (company-flx-mode +1))
 #+END_SRC
 
 Set up the company backends: (maybe do it the other way around...)
