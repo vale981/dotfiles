@@ -355,6 +355,9 @@ Support for the =Language Server Protocol=.
             company-echo-metadata-frontend))
 
     :hook (after-init . global-company-mode))
+  (use-package company-flx
+    :after company-mode
+    :config (company-flx-mode +1))
 #+END_SRC
 
 Set up the company backends: (maybe do it the other way around...)
@@ -404,7 +407,8 @@ avoid modifiers.
            (lisp-mode . lispy-mode)
            (common-lisp-mode . lispy-mode)
            (lisp-interaction-mode . lispy-mode)
-           (scheme-mode . lispy-mode)))
+           (scheme-mode . lispy-mode)
+           (racket-mode . lispy-mode)))
 #+END_SRC
 
 **** Sly
@@ -419,6 +423,16 @@ Slime fork with new features.
   (use-package sly-macrostep
     :after sly)
 #+END_SRC
+
+*** Racket
+#+begin_src emacs-lisp :tangle yes
+  ;; (use-package geiser)
+
+  (use-package racket-mode
+    :config (defun my-racket-mode-hook ()
+              (setq-local eldoc-documentation-function #'racket-eldoc-function))
+    :hook (racket-mode . my-racket-mode-hook))
+#+end_src
 
 *** Poly Mode
 Multiple major modes in one buffer.
@@ -812,6 +826,7 @@ Nice html and css snippets.
 Syntax checking and linting.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package flycheck
+    :config (setq flycheck-check-syntax-automatically '(save mode-enable))
     :hook ((after-init . global-flycheck-mode)))
   (use-package avy-flycheck)
 #+END_SRC
