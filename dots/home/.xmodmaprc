@@ -7,6 +7,6 @@ keycode  19 = 0 bracketright 0 bracketright
 keycode  34 = parenleft braceleft parenleft braceleft
 keycode  35 = parenright braceright parenright braceright
 
-keycode 130 = Control_R NoSymbol Control_R
-keycode 131 = Escape
-add control = Control_L Control_R
+keycode 66 = Control_L
+add Lock = Caps_Lock
+add Control = Control_L
