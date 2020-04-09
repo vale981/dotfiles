@@ -16,6 +16,8 @@ alias mktargz "tar -zcvf"
 alias frem "sudo pacman -R (pacman -Q | fzf -m --preview=\"echo {} | cut -d' ' -f1 | pacman -Si -\" | cut -d' ' -f1 )"
 alias fyay "yay -Pc x | fzf -m | cut -f1 | yay -S -"
 alias ftmux "tmux a -t (tmux ls | fzf --height=5 | cut -d ' ' -f 1)"
+alias please sudo
+
 
 function cmus
     set cmus_sess "cmus"

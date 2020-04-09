@@ -60,5 +60,5 @@ rofi.color-normal: S_base03, S_base0, S_base03, S_base02, S_base0
 rofi.color-active: S_base03, S_blue, S_base03, S_base02, S_blue
 rofi.color-urgent: S_base03, S_magenta, S_base03, S_base02, S_magenta
 
-Emacs.FontBackend: xft,x
-Emacs.font: Fira Code:size=13
+Emacs.font: JetBrains Mono-11
+Emacs.fontBackend: xft

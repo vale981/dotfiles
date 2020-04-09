@@ -30,6 +30,14 @@ Starts the emacs server.
   (desktop-save-mode 1)
 #+END_SRC
 
+*** Auto-Save
+Let emacs auto-save in a separate directory. This spares me from
+including all that emacs gruft in ~.gitignore~ files.
+
+#+begin_src emacs-lisp :tangle yes
+  (setq auto-save-file-name-transforms
+    `((".*" "~/.emacs-saves/" t)))
+#+end_src
 ** Hacks
 *** Speed up Cursor Movement
 Taken from https://github.com/Atman50/emacs-config.
@@ -77,12 +85,16 @@ Install diminish:
 ** Preferences
 *** Boon
 #+begin_src emacs-lisp :tangle yes
-  (use-package boon
-    :load-path "~/.emacs.d/boon/"
-    :config (require 'boon-workman)
-    (add-to-list 'boon-special-mode-list 'sly-db-mode)
-    (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
-    (boon-mode))
+    (use-package expand-region)
+    (use-package boon
+      :after expand-region
+      :load-path "~/.emacs.d/boon/"
+      :config
+      (use-package expand-region)
+      (require 'boon-workman)
+      (add-to-list 'boon-special-mode-list 'sly-db-mode)
+      (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
+      (boon-mode))
 #+end_src
 *** Custom
 Prevent custom from preserving state.
@@ -90,7 +102,7 @@ Prevent custom from preserving state.
   (setq custom-file (make-temp-file "emacs-custom"))
 #+END_SRC
 
-s*** General
+*** General
  No startup screen.
  #+BEGIN_SRC emacs-lisp :tangle yes
    (setq inhibit-startup-screen t)
@@ -109,10 +121,10 @@ s*** General
  #+END_SRC
 
 *** Font and Editor
-- Set font to Fira Code. Is handled in rescources too.
+- Set font to ~JetBrains Mono~.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (set-frame-font "Fira Code" nil t)
-  (set-face-attribute 'default t :font "Fira Code")
+  (set-frame-font "JetBrains Mono 11" nil t)
+  (set-face-attribute 'default t :font "JetBrains Mono 11")
 #+END_SRC
 
  - Highlight current line.
@@ -247,7 +259,7 @@ details are handled on a per-mode base.
     :config
     (global-pretty-mode t)
     (pretty-activate-groups
-     '(:sub-and-superscripts :greek :arithmetic-nary :arrows :arithmetic)))
+     '(:greek :arithmetic-nary :arrows :arithmetic)))
   (global-prettify-symbols-mode 1)
 #+END_SRC
 
@@ -315,6 +327,104 @@ Color code matching delimiters.
 ;;:hook prog-mode)
 #+END_SRC
 
+*** Smart Tab
+#+begin_src emacs-lisp :tangle yes
+  (use-package smart-tab
+    :config (global-smart-tab-mode))
+#+end_src
+*** Ripgrep
+#+begin_src emacs-lisp :tangle yes
+  (use-package rg
+    :config
+    (rg-enable-default-bindings)
+    :bind ("C-x p" . rg-menu))
+#+end_src
+*** Color Identifiers
+Give variables their own color.
+#+begin_src emacs-lisp :tangle yes
+  ;; (use-package color-identifiers-mode
+  ;;   :hook (after-init . global-color-identifiers-mode))
+#+end_src
+*** Flyspell
+#+begin_src emacs-lisp :tangle yes
+(use-package flyspell-correct-ivy
+    :bind ("C-;" . flyspell-correct-wrapper)
+    :init
+    (setq flyspell-correct-interface #'flyspell-correct-ivy))
+#+end_src
+
+*** Abbrev
+Use abbrev for greek input.
+#+begin_src emacs-lisp :tangle yes
+  (define-abbrev-table 'global-abbrev-table
+    '(
+          ;; Greek small letters
+          ("8al" "α")
+          ("8be" "β")
+          ("8ga" "γ")
+          ("8de" "δ")
+          ("8ep" "ε")
+          ("8ze" "ζ")
+          ("8et" "η")
+          ("8th" "θ")
+          ("8io" "ι")
+          ("8ka" "κ")
+          ("8la" "λ")
+          ("8mu" "μ")
+          ("8nu" "ν")
+          ("8xi" "ξ")
+          ("8oi" "ο") ;; omicron
+          ("8pi" "π")
+          ("8ro" "ρ")
+          ("8si" "σ")
+          ("8ta" "τ")
+          ("8up" "υ")
+          ("8ph" "φ")
+          ("8ch" "χ")
+          ("8ps" "ψ")
+          ("8oe" "ω") ;; omega
+
+          ;; Greek capital letters
+          ("8Al" "Α")
+          ("8Be" "Β")
+          ("8Ga" "Γ")
+          ("8De" "Δ")
+          ("8Ep" "Ε")
+          ("8Ze" "Ζ")
+          ("8Et" "Η")
+          ("8Th" "Θ")
+          ("8Io" "Ι")
+          ("8Ka" "Κ")
+          ("8La" "Λ")
+          ("8Mu" "Μ")
+          ("8Nu" "Ν")
+          ("8Xi" "Ξ")
+          ("8Oi" "Ο") ;; Omicron
+          ("8Pi" "Π")
+          ("8Ro" "Ρ")
+          ("8Si" "Σ")
+          ("8Ta" "Τ")
+          ("8Up" "Υ")
+          ("8Ph" "Φ")
+          ("8Ch" "Χ")
+          ("8Ps" "Ψ")
+          ("8Oe" "Ω") ;; Omega
+  ))
+
+  (setq save-abbrevs nil)
+  (setq-default abbrev-mode t)
+#+end_src
+
+*** Outline Magic
+#+begin_src emacs-lisp :tangle yes
+  (use-package outline-magic
+    :config
+    (eval-after-load 'outline
+      '(progn
+         (require 'outline-magic)
+         (define-key outline-minor-mode-map (kbd "<C-tab>") 'outline-cycle))))
+#+end_src
+
 ** Programming / Language Support
 *** LSP
 Support for the =Language Server Protocol=.
@@ -329,16 +439,27 @@ Support for the =Language Server Protocol=.
           lsp-ui-doc-use-childframe t
           lsp-ui-doc-position 'top
           lsp-ui-doc-include-signature t
-          lsp-ui-sideline-enable nil
+          lsp-ui-sideline-enable t
           lsp-ui-flycheck-enable t
           lsp-ui-flycheck-list-position 'right
           lsp-ui-flycheck-live-reporting t
           lsp-ui-peek-enable t
           lsp-ui-peek-list-width 60
-          lsp-ui-peek-peek-height 25)
+          lsp-ui-peek-peek-height 25
+          lsp-enable-semantic-highlighting t
+          lsp-enable-symbol-highlighting nil)
+    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
     (setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
     :hook ((elixir-mode . lsp)
            (lsp-mode . lsp-ui-mode)))
+  (use-package dap-mode
+    :config
+    (require 'dap-gdb-lldb)
+    (dap-gdb-lldb-setup)
+    :hook ((c-mode c++-mode) .
+           (lambda ()
+             (require 'dap-lldb))))
 #+END_SRC
 
 *** Company
@@ -353,6 +474,9 @@ Support for the =Language Server Protocol=.
     (setq company-show-numbers t)
     (setq company-idle-delay 0)
     (setq company-lsp-cache-candidates 'auto)
+    (setq company-lsp-async t)
+    (setq company-lsp-enable-snippet t)
+    (setq company-lsp-enable-recompletion t)
     (company-tng-configure-default)
     (setq company-frontends
           '(company-tng-frontend
@@ -369,8 +493,8 @@ Set up the company backends: (maybe do it the other way around...)
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package company-tern
     :config (add-to-list 'company-backends 'company-tern))
-  (use-package company-anaconda
-    :config (add-to-list 'company-backends 'company-anaconda))
+  ;; (use-package company-anaconda
+  ;;   :config (add-to-list 'company-backends 'company-anaconda))
   (use-package company-lsp
     :config (add-to-list 'company-backends 'company-lsp))
 #+END_SRC
@@ -379,7 +503,7 @@ Set up the company backends: (maybe do it the other way around...)
 **** Roswell
 Support for the roswell package manager.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (load (expand-file-name "~/.roswell/helper.el"))
+  ;; (load (expand-file-name "~/.roswell/helper.el"))
 #+END_SRC
 
 **** Lispy Mode
@@ -443,11 +567,11 @@ Slime fork with new features.
 Multiple major modes in one buffer.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package polymode
-    :config
-    (use-package poly-markdown)
-    (use-package poly-org)
-    (use-package poly-rst))
+  ;; (use-package polymode
+  ;;   :config
+  ;;   (use-package poly-markdown)
+  ;;   ;; (use-package poly-org)
+  ;;   (use-package poly-rst))
 #+END_SRC
 
 *** Org Mode
@@ -458,7 +582,6 @@ Multiple major modes in one buffer.
   (org-clock-persistence-insinuate)
 #+END_SRC
 **** Refile
-
  - Targets include this file and any file contributing to the agenda - up to 9 levels deep
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-refile-targets
@@ -580,6 +703,15 @@ Agenda Files:
   (setq org-agenda-files (list "~/Documents/org/todo.org" "~/Documents/org/calendar.org"))
 #+END_SRC
 
+**** Automatically mark task as done if all subtasks are done
+#+begin_src emacs-lisp :tangle yes
+  (defun org-summary-todo (n-done n-not-done)
+    "Switch entry to DONE when all subentries are done, to TODO otherwise."
+    (let (org-log-done org-log-states)   ; turn off logging
+      (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
+  (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+#+end_src
 **** Custom States
  - states
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -648,6 +780,70 @@ Agenda Files:
            "** %? :MEETING:\n"))))
 #+END_SRC
 **** Babel
+#+begin_src emacs-lisp :tangle yes
+  (add-to-list 'org-babel-load-languages '(ein . t))
+
+  (setq org-confirm-babel-evaluate nil)   ;don't prompt me to confirm everytime I want to evaluate a block
+
+  ;;; display/update images in the buffer after I evaluate
+  (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
+  (setq org-startup-with-inline-images t)
+  (setq imagemagick-types-inhibit t)
+  (setq ein:output-area-inlined-images t)
+#+end_src
+
+Htmlize for nice org html export.
+#+begin_src emacs-lisp :tangle yes
+  (use-package htmlize)
+#+end_src
+
+And dont evaluate code again.
+#+begin_src emacs-lisp :tangle yes
+  (setq org-export-use-babel nil)
+#+end_src
+
+And a hack to make ob-ipython open the source in a python buffer.
+#+begin_src emacs-lisp :tangle yes
+  (use-package jupyter
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((jupyter . t))))
+#+end_src
+
+Automatically tangle on save.
+#+begin_src emacs-lisp :tangle yes
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (add-hook 'after-save-hook 'org-babel-tangle nil 'make-it-local)))
+#+end_src
+**** Evince for PDF
+#+begin_src emacs-lisp :tangle yes
+  (eval-after-load "org"
+    '(setq org-file-apps
+      '((auto-mode . emacs)
+        ("\\.x?html?\\'" . "firefox %s")
+        ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
+        ("\\.gif\\'" . "eog \"%s\"")
+        ("\\.mp4\\'" . "vlc \"%s\"")
+        ("\\.mkv" . "vlc \"%s\""))))
+
+  (defun whatacold/org-pdf-app (file-path link-without-schema)
+    "Open pdf file using pdf-tools and go to the specified page."
+    (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
+                                      link-without-schema))
+                     1
+                   (string-to-number (match-string 1 link-without-schema)))))
+      (require 'subr-x)
+      (start-process "evince" "evince" "evince" (concat "--page-label=" (number-to-string page)) file-path)))
+#+end_src
+**** Presentations
+Org tree slide is a presentation tool for org mode.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-tree-slide
+    :bind (("<f10>" . 'org-tree-slide-move-next-tree)
+           ("<f9>" . 'org-tree-slide-move-previous-tree)))
+#+end_src
 *** Git
 **** Magit
  - Just load magit and give it a key.
@@ -704,7 +900,17 @@ Make mini-buffers and search nicer.
 *** LaTeX
 Enable electric braces for math mode: ~\( \)~
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (setq LaTeX-electric-left-right-brace t)
+    (setq LaTeX-electric-left-right-brace t)
+    (setq reftex-plug-into-auctex t)
+    (setq reftex-ref-macro-prompt nil)
+    (setq reftex-label-alist '(AMSTeX))
+  (defun my-auctex-init ()
+    (turn-off-smartparens-mode)
+    (auto-fill-mode)
+    (latex-math-mode)
+    (turn-on-reftex)
+    (flyspell-mode 1))
+    (add-hook 'LaTeX-mode-hook 'my-auctex-init)
 #+END_SRC
 
 **** Latexmk
@@ -837,18 +1043,37 @@ Syntax checking and linting.
 #+END_SRC
 
 *** Python
+**** Elpy
+#+begin_src emacs-lisp :tangle yes
+  (use-package elpy
+    :init
+    (elpy-enable)
+    :config
+    (add-hook 'elpy-mode-hook (lambda ()
+                                (add-hook 'before-save-hook
+                                          'elpy-black-fix-code nil t)))
+    (when (load "flycheck" t t)
+      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+      (add-hook 'elpy-mode-hook 'flycheck-mode))
+    (setq python-shell-interpreter "jupyter"
+          python-shell-interpreter-args "console --simple-prompt"
+          python-shell-prompt-detect-failure-warning nil)
+    (add-to-list 'python-shell-completion-native-disabled-interpreters
+                 "jupyter"))
+#+end_src
+
 **** Anaconda
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package anaconda-mode
-    :after (sphinx-doc python-docstring)
-    :hook ((python-mode . anaconda-mode)
-           (python-mode . anaconda-eldoc-mode)
-           (python-mode .
-                             (lambda ()
-                               (sphinx-doc-mode t)
-                               (whitespace-mode 1)
-                               (python-docstring-mode 1)))))
-  (use-package company-anaconda)
+  ;; (use-package anaconda-mode
+  ;;   :after (sphinx-doc python-docstring)
+  ;;   :hook ((python-mode . anaconda-mode)
+  ;;          (python-mode . anaconda-eldoc-mode)
+  ;;          (python-mode .
+  ;;                            (lambda ()
+  ;;                              (sphinx-doc-mode t)
+  ;;                              (whitespace-mode 1)
+  ;;                              (python-docstring-mode 1)))))
+  ;; (use-package company-anaconda)
 #+END_SRC
 
 **** Mark overlong Lines
@@ -896,14 +1121,62 @@ Fish shell script mode.
 *** C++
 Set up ~lsp~, ~ccls~.
 #+begin_src emacs-lisp :tangle yes
+  (use-package modern-cpp-font-lock
+    :hook (c++-mode . modern-c++-font-lock-mode))
   (use-package ccls
     :ensure t
     :config
     (setq ccls-executable "ccls")
     (setq lsp-prefer-flymake nil)
     (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc))
+    (setq ccls-sem-highlight-method 'overlay)
+    (ccls-use-default-rainbow-sem-highlight)
+    (set-buffer-multibyte nil)            ;TODO: Better fix!
     :hook ((c-mode c++-mode objc-mode) .
            (lambda () (require 'ccls) (lsp))))
+#+end_src
+
+Automatically insert Include-Guards.
+#+begin_src emacs-lisp :tangle yes
+
+  ;; autoinsert C/C++ header
+    (define-auto-insert
+      (cons "\\.\\([Hh]\\|hh\\|hpp\\)\\'" "My C / C++ header")
+      '(nil
+        (let* ((noext (substring buffer-file-name 0 (match-beginning 0)))
+                   (nopath (file-name-nondirectory noext))
+                   (ident (concat (upcase nopath) "_H")))
+          (concat "#ifndef " ident "\n"
+                          "#define " ident  " 1\n\n\n"
+                          "\n\n#endif // " ident "\n"))
+        (make-string 70 ?/) "\n"
+        "// $Log:$\n"
+        "//\n"))
+
+    ;; auto insert C/C++
+    (define-auto-insert
+      (cons "\\.\\([Cc]\\|cc\\|cpp\\)\\'" "My C++ implementation")
+      '(nil
+        (let* ((noext (substring buffer-file-name 0 (match-beginning 0)))
+                   (nopath (file-name-nondirectory noext))
+                   (ident (concat nopath ".h")))
+          (if (file-exists-p ident)
+                  (concat "#include \"" ident "\"\n")))
+        (make-string 70 ?/) "\n"
+        "// $Log:$\n"
+        "//\n"))
+#+end_src
+
+Highlight Doxygen.
+#+begin_src emacs-lisp :tangle yes
+  (use-package highlight-doxygen
+    :hook (c-mode-common . highlight-doxygen-global-mode))
+#+end_src
+
+Clang Format.
+#+begin_src emacs-lisp :tangle yes
+  (use-package clang-format+
+    :hook (c-mode-common . clang-format+-mode))
 #+end_src
 *** YAML
 #+begin_src emacs-lisp :tangle yes
@@ -917,17 +1190,11 @@ Set up ~lsp~, ~ccls~.
 #+begin_src emacs-lisp :tangle yes
   (use-package regex-tool)
 #+end_src
-
+*** Meson
+#+begin_src emacs-lisp :tangle yes
+  (use-package meson-mode)
+#+end_src
 ** Custom Scripts
-*** TODO Set frame font to FiraCode: Automatically
-Because of a bug, this doesn't work automatically.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(defun set-font ()
-  (interactive)
-  (set-frame-font "Fira Code" nil t))
-#+END_SRC
-
 *** Close all Buffers
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun close-all-buffers ()
