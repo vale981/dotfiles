@@ -8,3 +8,4 @@ MONITORS=(DVI-I-0 DisplayPort-2)
 RYGEL="true"
 BAR_POS="bottom"
 DPI=96
+SCREENLAYOUT=".screenlayout/desktop.sh"

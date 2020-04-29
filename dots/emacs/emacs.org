@@ -1055,9 +1055,7 @@ Syntax checking and linting.
     (when (load "flycheck" t t)
       (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
       (add-hook 'elpy-mode-hook 'flycheck-mode))
-    (setq python-shell-interpreter "jupyter"
-          python-shell-interpreter-args "console --simple-prompt"
-          python-shell-prompt-detect-failure-warning nil)
+
     (add-to-list 'python-shell-completion-native-disabled-interpreters
                  "jupyter"))
 #+end_src
@@ -1193,6 +1191,10 @@ Clang Format.
 *** Meson
 #+begin_src emacs-lisp :tangle yes
   (use-package meson-mode)
+#+end_src
+*** Lua
+#+begin_src emacs-lisp :tangle yes
+  (use-package lua-mode)
 #+end_src
 ** Custom Scripts
 *** Close all Buffers
