@@ -9,6 +9,7 @@ xfce4-clipman &
 kdeconnect-indicator &
 xset dpms 600 &
 xrdb .Xresources &
+wallp &
 {{ #SCREENLAYOUT }}
-exec {{ SCREENLAYOUT }}
+{{ SCREENLAYOUT }}
 {{ /SCREENLAYOUT }}

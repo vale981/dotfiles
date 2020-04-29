@@ -8,5 +8,3 @@ keycode  34 = parenleft braceleft parenleft braceleft
 keycode  35 = parenright braceright parenright braceright
 
 keycode 66 = Control_L
-add Lock = Caps_Lock
-add Control = Control_L
