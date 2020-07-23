@@ -47,9 +47,12 @@ Taken from https://github.com/Atman50/emacs-config.
 
 *** Tune GC
 #+begin_src emacs-lisp :tangle yes
-  (setq gc-cons-threshold 20000000)
+  (setq gc-cons-threshold 500000000)
 #+end_src
-
+*** Read more data from child processes
+#+begin_src emacs-lisp :tangle yes
+  (setq read-process-output-max (* 1024 1024))
+#+end_src
 *** Disable Garbage Collection on Fontcache
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq inhibit-compacting-font-caches t)
@@ -85,16 +88,18 @@ Install diminish:
 ** Preferences
 *** Boon
 #+begin_src emacs-lisp :tangle yes
+  (use-package expand-region)
+  (use-package boon
+    :after expand-region
+    :load-path "~/.emacs.d/boon/"
+    :config
     (use-package expand-region)
-    (use-package boon
-      :after expand-region
-      :load-path "~/.emacs.d/boon/"
-      :config
-      (use-package expand-region)
-      (require 'boon-workman)
-      (add-to-list 'boon-special-mode-list 'sly-db-mode)
-      (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
-      (boon-mode))
+    (require 'boon-workman)
+    (add-to-list 'boon-special-mode-list 'sly-db-mode)
+    (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
+    (add-to-list 'boon-special-mode-list 'cider-inspector-mode)
+    (add-to-list 'boon-special-mode-list 'cider-macroexpansion-mode)
+    (boon-mode))
 #+end_src
 *** Custom
 Prevent custom from preserving state.
@@ -425,6 +430,10 @@ Use abbrev for greek input.
          (define-key outline-minor-mode-map (kbd "<C-tab>") 'outline-cycle))))
 #+end_src
 
+*** Hydra
+#+begin_src emacs-lisp :tangle yes
+  (use-package hydra)
+#+end_src
 ** Programming / Language Support
 *** LSP
 Support for the =Language Server Protocol=.
@@ -435,7 +444,9 @@ Support for the =Language Server Protocol=.
     :after (lsp-ui elixir-mode)
     :config
     (setq lsp-prefer-flymake nil)
-    (setq lsp-ui-doc-enable nil
+    (setq
+          lsp-idle-delay 1
+          lsp-ui-doc-enable nil
           lsp-ui-doc-use-childframe t
           lsp-ui-doc-position 'top
           lsp-ui-doc-include-signature t
@@ -455,44 +466,81 @@ Support for the =Language Server Protocol=.
            (lsp-mode . lsp-ui-mode)))
   (use-package dap-mode
     :config
-    (require 'dap-gdb-lldb)
-    (dap-gdb-lldb-setup)
+    (require 'dap-lldb)
+    (require 'dap-lldb)
+
+    (add-hook 'dap-stopped-hook
+            (lambda (arg) (call-interactively #'dap-hydra)))
+    (setq dap-auto-configure-features
+          '(sessions locals controls tooltip))
     :hook ((c-mode c++-mode) .
            (lambda ()
              (require 'dap-lldb))))
+
+  (define-minor-mode +dap-running-session-mode
+    "A mode for adding keybindings to running sessions"
+    nil
+    nil
+    (make-sparse-keymap)
+    ;; The following code adds to the dap-terminated-hook
+    ;; so that this minor mode will be deactivated when the debugger finishes
+    (when +dap-running-session-mode
+      (let ((session-at-creation (dap--cur-active-session-or-die)))
+        (add-hook 'dap-terminated-hook
+                  (lambda (session)
+                    (when (eq session session-at-creation)
+                      (+dap-running-session-mode -1)))))))
+
+  ;; Activate this minor mode when dap is initialized
+  (add-hook 'dap-session-created-hook '+dap-running-session-mode)
+
+  ;; Activate this minor mode when hitting a breakpoint in another file
+  (add-hook 'dap-stopped-hook '+dap-running-session-mode)
+
+  ;; Activate this minor mode when stepping into code in another file
+  (add-hook 'dap-stack-frame-changed-hook (lambda (session)
+                                            (when (dap--session-running session)
+                                              (+dap-running-session-mode 1))))
+
 #+END_SRC
+
+#+RESULTS:
+| (lambda (session) (when (dap--session-running session) (+dap-running-session-mode 1))) | dap-ui--stack-frame-changed | (lambda (session) (if (dap--session-running session) (progn (+dap-running-session-mode 1)))) |
 
 *** Company
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package company
-    :diminish
-    :bind (("<C-tab>" . company-complete)
-           :map company-active-map
-           ("C-n" . company-select-next-or-abort)
-           ("C-p" . company-select-previous-or-abort))
-    :config
-    (setq company-show-numbers t)
-    (setq company-idle-delay 0)
-    (setq company-lsp-cache-candidates 'auto)
-    (setq company-lsp-async t)
-    (setq company-lsp-enable-snippet t)
-    (setq company-lsp-enable-recompletion t)
-    (company-tng-configure-default)
-    (setq company-frontends
-          '(company-tng-frontend
-            company-pseudo-tooltip-frontend
-            company-echo-metadata-frontend))
-
-    :hook (after-init . global-company-mode))
   (use-package company-flx
-    :after company
-    :config (company-flx-mode +1))
+      :after company
+      :config (company-flx-mode +1))
+    (use-package company
+      :diminish
+      :after company-lsp
+      :bind (("\t" . company-complete-common)
+             :map company-active-map
+             ("C-n" . company-select-next-or-abort)
+             ("C-p" . company-select-previous-or-abort)
+             ("<return>" . company-complete-selection))
+      :config
+      (setq company-show-numbers t)
+      (setq company-idle-delay .5)
+      (setq company-minimum-prefix-length 1)
+      (setq company-lsp-cache-candidates 'auto)
+      (setq company-lsp-async t)
+      (setq company-lsp-enable-snippet t)
+      (setq company-lsp-enable-recompletion t)
+      ;(company-tng-configure-default)
+      (setq company-frontends
+            '(;company-tng-frontend
+              company-pseudo-tooltip-frontend
+              company-echo-metadata-frontend))
+
+      :hook (after-init . global-company-mode))
 #+END_SRC
 
 Set up the company backends: (maybe do it the other way around...)
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package company-tern
-    :config (add-to-list 'company-backends 'company-tern))
+  ;; (use-package company-tern
+  ;;   :config (add-to-list 'company-backends 'company-tern))
   ;; (use-package company-anaconda
   ;;   :config (add-to-list 'company-backends 'company-anaconda))
   (use-package company-lsp
@@ -514,20 +562,22 @@ avoid modifiers.
   (use-package lispy
     :diminish
     :bind (("M-(" . lispy-parens-auto-wrap))
-    :config (setq lispy-use-sly t)
+    :config
+    (setq lispy-use-sly t)
+    (setq lispy-compat '(cider))
     (let ((custom-bindings '(("u" . lispy-up)
-                            ("p" . lispy-down)
-                            ("n" . lispy-left)
-                            ("o" . lispy-right)
-                            ("e" . lispy-flow)
-                            ("i" . lispy-different)
-                            ("j" . lispy-eval-other-window)
-                            ("h" . lispy-eval)
-                            ("l" . lispy-other-mode)
-                            ("f" . lispy-new-copy)
-                            ("F" . lispy-narrow)
-                            ("d" . lispy-undo)
-                            ("k" . lispy-tab))))
+                             ("p" . lispy-down)
+                             ("n" . lispy-left)
+                             ("o" . lispy-right)
+                             ("e" . lispy-flow)
+                             ("i" . lispy-different)
+                             ("j" . lispy-eval-other-window)
+                             ("h" . lispy-eval)
+                             ("l" . lispy-other-mode)
+                             ("f" . lispy-new-copy)
+                             ("F" . lispy-narrow)
+                             ("d" . lispy-undo)
+                             ("k" . lispy-tab))))
       (dolist (binding custom-bindings)
         (lispy-define-key lispy-mode-map (car binding) (cdr binding))))
     :hook ((emacs-lisp-mode . lispy-mode)
@@ -537,9 +587,33 @@ avoid modifiers.
            (common-lisp-mode . lispy-mode)
            (lisp-interaction-mode . lispy-mode)
            (scheme-mode . lispy-mode)
-           (racket-mode . lispy-mode)))
+           (racket-mode . lispy-mode)
+           (clojure-mode . lispy-mode)))
 #+END_SRC
 
+**** Cider
+Clojure IDE.
+#+begin_src emacs-lisp :tangle yes
+  (use-package cider
+    :config
+    (setq cider-font-lock-dynamically '(macro core function var))
+
+    :hook ((cider-repl-mode . cider-company-enable-fuzzy-completion)
+           (cider-mode . cider-company-enable-fuzzy-completion)))
+#+end_src
+
+***** clj-refactor
+#+begin_src emacs-lisp :tangle yes
+  (use-package clj-refactor
+    :config (cljr-add-keybindings-with-prefix "C-c C-m")
+    (setq cljr-warn-on-eval nil)
+    (defun my-clojure-mode-hook ()
+      (clj-refactor-mode 1)
+      (yas-minor-mode 1)      ; for adding require/use/import statements
+      ;; This choice of keybinding leaves cider-macroexpand-1 unbound
+      (cljr-add-keybindings-with-prefix "C-c C-m"))
+    :hook (cider-mode . my-clojure-mode-hook))
+#+end_src
 **** Sly
 Slime fork with new features.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -782,6 +856,8 @@ Agenda Files:
 **** Babel
 #+begin_src emacs-lisp :tangle yes
   (add-to-list 'org-babel-load-languages '(ein . t))
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '((shell . t)))
 
   (setq org-confirm-babel-evaluate nil)   ;don't prompt me to confirm everytime I want to evaluate a block
 
@@ -901,9 +977,6 @@ Make mini-buffers and search nicer.
 Enable electric braces for math mode: ~\( \)~
 #+BEGIN_SRC emacs-lisp :tangle yes
     (setq LaTeX-electric-left-right-brace t)
-    (setq reftex-plug-into-auctex t)
-    (setq reftex-ref-macro-prompt nil)
-    (setq reftex-label-alist '(AMSTeX))
   (defun my-auctex-init ()
     (turn-off-smartparens-mode)
     (auto-fill-mode)
@@ -912,6 +985,16 @@ Enable electric braces for math mode: ~\( \)~
     (flyspell-mode 1))
     (add-hook 'LaTeX-mode-hook 'my-auctex-init)
 #+END_SRC
+
+**** RefTeX
+#+begin_src emacs-lisp :tangle yes
+  (setq reftex-plug-into-auctex t)
+  (setq reftex-ref-macro-prompt nil)
+  (setq reftex-label-alist '(AMSTeX))
+  (defun reftex-format-cref (label def-fmt ref-style)
+    (format "\\cref{%s}" label))
+  (setq reftex-format-ref-function 'reftex-format-cref)
+#+end_src
 
 **** Latexmk
 Set up latexmk for easier making.
@@ -1128,7 +1211,7 @@ Set up ~lsp~, ~ccls~.
     (setq lsp-prefer-flymake nil)
     (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc))
     (setq ccls-sem-highlight-method 'overlay)
-    (ccls-use-default-rainbow-sem-highlight)
+    ;; (ccls-use-default-rainbow-sem-highlight)
     (set-buffer-multibyte nil)            ;TODO: Better fix!
     :hook ((c-mode c++-mode objc-mode) .
            (lambda () (require 'ccls) (lsp))))

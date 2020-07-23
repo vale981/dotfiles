@@ -11,7 +11,6 @@ echo -e "
 
 DOTFILES_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOTFILES_TMP=$DOTFILES_DIR/.tmp #TODO remove
-FISH_DIR=$HOME/.config/fish
 DOTDIR="dots"
 SCHEME="light"
 YES=false
