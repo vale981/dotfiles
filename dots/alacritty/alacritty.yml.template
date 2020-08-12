@@ -43,19 +43,19 @@ draw_bold_text_with_bright_colors: true
 font:
   # The normal (roman) font face to use.
   normal:
-    family: FiraCode Nerd Font
+    family: Fira Code
     # Style can be specified to pick a specific
     style: medium
 
   # The bold font face
   bold:
-    family: FiraCode Nerd Font
+    family: Fira Code
     # Style can be specified to pick a specific
     style: bold
 
   # The italic font face
   italic:
-    family: FiraCode Nerd Font
+    family: Fira Code
     # Style can be specified to pick a specific
     style: italic
 
@@ -102,7 +102,7 @@ font:
 #
 # To completely disable the visual bell, set its duration to 0.
 #
-visual_bell:
+bell:
   animation: EaseOutExpo
   duration: 0
 

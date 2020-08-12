@@ -1,15 +1,6 @@
 export PATH="${PATH}:~/.local/bin"
-eval $(/usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh)
-export SSH_AUTH_SOCK
-picom &
-dunst &
-xmodmap ~/.xmodmaprc
-udiskie &
-xfce4-clipman &
-kdeconnect-indicator &
-xset dpms 600 &
-xrdb .Xresources &
 wallp &
-{{ #SCREENLAYOUT }}
-{{ SCREENLAYOUT }}
-{{ /SCREENLAYOUT }}
+xmodmap ~/.xmodmaprc &
+dunst &
+picom --config .picom.conf &
+xrdb .Xresources &

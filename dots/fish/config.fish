@@ -24,3 +24,5 @@ function cmus
     set cmus_sess "cmus"
     tmux new-session -A -s $cmus_sess "bash -c cmus"
 end
+
+eval (direnv hook fish)

@@ -91,19 +91,21 @@ name                  = ws[3]:Terms
 # Mod key, (Windows key is Mod4) (Apple key on OSX is Mod2)
 modkey                  = Mod4
 
-# This allows you to include pre-defined key bindings for your keyboard layout.
 keyboard_mapping = ~/.spectrwm_wm.conf
 
 # PROGRAMS
 program[ec]             = bash /home/hiro/.scripts/ec -c
 bind[ec] = MOD+p
+program[quit-xfce]           = xfce4-session-logout --fast
+bind[quit-xfce]              = MOD+Shift+q
 
-program[volup]          = pactl set-sink-volume 0 +5%
-program[voldown]        = pactl set-sink-volume 0 -5%
-program[mute]           = pactl set-sink-mute 0 toggle
-bind[volup]             = XF86AudioRaiseVolume
-bind[voldown]           = XF86AudioLowerVolume
-bind[mute]              = XF86AudioMute
+
+# program[volup]          = pactl set-sink-volume 0 +5%
+# program[voldown]        = pactl set-sink-volume 0 -5%
+# program[mute]           = pactl set-sink-mute 0 toggle
+# bind[volup]             = XF86AudioRaiseVolume
+# bind[voldown]           = XF86AudioLowerVolume
+# bind[mute]              = XF86AudioMute
 
 program[gopass]         = sh -c "gopass ls --flat | rofi -matching fuzzy -dmenu | xargs --no-run-if-empty gopass show -c"
 bind[gopass]            = MOD+Shift+p
@@ -119,7 +121,7 @@ bind[XF86MonBrightnessDown] = brightdown
 {{ /laptop }}
 
 # Validated default programs:
-# program[lock]         = xlock
+program[lock]         = xflock4
 program[term]         = alacritty
 program[menu]         = rofi -matching fuzzy -show run
 program[search_win]   = rofi -matching fuzzy -show-icons -show

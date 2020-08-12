@@ -128,7 +128,7 @@ Prevent custom from preserving state.
 *** Font and Editor
 - Set font to ~JetBrains Mono~.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (set-frame-font "JetBrains Mono 11" nil t)
+  (set-frame-font "JetBrains Mono 11" t t)
   (set-face-attribute 'default t :font "JetBrains Mono 11")
 #+END_SRC
 
@@ -183,8 +183,7 @@ We use the doom theme.
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     (load-theme 'doom-solarized-light t)
     (doom-themes-treemacs-config)
-    (doom-themes-org-config)
-    )
+    (doom-themes-org-config))
 
   (use-package doom-modeline
     :ensure t
@@ -332,11 +331,7 @@ Color code matching delimiters.
 ;;:hook prog-mode)
 #+END_SRC
 
-*** Smart Tab
-#+begin_src emacs-lisp :tangle yes
-  (use-package smart-tab
-    :config (global-smart-tab-mode))
-#+end_src
+
 *** Ripgrep
 #+begin_src emacs-lisp :tangle yes
   (use-package rg
@@ -433,6 +428,12 @@ Use abbrev for greek input.
 *** Hydra
 #+begin_src emacs-lisp :tangle yes
   (use-package hydra)
+#+end_src
+*** Direnv Support
+#+begin_src emacs-lisp :tangle yes
+  (use-package direnv
+   :config
+   (direnv-mode))
 #+end_src
 ** Programming / Language Support
 *** LSP
