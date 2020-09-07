@@ -127,9 +127,13 @@ Prevent custom from preserving state.
 
 *** Font and Editor
 - Set font to ~JetBrains Mono~.
+
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (set-frame-font "JetBrains Mono 11" t t)
-  (set-face-attribute 'default t :font "JetBrains Mono 11")
+  ;(set-frame-font "JetBrains Mono 11" nil t)
+  ;(setq default-frame-alist '((font . "JetBrains Mono"))
+                                          ;(set-face-attribute 'default t :font "JetBrains Mono 11")
+  (add-to-list 'default-frame-alist
+               '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
 #+END_SRC
 
  - Highlight current line.
@@ -168,7 +172,7 @@ Use smartparens.
   (use-package smartparens
     :diminish
     :config
-    (smartparens-global-mode)
+    ; (smartparens-global-mode)
     (show-smartparens-global-mode +1))
 #+END_SRC
 
@@ -188,6 +192,20 @@ We use the doom theme.
   (use-package doom-modeline
     :ensure t
     :hook (after-init . doom-modeline-mode))
+#+end_src
+
+*** Compilation
+Reuse the compilation frame instead of annoyingly creating new ones.
+#+begin_src emacs-lisp :tangle yes
+  (add-to-list
+   'display-buffer-alist
+   '("\\*compilation\\*" display-buffer-reuse-window
+                           (reusable-frames . t)))
+#+end_src
+
+And scroll the compilation output.
+#+begin_src emacs-lisp :tangle yes
+  (setq compilation-scroll-output t)
 #+end_src
 
 ** Interface
@@ -309,6 +327,7 @@ Move whole lines easily.
 
   (use-package treemacs-projectile
     :after treemacs projectile
+    :bind ("<f5>" . projectile-compile-project)
     :ensure t)
 
   (use-package treemacs-icons-dired
@@ -446,20 +465,21 @@ Support for the =Language Server Protocol=.
     :config
     (setq lsp-prefer-flymake nil)
     (setq
-          lsp-idle-delay 1
-          lsp-ui-doc-enable nil
-          lsp-ui-doc-use-childframe t
-          lsp-ui-doc-position 'top
-          lsp-ui-doc-include-signature t
-          lsp-ui-sideline-enable t
-          lsp-ui-flycheck-enable t
-          lsp-ui-flycheck-list-position 'right
-          lsp-ui-flycheck-live-reporting t
-          lsp-ui-peek-enable t
-          lsp-ui-peek-list-width 60
-          lsp-ui-peek-peek-height 25
-          lsp-enable-semantic-highlighting t
-          lsp-enable-symbol-highlighting nil)
+     lsp-idle-delay 1
+     lsp-ui-doc-enable nil
+     lsp-ui-doc-use-childframe t
+     lsp-ui-doc-position 'top
+     lsp-ui-doc-include-signature t
+     lsp-ui-sideline-enable t
+     lsp-ui-flycheck-enable t
+     lsp-ui-flycheck-list-position 'right
+     lsp-ui-flycheck-live-reporting t
+     lsp-ui-peek-enable t
+     lsp-ui-peek-list-width 60
+     lsp-ui-peek-peek-height 25
+     lsp-enable-semantic-highlighting t
+     lsp-enable-symbol-highlighting nil
+     lsp-modeline-code-actions-segments '(count icon))
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
     (setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
@@ -505,8 +525,6 @@ Support for the =Language Server Protocol=.
 
 #+END_SRC
 
-#+RESULTS:
-| (lambda (session) (when (dap--session-running session) (+dap-running-session-mode 1))) | dap-ui--stack-frame-changed | (lambda (session) (if (dap--session-running session) (progn (+dap-running-session-mode 1)))) |
 
 *** Company
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -515,7 +533,6 @@ Support for the =Language Server Protocol=.
       :config (company-flx-mode +1))
     (use-package company
       :diminish
-      :after company-lsp
       :bind (("\t" . company-complete-common)
              :map company-active-map
              ("C-n" . company-select-next-or-abort)
@@ -525,13 +542,10 @@ Support for the =Language Server Protocol=.
       (setq company-show-numbers t)
       (setq company-idle-delay .5)
       (setq company-minimum-prefix-length 1)
-      (setq company-lsp-cache-candidates 'auto)
-      (setq company-lsp-async t)
-      (setq company-lsp-enable-snippet t)
-      (setq company-lsp-enable-recompletion t)
-      ;(company-tng-configure-default)
+                                          ;(company-tng-configure-default)
+      (add-to-list 'company-backends 'company-capf)
       (setq company-frontends
-            '(;company-tng-frontend
+            '(                            ;company-tng-frontend
               company-pseudo-tooltip-frontend
               company-echo-metadata-frontend))
 
@@ -543,9 +557,8 @@ Set up the company backends: (maybe do it the other way around...)
   ;; (use-package company-tern
   ;;   :config (add-to-list 'company-backends 'company-tern))
   ;; (use-package company-anaconda
-  ;;   :config (add-to-list 'company-backends 'company-anaconda))
-  (use-package company-lsp
-    :config (add-to-list 'company-backends 'company-lsp))
+  ;;   :config )
+
 #+END_SRC
 
 *** Lisp
@@ -857,8 +870,10 @@ Agenda Files:
 **** Babel
 #+begin_src emacs-lisp :tangle yes
   (add-to-list 'org-babel-load-languages '(ein . t))
-  (org-babel-do-load-languages 'org-babel-load-languages
-                               '((shell . t)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell . t)
+     (sqlite . t)))
 
   (setq org-confirm-babel-evaluate nil)   ;don't prompt me to confirm everytime I want to evaluate a block
 
@@ -1249,16 +1264,15 @@ Automatically insert Include-Guards.
         "//\n"))
 #+end_src
 
-Highlight Doxygen.
-#+begin_src emacs-lisp :tangle yes
-  (use-package highlight-doxygen
-    :hook (c-mode-common . highlight-doxygen-global-mode))
-#+end_src
-
 Clang Format.
 #+begin_src emacs-lisp :tangle yes
   (use-package clang-format+
     :hook (c-mode-common . clang-format+-mode))
+#+end_src
+**** RealGUD
+Debugging yay!
+#+begin_src emacs-lisp :tangle yes
+  (use-package realgud)
 #+end_src
 *** YAML
 #+begin_src emacs-lisp :tangle yes
