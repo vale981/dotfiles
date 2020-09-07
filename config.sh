@@ -9,3 +9,4 @@ SCREEN_LAYOUT="xrandr --output HDMI-2 --off --output HDMI-1 --off --output DP-1 
 #MONITORS=(VGA-0 DVI-D-0)
 BAR_POS="bottom"
 LAPTOP=true
+TERM_FONT_SIZE=6

@@ -6,5 +6,3 @@ keycode  19 = 0 bracketright 0 bracketright
 !keycode  35 = bracketright braceright bracketright braceright
 keycode  34 = parenleft braceleft parenleft braceleft
 keycode  35 = parenright braceright parenright braceright
-
-keycode 66 = Control_L
