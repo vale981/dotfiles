@@ -59,6 +59,22 @@ Taken from https://github.com/Atman50/emacs-config.
 #+END_SRC
 
 ** Packages
+*** Straight
+#+begin_src emacs-lisp :tangle yes
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+  (straight-use-package 'use-package)
+#+end_src
 *** Packages
 Set up package sources.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -75,9 +91,9 @@ Set up package sources.
     (package-install 'use-package))
 #+END_SRC
 
-Allways ensure:
+Use straight:
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (customize-set-variable 'use-package-always-ensure t)
+  (setq straight-use-package-by-default t)
 #+END_SRC
 
 Install diminish:
@@ -129,9 +145,6 @@ Prevent custom from preserving state.
 - Set font to ~JetBrains Mono~.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;(set-frame-font "JetBrains Mono 11" nil t)
-  ;(setq default-frame-alist '((font . "JetBrains Mono"))
-                                          ;(set-face-attribute 'default t :font "JetBrains Mono 11")
   (add-to-list 'default-frame-alist
                '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
 #+END_SRC
@@ -281,13 +294,7 @@ details are handled on a per-mode base.
     :config
     (global-pretty-mode t)
     (pretty-activate-groups
-     '(:greek :arithmetic-nary :arrows :arithmetic)))
-  (global-prettify-symbols-mode 1)
-#+END_SRC
-
-Unprettify on hover.
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq prettify-symbols-unprettify-at-point t)
+     '(:greek)))
 #+END_SRC
 
 *** Navigation
@@ -350,7 +357,28 @@ Color code matching delimiters.
 ;;:hook prog-mode)
 #+END_SRC
 
-
+*** Ligatures
+#+begin_src emacs-lisp :tangle yes
+  (use-package ligature
+    :straight (:host github :repo "mickeynp/ligature.el")
+    :config
+    (ligature-set-ligatures 't
+                            '("-->" "//" "/**" "/*" "*/" "<!--" ":=" "->>" "<<-" "->" "<-"
+                              "<=>" "==" "!=" "<=" ">=" "=:=" "!==" "&&" "||" "..." ".."
+                              "|||" "///" "&&&" "===" "++" "--" "=>" "|>" "<|" "||>" "<||"
+                              "|||>" "<|||" ">>" "<<" "::=" "|]" "[|" "{|" "|}"
+                              "[<" ">]" ":?>" ":?" "/=" "[||]" "!!" "?:" "?." "::"
+                              "+++" "??" "###" "##" ":::" "####" ".?" "?=" "=!=" "<|>"
+                              "<:" ":<" ":>" ">:" "<>" ";;" "/==" ".=" ".-" "__"
+                              "=/=" "<-<" "<<<" ">>>" "<=<" "<<=" "<==" "<==>" "==>" "=>>"
+                              ">=>" ">>=" ">>-" ">-" "<~>" "-<" "-<<" "=<<" "---" "<-|"
+                              "<=|" "/\\" "\\/" "|=>" "|~>" "<~~" "<~" "~~" "~~>" "~>"
+                              "<$>" "<$" "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</>" "</" "/>"
+                              "<->" "..<" "~=" "~-" "-~" "~@" "^=" "-|" "_|_" "|-" "||-"
+                              "|=" "||=" "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#="
+                              "&="))
+    (global-ligature-mode t))
+#+end_src
 *** Ripgrep
 #+begin_src emacs-lisp :tangle yes
   (use-package rg
@@ -525,7 +553,16 @@ Support for the =Language Server Protocol=.
 
 #+END_SRC
 
+*** Separedit
+#+begin_src emacs-lisp :tangle yes
+  (use-package separedit
+    :config
+    (setq separedit-default-mode 'markdown-mode)
+    :bind
+    (:map prog-mode-map
+          ("C-c '" . separedit)))
 
+#+end_src
 *** Company
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package company-flx
@@ -1080,15 +1117,16 @@ Some junk for the elixir programming language.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package elixir-mode
     :config
-    (mapc (lambda (pair) (push pair prettify-symbols-alist))
-          '(;; Syntax
-            ("do" .      #x2770)
-            ("|>" .      #x2A20)
-            ("->" .      #x21A6)
-            ("fn" .      #x03BB)
-            ("quote" .      #x2358)
-            ("unquote" .      #x236A)
-            ("end" .      #x2771))))
+    ;; (mapc (lambda (pair) (push pair prettify-symbols-alist))
+    ;;       '(;; Syntax
+    ;;         ("do" .      #x2770)
+    ;;         ("|>" .      #x2A20)
+    ;;         ("->" .      #x21A6)
+    ;;         ("fn" .      #x03BB)
+    ;;         ("quote" .      #x2358)
+    ;;         ("unquote" .      #x236A)
+    ;;         ("end" .      #x2771)))
+    )
 #+END_SRC
 
 *** Projectile
@@ -1272,7 +1310,8 @@ Clang Format.
 **** RealGUD
 Debugging yay!
 #+begin_src emacs-lisp :tangle yes
-  (use-package realgud)
+  (use-package realgud
+    :config (setq realgud-safe-mode nil))
 #+end_src
 *** YAML
 #+begin_src emacs-lisp :tangle yes
@@ -1293,6 +1332,10 @@ Debugging yay!
 *** Lua
 #+begin_src emacs-lisp :tangle yes
   (use-package lua-mode)
+#+end_src
+*** Nix
+#+begin_src emacs-lisp :tangle yes
+  (use-package nix-mode)
 #+end_src
 ** Custom Scripts
 *** Close all Buffers
