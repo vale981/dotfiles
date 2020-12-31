@@ -26,15 +26,23 @@ border-bottom-color = ${colors.bordercolor}
 font-0 = Fira Code:size=10;2
 font-1 = FontAwesome:size=10;2
 
+{{ #LAPTOP }}
 [bar/ext]
 inherit = bar/base
-
-monitor = HDMI-2
+monitor = {{.}}
 modules-left = bspwm
+{{ /LAPTOP }}
+
+{{#SIDE_MONITORS}}
+[bar/ext__{{.}}]
+inherit = bar/base
+monitor = {{.}}
+modules-left = bspwm
+{{/SIDE_MONITORS}}
 
 [bar/main]
 inherit = bar/base
-monitor = eDP-1
+monitor = {{ MAIN_MONITOR }}
 
 spacing = 3
 lineheight = 2
@@ -45,7 +53,14 @@ module-margin-right = 1
 separator = |
 
 modules-left = bspwm
+
+{{ #LAPTOP }}
 modules-right = battery clock
+{{ /LAPTOP }}
+
+{{ ^LAPTOP }}
+modules-right = clock
+{{ /LAPTOP }}
 
 tray-position = center
 

@@ -1,0 +1,23 @@
+###############################################################################
+#                               External Monitor                              #
+###############################################################################
+
+declare -A workspaces
+workspaces[2]="I V VI VIII IX X"
+workspaces[0]="II IV VII"
+workspaces[1]="III IX"
+
+MONITORS=({{ MONITORS[@] }})
+
+move_to_monitor() {
+    for D in $(echo $1 | tr " " "\n"); do
+        bspc desktop $D --to-monitor $2
+    done
+}
+
+I=0
+for MONITOR in $MONITORS; do
+    bspc monitor $MONITOR -d ${workspaces[${I}]}
+    ((I=I+1))
+    # move_to_monitor "${workspaces[${I}]}" $MONITOR
+done
