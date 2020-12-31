@@ -47,7 +47,14 @@ Taken from https://github.com/Atman50/emacs-config.
 
 *** Tune GC
 #+begin_src emacs-lisp :tangle yes
-  (setq gc-cons-threshold 500000000)
+  (defun my-minibuffer-setup-hook ()
+    (setq gc-cons-threshold most-positive-fixnum))
+
+  (defun my-minibuffer-exit-hook ()
+    (setq gc-cons-threshold 800000))
+
+  (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+  (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
 #+end_src
 *** Read more data from child processes
 #+begin_src emacs-lisp :tangle yes
@@ -285,18 +292,6 @@ Nicer buffer menu. Set up some custom filters.
   (global-set-key (kbd "C-x C-b") 'ibuffer-other-window)
 #+END_SRC
 
-*** Pretty Symbols
-Some basic set-up for ~pretty-mode~ and ~prettify-symbols-mode~. The
-details are handled on a per-mode base.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package pretty-mode
-    :config
-    (global-pretty-mode t)
-    (pretty-activate-groups
-     '(:greek)))
-#+END_SRC
-
 *** Navigation
 **** Avy
 Jump to char.
@@ -376,7 +371,7 @@ Color code matching delimiters.
                               "<$>" "<$" "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</>" "</" "/>"
                               "<->" "..<" "~=" "~-" "-~" "~@" "^=" "-|" "_|_" "|-" "||-"
                               "|=" "||=" "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#="
-                              "&="))
+                              "&=" "+="))
     (global-ligature-mode t))
 #+end_src
 *** Ripgrep
@@ -493,7 +488,7 @@ Support for the =Language Server Protocol=.
     :config
     (setq lsp-prefer-flymake nil)
     (setq
-     lsp-idle-delay 1
+     lsp-idle-delay 0
      lsp-ui-doc-enable nil
      lsp-ui-doc-use-childframe t
      lsp-ui-doc-position 'top
@@ -1307,6 +1302,12 @@ Clang Format.
   (use-package clang-format+
     :hook (c-mode-common . clang-format+-mode))
 #+end_src
+
+Cmake support.
+#+begin_src emacs-lisp :tangle yes
+  (use-package cmake-mode)
+#+end_src
+
 **** RealGUD
 Debugging yay!
 #+begin_src emacs-lisp :tangle yes
