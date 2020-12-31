@@ -4,3 +4,4 @@ xmodmap ~/.xmodmaprc &
 dunst &
 picom --config .picom.conf &
 xrdb .Xresources &
+kdeconnect-indicator &

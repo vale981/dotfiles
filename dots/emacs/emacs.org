@@ -12,7 +12,6 @@ Allow downcase.
 Shortcut to edit this file.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun find-config ()
-    "Edit config.org"
     (interpactive)
     (find-file "~/.emacs/emacs.org"))
 
@@ -67,21 +66,9 @@ Taken from https://github.com/Atman50/emacs-config.
 
 ** Packages
 *** Straight
-#+begin_src emacs-lisp :tangle yes
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 5))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-  (straight-use-package 'use-package)
-#+end_src
+Straight is loaded in =~/.emacs= before anything else to then load the
+latest org mode which loads this file.
+
 *** Packages
 Set up package sources.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -131,22 +118,22 @@ Prevent custom from preserving state.
 #+END_SRC
 
 *** General
- No startup screen.
- #+BEGIN_SRC emacs-lisp :tangle yes
-   (setq inhibit-startup-screen t)
- #+END_SRC
+No startup screen.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq inhibit-startup-screen t)
+#+END_SRC
 
- Hide obstractions.
- #+BEGIN_SRC emacs-lisp :tangle yes
-   (scroll-bar-mode -1)
-   (menu-bar-mode -1)
-   (tool-bar-mode -1)
- #+END_SRC
+Hide obstractions.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (scroll-bar-mode -1)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+#+END_SRC
 
- No cursor blink.
- #+BEGIN_SRC emacs-lisp :tangle yes
-   (blink-cursor-mode 0)
- #+END_SRC
+No cursor blink.
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (blink-cursor-mode 0)
+#+END_SRC
 
 *** Font and Editor
 - Set font to ~JetBrains Mono~.
@@ -156,7 +143,7 @@ Prevent custom from preserving state.
                '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
 #+END_SRC
 
- - Highlight current line.
+- Highlight current line.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-hl-line-mode 1)
 #+END_SRC
@@ -702,7 +689,7 @@ Multiple major modes in one buffer.
   (org-clock-persistence-insinuate)
 #+END_SRC
 **** Refile
- - Targets include this file and any file contributing to the agenda - up to 9 levels deep
+- Targets include this file and any file contributing to the agenda - up to 9 levels deep
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-refile-targets
         (quote
@@ -710,27 +697,27 @@ Multiple major modes in one buffer.
           (org-agenda-files :maxlevel . 9))))
 #+END_SRC
 
- - Use full outline paths for refile targets - we file directly with IDO
+- Use full outline paths for refile targets - we file directly with IDO
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-refile-use-outline-path t)
 #+END_SRC
 
- - Targets complete directly with IDO
+- Targets complete directly with IDO
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-outline-path-complete-in-steps nil)
 #+END_SRC
 
- - Allow refile to create parent tasks with confirmation
+- Allow refile to create parent tasks with confirmation
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-refile-allow-creating-parent-nodes (quote confirm))
 #+END_SRC
 
- - Use the current window for indirect buffer display
+- Use the current window for indirect buffer display
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-indirect-buffer-display 'current-window)
 #+END_SRC
 
- - Exclude DONE state tasks from refile targets
+- Exclude DONE state tasks from refile targets
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun bh/verify-refile-target ()
     "Exclude todo keywords with a done state from refile targets."
@@ -741,7 +728,7 @@ Multiple major modes in one buffer.
 #+END_SRC
 
 **** Agenda
- - Formatting: Add path to Items
+- Formatting: Add path to Items
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-agenda-prefix-format
         '((agenda . " %i %-12:c%?-12t% s")
@@ -753,7 +740,7 @@ Multiple major modes in one buffer.
           (search . " %i %-12:c")))
 #+END_SRC
 
- - Custom Agenda Commands
+- Custom Agenda Commands
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-agenda-custom-commands
         '(("X" agenda
@@ -820,7 +807,11 @@ Buff the agenda to use Groups.
 
 Agenda Files:
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (setq org-agenda-files (list "~/Documents/org/todo.org" "~/Documents/org/calendar.org"))
+  (setq
+   org-agenda-files
+   (list "~/Documents/org/todo.org"
+         "~/Documents/org/general.org"
+         "/home/hiro/Documents/Projects/UNI/master/sem_1/courses.org"))
 #+END_SRC
 
 **** Automatically mark task as done if all subtasks are done
@@ -833,7 +824,7 @@ Agenda Files:
   (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 #+end_src
 **** Custom States
- - states
+- states
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq org-todo-keywords
       '((sequence "TODO" "WAITING" "NEXT" "HOLD" "|"
@@ -844,7 +835,7 @@ Agenda Files:
         (sequence "HOMEWORK" "ACTIVE" "|" "FINISHED")))
 #+END_SRC
 
- - triggers
+- triggers
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-todo-state-tags-triggers
         (quote
@@ -896,12 +887,15 @@ Agenda Files:
            "**** %?\n%U\n")
           ("m" "Meeting"
            entry
-           (file org-default-notes-file)
-           "** %? :MEETING:\n"))))
+           (file+headline "~/Documents/org/general.org" "Meetings")
+           "** %? :MEETING:\n")
+          ("p" "Appointment"
+           entry
+           (file+headline "~/Documents/org/general.org" "Appointments")
+           "** %? :APPOINTMENT:\n"))))
 #+END_SRC
 **** Babel
 #+begin_src emacs-lisp :tangle yes
-  (add-to-list 'org-babel-load-languages '(ein . t))
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)
@@ -913,7 +907,8 @@ Agenda Files:
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
   (setq org-startup-with-inline-images t)
   (setq imagemagick-types-inhibit t)
-  (setq ein:output-area-inlined-images t)
+
+
 #+end_src
 
 Htmlize for nice org html export.
@@ -928,12 +923,12 @@ And dont evaluate code again.
 
 And a hack to make ob-ipython open the source in a python buffer.
 #+begin_src emacs-lisp :tangle yes
-  (use-package jupyter
-  :config
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((jupyter . t))))
+   '((jupyter . t)))
 #+end_src
+
+#+RESULTS:
 
 Automatically tangle on save.
 #+begin_src emacs-lisp :tangle yes
@@ -941,25 +936,26 @@ Automatically tangle on save.
             (lambda ()
               (add-hook 'after-save-hook 'org-babel-tangle nil 'make-it-local)))
 #+end_src
-**** Evince for PDF
+**** Evince for PDF, Xournal for xoj
 #+begin_src emacs-lisp :tangle yes
-  (eval-after-load "org"
-    '(setq org-file-apps
-      '((auto-mode . emacs)
-        ("\\.x?html?\\'" . "firefox %s")
-        ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
-        ("\\.gif\\'" . "eog \"%s\"")
-        ("\\.mp4\\'" . "vlc \"%s\"")
-        ("\\.mkv" . "vlc \"%s\""))))
+    (eval-after-load "org"
+      '(setq org-file-apps
+        '((auto-mode . emacs)
+          ("\\.x?html?\\'" . "firefox %s")
+          ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
+          ("\\.gif\\'" . "eog \"%s\"")
+          ("\\.mp4\\'" . "vlc \"%s\"")
+          ("\\.mkv" . "vlc \"%s\"")
+          ("\\.xoj" . "xournal \"%s\""))))
 
-  (defun whatacold/org-pdf-app (file-path link-without-schema)
-    "Open pdf file using pdf-tools and go to the specified page."
-    (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
-                                      link-without-schema))
-                     1
-                   (string-to-number (match-string 1 link-without-schema)))))
-      (require 'subr-x)
-      (start-process "evince" "evince" "evince" (concat "--page-label=" (number-to-string page)) file-path)))
+    (defun whatacold/org-pdf-app (file-path link-without-schema)
+      "Open pdf file using pdf-tools and go to the specified page."
+      (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
+                                        link-without-schema))
+                       1
+                     (string-to-number (match-string 1 link-without-schema)))))
+        (require 'subr-x)
+        (start-process "evince" "evince" "evince" (concat "--page-label=" (number-to-string page)) file-path)))
 #+end_src
 **** Presentations
 Org tree slide is a presentation tool for org mode.
@@ -968,15 +964,24 @@ Org tree slide is a presentation tool for org mode.
     :bind (("<f10>" . 'org-tree-slide-move-next-tree)
            ("<f9>" . 'org-tree-slide-move-previous-tree)))
 #+end_src
+**** LaTeX preview size
+#+begin_src emacs-lisp :tangle yes
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+#+end_src
+**** Instant latex preview
+#+begin_src emacs-lisp :tangle yes
+  ;; (use-package org-fragtog
+  ;;   :hook org-mode)
+#+end_src
 *** Git
 **** Magit
- - Just load magit and give it a key.
+- Just load magit and give it a key.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit
     :bind ("C-x g" . magit-status))
 #+END_SRC
 
- - Reload files on git change.
+- Reload files on git change.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit-filenotify)
 #+END_SRC
@@ -1024,13 +1029,13 @@ Make mini-buffers and search nicer.
 *** LaTeX
 Enable electric braces for math mode: ~\( \)~
 #+BEGIN_SRC emacs-lisp :tangle yes
-    (setq LaTeX-electric-left-right-brace t)
-  (defun my-auctex-init ()
-    (turn-off-smartparens-mode)
-    (auto-fill-mode)
-    (latex-math-mode)
-    (turn-on-reftex)
-    (flyspell-mode 1))
+   (setq LaTeX-electric-left-right-brace t)
+    (defun my-auctex-init ()
+      (turn-off-smartparens-mode)
+      (auto-fill-mode)
+      (latex-math-mode)
+      (turn-on-reftex)
+      (flyspell-mode 1))
     (add-hook 'LaTeX-mode-hook 'my-auctex-init)
 #+END_SRC
 
@@ -1232,13 +1237,6 @@ Support for sphinx style docstrings.
     :init (setq xref-show-definitions-function #'ivy-xref-show-defs))
 #+END_SRC
 
-*** Jupyter-Notebooks
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package ein
-    :config (setq ein:output-type-preference
-                  '(emacs-lisp svg png jpeg html text latex javascript)))
-#+END_SRC
-
 *** Fish
 Fish shell script mode.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -1338,6 +1336,10 @@ Debugging yay!
 #+begin_src emacs-lisp :tangle yes
   (use-package nix-mode)
 #+end_src
+*** Julia
+#+begin_src emacs-lisp :tangle yes
+  (use-package julia-mode)
+#+end_src
 ** Custom Scripts
 *** Close all Buffers
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -1377,3 +1379,49 @@ Debugging yay!
           ,@args
           ,@',common-args)))
 #+END_SRC
+*** Insert a new exercise into an org file
+#+begin_src emacs-lisp :tangle yes
+  (require 'org)
+  (require 'org-element)
+  (defun insert-uebung (file org-path)
+    (interactive
+     (list (read-file-name "Select Uebung: " "~/Downloads") (org-get-outline-path t)))
+    (when (and
+           (eq (length org-path) 2)
+           (string= (nth 1 org-path) "Uebungen"))
+      (save-match-data
+        (let* ((subject (first (org-get-outline-path)))
+               (last-heading
+                (first (last (org-map-entries
+                              (lambda ()
+                                (nth 4 (org-heading-components)))
+                              nil 'tree))))
+               (last-ex-number
+                (progn
+                  (string-match ".*?\\([0-9]+\\)\\..*" last-heading)
+                  (string-to-number (match-string 1 last-heading))))
+               (ueb-dir (format "%s%s/uebungen/%d/"
+                                (file-name-directory (buffer-file-name))
+                                subject
+                                (1+ last-ex-number)))
+               (new-file (format "%s%s" ueb-dir (file-name-nondirectory file)))
+               (solution-file (format "%s/lsg.xoj" ueb-dir))
+               (template-file (format "%s/lsg.xoj"
+                                      (file-name-directory (buffer-file-name))))
+               (template-bg-file (format "%s/lsg.xoj.bg_2.png"
+                                      (file-name-directory (buffer-file-name)))))
+          (make-directory ueb-dir t)
+          (copy-file file new-file t)
+          (org-insert-heading-after-current)
+          (insert (format "TODO %d. Uebung" (1+ last-ex-number)))
+          (org-demote)
+          (forward-line)
+          (insert (format "- [[%s][Blatt]]\n" new-file))
+          (copy-file template-file solution-file nil)
+          (copy-file template-bg-file ueb-dir nil)
+          (insert (format "- [[%s][meine loesung]]\n\n" solution-file))
+          (forward-line -4)
+          (org-set-tags "EXERCISE")
+          (call-interactively 'org-deadline)))))
+
+#+end_src
