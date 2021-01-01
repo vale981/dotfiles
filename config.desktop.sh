@@ -10,4 +10,4 @@ RYGEL="true"
 BAR_POS="bottom"
 DPI=91
 TERM_FONT_SIZE=9
-SCREENLAYOUT=".screenlayout/desktop.sh"
+SCREENLAYOUT="~/.screenlayout/desktop.sh"

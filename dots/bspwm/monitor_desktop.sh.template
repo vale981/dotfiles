@@ -3,9 +3,9 @@
 ###############################################################################
 
 declare -A workspaces
-workspaces[2]="I V VI VIII IX X"
+workspaces[2]="I V VI VIII IX"
 workspaces[0]="II IV VII"
-workspaces[1]="III IX"
+workspaces[1]="III IX X"
 
 MONITORS=({{ MONITORS[@] }})
 
@@ -16,7 +16,7 @@ move_to_monitor() {
 }
 
 I=0
-for MONITOR in $MONITORS; do
+for MONITOR in ${MONITORS[@]}; do
     bspc monitor $MONITOR -d ${workspaces[${I}]}
     ((I=I+1))
     # move_to_monitor "${workspaces[${I}]}" $MONITOR
