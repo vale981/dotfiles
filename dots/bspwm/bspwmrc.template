@@ -33,14 +33,16 @@ bspc config remove_unplugged_monitors true
 #                                   Scripts                                   #
 ###############################################################################
 
+{{ #SCREENLAYOUT }}
 sh {{ SCREENLAYOUT }}
+{{ /SCREENLAYOUT }}
 
-{{ #laptop }}
+{{ #LAPTOP }}
 bash ~/.config/bspwm/monitor_laptop.sh
-{{ /laptop }}
+{{ /LAPTOP }}
 
-{{ ^laptop }}
+{{ ^LAPTOP }}
 bash ~/.config/bspwm/monitor_desktop.sh
-{{ /laptop }}
+{{ /LAPTOP }}
 
 bash ~/.config/polybar/launch.sh
