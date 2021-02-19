@@ -138,6 +138,7 @@ function linkall {
         if [[  ${f: -9} == ".template" ]]; then
             mkdir -p $DOTFILES_TMP/$DIR
             cat $CDIR/$f | mo > $DOTFILES_TMP/$DIR/${f:0:-9}
+            chmod --reference=$CDIR/$f $DOTFILES_TMP/$DIR/${f:0:-9}
             CDIR=$DOTFILES_TMP/$DIR/
             f=${f:0:-9}
         fi
