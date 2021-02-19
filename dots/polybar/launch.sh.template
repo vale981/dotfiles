@@ -2,9 +2,9 @@
 polybar-msg cmd quit
 polybar main & disown
 
-{{ #LAPTOP }}
-polybar ext & disown
-{{ /LAPTOP }}
+# {{ #LAPTOP }}
+# polybar ext & disown
+# {{ /LAPTOP }}
 
 {{#SIDE_MONITORS}}
 polybar ext__{{.}} & disown

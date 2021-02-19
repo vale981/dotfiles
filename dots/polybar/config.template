@@ -26,19 +26,19 @@ border-bottom-color = ${colors.bordercolor}
 font-0 = Fira Code:size=10;2
 font-1 = FontAwesome:size=10;2
 
-{{ #LAPTOP }}
-[bar/ext]
-inherit = bar/base
-monitor = {{.}}
-modules-left = bspwm
-{{ /LAPTOP }}
+# {{ #LAPTOP }}
+# [bar/ext]
+# inherit = bar/base
+# monitor =
+# modules-left = bspwm
+# {{ /LAPTOP }}
 
-{{#SIDE_MONITORS}}
+{{ #SIDE_MONITORS }}
 [bar/ext__{{.}}]
 inherit = bar/base
 monitor = {{.}}
 modules-left = bspwm
-{{/SIDE_MONITORS}}
+{{ /SIDE_MONITORS }}
 
 [bar/main]
 inherit = bar/base
@@ -55,7 +55,7 @@ separator = |
 modules-left = bspwm
 
 {{ #LAPTOP }}
-modules-right = battery clock
+modules-right = battery battery1 clock
 {{ /LAPTOP }}
 
 {{ ^LAPTOP }}
@@ -101,4 +101,10 @@ interval = 5
 
 [module/battery]
 type = internal/battery
+battery = BAT0
+full-at = 98
+
+[module/battery1]
+type = internal/battery
+battery = BAT1
 full-at = 98
