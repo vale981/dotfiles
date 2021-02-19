@@ -109,6 +109,7 @@ Install diminish:
     (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
     (add-to-list 'boon-special-mode-list 'cider-inspector-mode)
     (add-to-list 'boon-special-mode-list 'cider-macroexpansion-mode)
+    (add-to-list 'boon-special-mode-list 'jupyter-repl-mode)
     (boon-mode))
 #+end_src
 *** Custom
@@ -174,14 +175,13 @@ Enable electric pairs.
   (electric-pair-mode 1)
 #+END_SRC
 
-Use smartparens.
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package smartparens
-    :diminish
-    :config
-    ; (smartparens-global-mode)
-    (show-smartparens-global-mode +1))
-#+END_SRC
+Show parens.
+#+begin_src emacs-lisp :tangle yes
+  (require 'paren)
+  (set-face-attribute 'show-paren-match nil :weight 'extra-bold)
+  (setq show-paren-delay 0)
+  (show-paren-mode 1)
+#+end_src
 
 *** Theme
 We use the doom theme.
@@ -475,6 +475,7 @@ Support for the =Language Server Protocol=.
     :config
     (setq lsp-prefer-flymake nil)
     (setq
+     lsp-headerline-breadcrumb-enable nil
      lsp-idle-delay 0
      lsp-ui-doc-enable nil
      lsp-ui-doc-use-childframe t
@@ -686,8 +687,10 @@ Multiple major modes in one buffer.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-treat-S-cursor-todo-selection-as-state-change nil)
   (setq org-clock-persist 'history)
+  (add-hook 'org-mode-hook 'org-indent-mode)
   (org-clock-persistence-insinuate)
 #+END_SRC
+
 **** Refile
 - Targets include this file and any file contributing to the agenda - up to 9 levels deep
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -778,7 +781,6 @@ Buff the agenda to use Groups.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package org-super-agenda
-    :defer t
     :config
     (setq org-super-agenda-groups
           '((:name "NEXT"
@@ -789,6 +791,7 @@ Buff the agenda to use Groups.
                    :todo "WAITING")
             (:name "TODO"
                    :order 3
+                   :auto-outline-path t
                    :todo "TODO")))
     (org-super-agenda-mode 1))
 #+END_SRC
@@ -973,6 +976,17 @@ Org tree slide is a presentation tool for org mode.
   ;; (use-package org-fragtog
   ;;   :hook org-mode)
 #+end_src
+**** Archive all DONE
+#+begin_src emacs-lisp :tangle yes
+  (defun org-archive-done-tasks ()
+    (interactive)
+    (org-map-entries
+     (lambda ()
+       (org-archive-subtree)
+       (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
+     "/DONE" 'tree))
+#+end_src
+
 *** Git
 **** Magit
 - Just load magit and give it a key.
@@ -1340,6 +1354,25 @@ Debugging yay!
 #+begin_src emacs-lisp :tangle yes
   (use-package julia-mode)
 #+end_src
+*** Rust
+#+begin_src emacs-lisp :tangle yes
+  (use-package rust-mode
+    :hook (rust-mode . lsp))
+
+  ;; Add keybindings for interacting with Cargo
+  (use-package cargo
+    :hook (rust-mode . cargo-minor-mode))
+
+  (use-package flycheck-rust
+    :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+#+end_src
+
+** Applications
+*** Anki
+#+begin_src emacs-lisp :tangle yes
+  (use-package anki-editor)
+#+end_src
+
 ** Custom Scripts
 *** Close all Buffers
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -1383,6 +1416,7 @@ Debugging yay!
 #+begin_src emacs-lisp :tangle yes
   (require 'org)
   (require 'org-element)
+  (require 'cl-lib)
   (defun insert-uebung (file org-path)
     (interactive
      (list (read-file-name "Select Uebung: " "~/Downloads") (org-get-outline-path t)))
@@ -1390,9 +1424,9 @@ Debugging yay!
            (eq (length org-path) 2)
            (string= (nth 1 org-path) "Uebungen"))
       (save-match-data
-        (let* ((subject (first (org-get-outline-path)))
+        (let* ((subject (cl-first (org-get-outline-path)))
                (last-heading
-                (first (last (org-map-entries
+                (cl-first (last (org-map-entries
                               (lambda ()
                                 (nth 4 (org-heading-components)))
                               nil 'tree))))
@@ -1409,7 +1443,7 @@ Debugging yay!
                (template-file (format "%s/lsg.xoj"
                                       (file-name-directory (buffer-file-name))))
                (template-bg-file (format "%s/lsg.xoj.bg_2.png"
-                                      (file-name-directory (buffer-file-name)))))
+                                         (file-name-directory (buffer-file-name)))))
           (make-directory ueb-dir t)
           (copy-file file new-file t)
           (org-insert-heading-after-current)
