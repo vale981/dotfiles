@@ -474,72 +474,72 @@ Distraction free writing.
 *** LSP
 Support for the =Language Server Protocol=.
 #+BEGIN_SRC emacs-lisp :tangle yes
-    (use-package lsp-ui)
-    (use-package lsp-treemacs)
-    (use-package lsp-mode
-      :after (lsp-ui elixir-mode)
-      :config
-      (setq lsp-prefer-flymake nil)
-      (setq
-       lsp-headerline-breadcrumb-enable nil
-       lsp-idle-delay 0.1
-       lsp-ui-doc-enable nil
-       lsp-ui-doc-use-childframe t
-       lsp-ui-doc-position 'top
-       lsp-ui-doc-include-signature t
-       lsp-ui-sideline-enable t
-       lsp-ui-flycheck-enable t
-       lsp-ui-flycheck-list-position 'right
-       lsp-ui-flycheck-live-reporting t
-       lsp-ui-peek-enable t
-       lsp-ui-peek-list-width 60
-       lsp-ui-peek-peek-height 25
-       lsp-enable-semantic-highlighting t
-       lsp-enable-symbol-highlighting nil
-       lsp-modeline-code-actions-segments '(count icon)
-       lsp-clients-clangd-args '("--background-index" "-j=8" "--clang-tidy"))
-      (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-      (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-      (setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
-      :hook ((elixir-mode . lsp)
-             (lsp-mode . lsp-ui-mode)))
-    (use-package dap-mode
-      :config
-      (require 'dap-lldb)
-      (require 'dap-lldb)
+  (use-package lsp-ui)
+  (use-package lsp-treemacs)
+  (use-package lsp-mode
+    :after (lsp-ui elixir-mode)
+    :config
+    (setq lsp-prefer-flymake nil)
+    (setq
+     lsp-headerline-breadcrumb-enable nil
+     lsp-idle-delay 0.1
+     lsp-ui-doc-enable nil
+     lsp-ui-doc-use-childframe t
+     lsp-ui-doc-position 'top
+     lsp-ui-doc-include-signature t
+     lsp-ui-sideline-enable t
+     lsp-ui-flycheck-enable t
+     lsp-ui-flycheck-list-position 'right
+     lsp-ui-flycheck-live-reporting t
+     lsp-ui-peek-enable t
+     lsp-ui-peek-list-width 60
+     lsp-ui-peek-peek-height 25
+     lsp-enable-semantic-highlighting t
+     lsp-enable-symbol-highlighting nil
+     lsp-modeline-code-actions-segments '(count icon)
+     lsp-clients-clangd-args '("--background-index" "-j=2" "--clang-tidy"))
+    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+    (setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
+    :hook ((elixir-mode . lsp)
+           (lsp-mode . lsp-ui-mode)))
+  (use-package dap-mode
+    :config
+    (require 'dap-lldb)
+    (require 'dap-lldb)
 
-      (add-hook 'dap-stopped-hook
-              (lambda (arg) (call-interactively #'dap-hydra)))
-      (setq dap-auto-configure-features
-            '(sessions locals controls tooltip))
-      :hook ((c-mode c++-mode) .
-             (lambda ()
-               (require 'dap-lldb))))
+    (add-hook 'dap-stopped-hook
+            (lambda (arg) (call-interactively #'dap-hydra)))
+    (setq dap-auto-configure-features
+          '(sessions locals controls tooltip))
+    :hook ((c-mode c++-mode) .
+           (lambda ()
+             (require 'dap-lldb))))
 
-    (define-minor-mode +dap-running-session-mode
-      "A mode for adding keybindings to running sessions"
-      nil
-      nil
-      (make-sparse-keymap)
-      ;; The following code adds to the dap-terminated-hook
-      ;; so that this minor mode will be deactivated when the debugger finishes
-      (when +dap-running-session-mode
-        (let ((session-at-creation (dap--cur-active-session-or-die)))
-          (add-hook 'dap-terminated-hook
-                    (lambda (session)
-                      (when (eq session session-at-creation)
-                        (+dap-running-session-mode -1)))))))
+  (define-minor-mode +dap-running-session-mode
+    "A mode for adding keybindings to running sessions"
+    nil
+    nil
+    (make-sparse-keymap)
+    ;; The following code adds to the dap-terminated-hook
+    ;; so that this minor mode will be deactivated when the debugger finishes
+    (when +dap-running-session-mode
+      (let ((session-at-creation (dap--cur-active-session-or-die)))
+        (add-hook 'dap-terminated-hook
+                  (lambda (session)
+                    (when (eq session session-at-creation)
+                      (+dap-running-session-mode -1)))))))
 
-    ;; Activate this minor mode when dap is initialized
-    (add-hook 'dap-session-created-hook '+dap-running-session-mode)
+  ;; Activate this minor mode when dap is initialized
+  (add-hook 'dap-session-created-hook '+dap-running-session-mode)
 
-    ;; Activate this minor mode when hitting a breakpoint in another file
-    (add-hook 'dap-stopped-hook '+dap-running-session-mode)
+  ;; Activate this minor mode when hitting a breakpoint in another file
+  (add-hook 'dap-stopped-hook '+dap-running-session-mode)
 
-    ;; Activate this minor mode when stepping into code in another file
-    (add-hook 'dap-stack-frame-changed-hook (lambda (session)
-                                              (when (dap--session-running session)
-                                                (+dap-running-session-mode 1))))
+  ;; Activate this minor mode when stepping into code in another file
+  (add-hook 'dap-stack-frame-changed-hook (lambda (session)
+                                            (when (dap--session-running session)
+                                              (+dap-running-session-mode 1))))
 
 #+END_SRC
 
@@ -1183,6 +1183,8 @@ Some junk for the elixir programming language.
     :config
     (projectile-mode +1)
     (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (defadvice projectile-project-root (around ignore-remote first activate)
+      (unless (file-remote-p default-directory) ad-do-it))
     :after ivy)
 
   (use-package counsel-projectile
@@ -1533,3 +1535,6 @@ Stolen from https://yiufung.net/post/anki-org/.
           (call-interactively 'org-deadline)))))
 
 #+end_src
+
+#+RESULTS:
+: insert-uebung
