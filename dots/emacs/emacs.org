@@ -464,6 +464,12 @@ Use abbrev for greek input.
    :config
    (direnv-mode))
 #+end_src
+*** Writeroom
+Distraction free writing.
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package writeroom-mode)
+#+end_src
 ** Programming / Language Support
 *** LSP
 Support for the =Language Server Protocol=.
@@ -586,7 +592,7 @@ Set up the company backends: (maybe do it the other way around...)
 **** Roswell
 Support for the roswell package manager.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (load (expand-file-name "~/.roswell/helper.el"))
+  (load (expand-file-name "~/.roswell/helper.el"))
 #+END_SRC
 
 **** Lispy Mode
@@ -911,9 +917,14 @@ Agenda Files:
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
   (setq org-startup-with-inline-images t)
   (setq imagemagick-types-inhibit t)
-
+  (define-key org-mode-map (kbd "M-<shift>-<return>")
+    '(lambda ()
+       (interactive)
+       (org-babel-execute-src-block)
+       (org-babel-next-src-block)))
 
 #+end_src
+
 
 Htmlize for nice org html export.
 #+begin_src emacs-lisp :tangle yes
@@ -1389,6 +1400,10 @@ Debugging yay!
 
   (use-package flycheck-rust
     :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+#+end_src
+*** QML
+#+begin_src emacs-lisp :tangle yes
+  (use-package qml-mode)
 #+end_src
 
 ** Applications
