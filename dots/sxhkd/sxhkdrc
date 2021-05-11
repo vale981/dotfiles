@@ -120,6 +120,10 @@ super + {_,shift +}c
 super + {_,shift +}{1-9,0}
         bspc {desktop -f,node -d} {I,II,III,IV,V,VI,VII,VIII,IX,X}
 
+# move desktop to next monitor
+super + shift + m
+      bspc desktop focused -m next --follow
+
 #
 # preselect
 #
