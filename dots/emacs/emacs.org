@@ -110,13 +110,42 @@ Install diminish:
     (add-to-list 'boon-special-mode-list 'cider-inspector-mode)
     (add-to-list 'boon-special-mode-list 'cider-macroexpansion-mode)
     (add-to-list 'boon-special-mode-list 'jupyter-repl-mode)
+    (add-to-list 'boon-special-mode-list 'term-mode)
+    (add-to-list 'boon-special-mode-list 'ansi-term-mode)
     (boon-mode))
+#+end_src
+
+*** Term
+HL line mode is nonsensical in term.
+#+begin_src emacs-lisp :tangle yes
+  (add-hook 'term-mode-hook
+            (lambda ()
+              (setq cursor-type 'bar)
+              (turn-off-boon-mode)
+              (setq global-hl-line-mode nil)))
+
+  (use-package eterm-256color
+    :config
+    (add-hook 'term-mode-hook #'eterm-256color-mode))
+#+end_src
+
+*** VTerm
+VTerm has a ~c~ core and is faster + more compatible. We install this through nix.
+#+begin_src emacs-lisp :tangle yes
+  ;; (use-package vterm
+  ;;     :ensure t)
+  (add-hook 'vterm-mode-hook
+   (lambda ()
+     (setq cursor-type 'bar)
+     (turn-off-boon-mode)
+     (setq global-hl-line-mode nil)))
 #+end_src
 *** Custom
 Prevent custom from preserving state.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq custom-file (make-temp-file "emacs-custom"))
 #+END_SRC
+
 
 *** General
 No startup screen.
@@ -144,10 +173,16 @@ No cursor blink.
                '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
 #+END_SRC
 
-- Highlight current line.
+**** Highlight current line.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-hl-line-mode 1)
 #+END_SRC
+
+This allows us to disable it locally
+
+#+begin_src emacs-lisp :tangle yes
+  (make-variable-buffer-local 'global-hl-line-mode)
+#+end_src
 
 *** Sound
 No terminal bell.
@@ -332,11 +367,11 @@ Move whole lines easily.
 *** Rainbow Delimiters, Identifiers
 Color code matching delimiters.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (use-package rainbow-identifiers
-  ;;   :hook prog-mode)
+  (use-package rainbow-identifiers
+    :hook (julia-mode . rainbow-identifiers-mode))
 
-;;(use-package rainbow-delimiters
-;;:hook prog-mode)
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
 
 *** Ligatures
@@ -368,12 +403,7 @@ Color code matching delimiters.
     (rg-enable-default-bindings)
     :bind ("C-x p" . rg-menu))
 #+end_src
-*** Color Identifiers
-Give variables their own color.
-#+begin_src emacs-lisp :tangle yes
-  ;; (use-package color-identifiers-mode
-  ;;   :hook (after-init . global-color-identifiers-mode))
-#+end_src
+
 *** Flyspell
 #+begin_src emacs-lisp :tangle yes
 (use-package flyspell-correct-ivy
@@ -464,11 +494,17 @@ Use abbrev for greek input.
    :config
    (direnv-mode))
 #+end_src
-*** Writeroom
+*** Writeroomi
 Distraction free writing.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package writeroom-mode)
+#+end_src
+*** Aggressive Indent
+Indenting wherever we can!
+#+begin_src emacs-lisp :tangle yes
+  (use-package aggressive-indent
+    :config (global-aggressive-indent-mode 1))
 #+end_src
 ** Programming / Language Support
 *** LSP
@@ -548,6 +584,8 @@ Support for the =Language Server Protocol=.
   (use-package separedit
     :config
     (setq separedit-default-mode 'markdown-mode)
+    (add-to-list 'separedit-string-quotes-alist
+                 '(julia-mode     . ("\"\"\"" "\"")))
     :bind
     (:map prog-mode-map
           ("C-c '" . separedit)))
@@ -556,27 +594,26 @@ Support for the =Language Server Protocol=.
 *** Company
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package company-flx
-      :after company
-      :config (company-flx-mode +1))
-    (use-package company
-      :diminish
-      :bind (("\t" . company-complete-common)
-             :map company-active-map
-             ("C-n" . company-select-next-or-abort)
-             ("C-p" . company-select-previous-or-abort)
-             ("<return>" . company-complete-selection))
-      :config
-      (setq company-show-numbers t)
-      (setq company-idle-delay .1)
-      (setq company-minimum-prefix-length 1)
-                                          ;(company-tng-configure-default)
-      (add-to-list 'company-backends 'company-capf)
-      (setq company-frontends
-            '(                            ;company-tng-frontend
-              company-pseudo-tooltip-frontend
-              company-echo-metadata-frontend))
+    :after company
+    :config (company-flx-mode +1))
 
-      :hook (after-init . global-company-mode))
+  (use-package company
+    :diminish
+    :bind (:map company-active-map
+                ("C-n" . company-select-next-or-abort)
+                ("C-p" . company-select-previous-or-abort)
+                ("<return>" . company-complete-selection))
+    :config
+    (setq company-show-numbers t)
+    (setq company-idle-delay 1)
+    (setq company-minimum-prefix-length 3)
+    (add-to-list 'company-backends 'company-capf)
+    (global-set-key (kbd "C-<tab>") 'company-complete-common)
+    (company-tng-configure-default)
+    (setq company-frontends
+          '(company-pseudo-tooltip-frontend
+            company-echo-metadata-frontend))
+    :hook (after-init . global-company-mode))
 #+END_SRC
 
 Set up the company backends: (maybe do it the other way around...)
@@ -592,7 +629,7 @@ Set up the company backends: (maybe do it the other way around...)
 **** Roswell
 Support for the roswell package manager.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (load (expand-file-name "~/.roswell/helper.el"))
+  ;(load (expand-file-name "~/.roswell/helper.el"))
 #+END_SRC
 
 **** Lispy Mode
@@ -936,13 +973,6 @@ And dont evaluate code again.
   (setq org-export-use-babel nil)
 #+end_src
 
-And a hack to make ob-ipython open the source in a python buffer.
-#+begin_src emacs-lisp :tangle yes
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((jupyter . t)))
-#+end_src
-
 #+RESULTS:
 
 Automatically tangle on save.
@@ -1275,6 +1305,20 @@ Support for sphinx style docstrings.
   (use-package sphinx-doc)
 #+END_SRC
 
+*** Jupyter
+#+begin_src emacs-lisp :tangle yes
+  (use-package jupyter
+    :config
+    (require 'jupyter-python)
+    (require 'jupyter-julia)
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((python . t)
+       (jupyter . t)))
+    (setq jupyter-eval-short-result-display-function 'popup-tip))
+
+#+end_src
+
 *** YASnippets
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package yasnippet
@@ -1389,7 +1433,90 @@ Debugging yay!
 #+end_src
 *** Julia
 #+begin_src emacs-lisp :tangle yes
-  (use-package julia-mode)
+  (use-package julia-repl
+    :config
+    (julia-repl-set-terminal-backend 'vterm)
+    (add-hook 'julia-mode-hook 'julia-repl-mode)
+    (setq julia-repl-switches "-J /home/hiro/.julia/image/sys_repl.so"))
+  (use-package eglot-jl
+    :ensure t
+    :defer  t
+    :config
+    (setq eglot-jl-julia-flags  '("-J" "/home/hiro/.julia/image/sys_ls.so")))
+  (use-package project
+    :demand t
+    :config
+    (defun project-root (project)
+      (car (project-roots project))))
+  (use-package eglot)
+  (use-package julia-mode
+    :ensure t
+    :interpreter ("julia" . julia-mode)
+    :config
+    (add-hook 'julia-mode-hook 'eglot-jl-init)
+    (add-hook 'julia-mode-hook 'eglot-ensure))
+#+end_src
+
+**** Highlighting
+Some extra highlighting for assignments is nice.
+Stolen from [[https://www.reddit.com/r/emacs/comments/cbvwlp/juliamode_syntax_highlight/][reddit]] or python-mode by proxy.
+#+begin_src emacs-lisp :tangle yes
+  (setq my-julia-assign-ops
+        `(or "=" "+=" "-=" "*=" "/=" "//=" "%=" "**="
+             ">>=" "<<=" "&=" "^=" "|="))
+  (font-lock-add-keywords
+   'julia-mode
+   `((,(lambda (limit)
+         (let (res
+               (re (rx-to-string `(: (group (+ (any word ?. ?_)))
+                                     (? ?\[ (+ (not (any  ?\]))) ?\])
+                                     (* space)
+                                     ,my-julia-assign-ops))))
+           (while (and (setq res (re-search-forward re limit t))
+                       (or (nth 1 (syntax-ppss))
+                           (equal (char-after (point)) ?=))))
+           res))
+      (1 font-lock-variable-name-face nil nil))
+     (,(lambda (limit)
+         (let (res
+               (re (rx-to-string `(: (group (+ (any word ?. ?_)))
+                                     (* space)
+                                     (* ?,
+                                        (* space)
+                                        (+ (any word ?. ?_))
+                                        (* space))
+                                     ?,
+                                     (* space)
+                                     (+ (any word ?. ?_))
+                                     (* space)
+                                     ,my-julia-assign-ops))))
+           (while (and (setq res (re-search-forward re limit t))
+                       (goto-char (match-end 1))
+                       (nth 1 (syntax-ppss))))
+           res))
+      (1 font-lock-variable-name-face nil nil))))
+#+end_src
+
+#+RESULTS:
+
+**** Formatting
+Hooking into aggressive indent.
+#+begin_src emacs-lisp :tangle yes
+  (use-package julia-formatter
+    :straight (julia-formatter
+               :type git
+               :repo "https://codeberg.org/FelipeLema/julia-formatter.el.git"
+               :pre-build ("julia --project=. -e \"using Pkg; Pkg.resolve();\"")
+               :files ("*.el" "*.toml" "*.jl"))
+    :hook
+    (julia-mode . (lambda ()
+                    (add-hook 'before-save-hook
+                              (lambda ()
+                                (julia-formatter-format-region
+                                 (point-min)
+                                 (point-max)))
+                              nil
+                              t))))
 #+end_src
 *** Rust
 #+begin_src emacs-lisp :tangle yes
@@ -1445,8 +1572,7 @@ Stolen from https://yiufung.net/post/anki-org/.
       (anki-editor-push-notes)
       (anki-editor-reset-cloze-number))
     ;; Initialize
-    (anki-editor-reset-cloze-number)
-    )
+    (anki-editor-reset-cloze-number))
 #+end_src
 
 ** Custom Scripts
