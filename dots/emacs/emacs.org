@@ -146,7 +146,6 @@ Prevent custom from preserving state.
   (setq custom-file (make-temp-file "emacs-custom"))
 #+END_SRC
 
-
 *** General
 No startup screen.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -171,6 +170,8 @@ No cursor blink.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'default-frame-alist
                '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
+  (add-to-list 'default-frame-alist
+               '(internal-border-width . 0))
 #+END_SRC
 
 **** Highlight current line.
@@ -533,7 +534,7 @@ Support for the =Language Server Protocol=.
      lsp-enable-semantic-highlighting t
      lsp-enable-symbol-highlighting nil
      lsp-modeline-code-actions-segments '(count icon)
-     lsp-clients-clangd-args '("--background-index" "-j=2" "--clang-tidy"))
+     lsp-clients-clangd-args '("--background-index" "-j=2" "--clang-tidy" "--cross-file-rename" "--log=verbose"))
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
     (setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
@@ -541,16 +542,15 @@ Support for the =Language Server Protocol=.
            (lsp-mode . lsp-ui-mode)))
   (use-package dap-mode
     :config
-    (require 'dap-lldb)
-    (require 'dap-lldb)
-
     (add-hook 'dap-stopped-hook
             (lambda (arg) (call-interactively #'dap-hydra)))
     (setq dap-auto-configure-features
           '(sessions locals controls tooltip))
     :hook ((c-mode c++-mode) .
            (lambda ()
-             (require 'dap-lldb))))
+             (setq dap-cpptools-debug-path "/nix/store/xmh8y9r01jgahyp4nhhcwfhlxvpgzxbl-vscode-extension-ms-vscode-cpptools-1.0.1/share/vscode/extensions/ms-vscode.cpptools/")
+             (setq dap-cpptools-debug-program '("/nix/store/xmh8y9r01jgahyp4nhhcwfhlxvpgzxbl-vscode-extension-ms-vscode-cpptools-1.0.1/share/vscode/extensions/ms-vscode.cpptools/debugAdapters/OpenDebugAD7"))
+             (require 'dap-cpptools))))
 
   (define-minor-mode +dap-running-session-mode
     "A mode for adding keybindings to running sessions"
@@ -613,7 +613,8 @@ Support for the =Language Server Protocol=.
     (setq company-frontends
           '(company-pseudo-tooltip-frontend
             company-echo-metadata-frontend))
-    :hook (after-init . global-company-mode))
+    :hook (after-init . global-company-mode)
+    (after-init . company-tng-mode))
 #+END_SRC
 
 Set up the company backends: (maybe do it the other way around...)
@@ -983,25 +984,31 @@ Automatically tangle on save.
 #+end_src
 **** Evince for PDF, Xournal for xoj
 #+begin_src emacs-lisp :tangle yes
-    (eval-after-load "org"
-      '(setq org-file-apps
-        '((auto-mode . emacs)
-          ("\\.x?html?\\'" . "firefox %s")
-          ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
-          ("\\.gif\\'" . "eog \"%s\"")
-          ("\\.mp4\\'" . "vlc \"%s\"")
-          ("\\.mkv" . "vlc \"%s\"")
-          ("\\.xoj" . "xournal \"%s\""))))
+  (eval-after-load "org"
+    '(setq org-file-apps
+           '((auto-mode . emacs)
+             ("\\.x?html?\\'" . "firefox %s")
+             ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
+             ("\\.gif\\'" . "eog \"%s\"")
+             ("\\.mp4\\'" . "vlc \"%s\"")
+             ("\\.mkv" . "vlc \"%s\"")
+             ("\\.xoj" . "xournal \"%s\"")
+             ("\\.svg" . "firefox \"%s\"")
+             ("\\.webm" . "vlc \"%s\""))))
 
-    (defun whatacold/org-pdf-app (file-path link-without-schema)
-      "Open pdf file using pdf-tools and go to the specified page."
-      (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
-                                        link-without-schema))
-                       1
-                     (string-to-number (match-string 1 link-without-schema)))))
-        (require 'subr-x)
-        (start-process "evince" "evince" "evince" (concat "--page-label=" (number-to-string page)) file-path)))
+  (defun whatacold/org-pdf-app (file-path link-without-schema)
+    "Open pdf file using pdf-tools and go to the specified page."
+    (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
+                                      link-without-schema))
+                     1
+                   (string-to-number (match-string 1 link-without-schema)))))
+      (require 'subr-x)
+      (start-process "evince" "evince" "evince" (concat "--page-label=" (number-to-string page)) file-path)))
 #+end_src
+
+#+RESULTS:
+: whatacold/org-pdf-app
+
 **** Presentations
 Org tree slide is a presentation tool for org mode.
 #+begin_src emacs-lisp :tangle yes
@@ -1114,6 +1121,11 @@ Configure AucTeX.
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
   (setq-default TeX-master nil)
+#+end_src
+
+Custom math macros.
+#+begin_src emacs-lisp :tangle yes
+  ;(add-to-list 'LaTeX-math-list (list ?\; "dagger" "dagger" 8224))
 #+end_src
 
 **** RefTeX
@@ -1263,11 +1275,22 @@ Syntax checking and linting.
 *** Python
 **** Elpy
 #+begin_src emacs-lisp :tangle yes
-  (use-package elpy
-    :init
-    (elpy-enable)
-    :config
-    (add-hook 'elpy-mode-hook (lambda ()
+  ;; Installed through nix
+  ;; (use-package elpy
+  ;;   :init
+  ;;   (elpy-enable)
+  ;;   :config
+  ;;   (add-hook 'elpy-mode-hook (lambda ()
+  ;;                               (add-hook 'before-save-hook
+  ;;                                         'elpy-black-fix-code nil t)))
+  ;;   (when (load "flycheck" t t)
+  ;;     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  ;;     (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+  ;;   (add-to-list 'python-shell-completion-native-disabled-interpreters
+  ;;                "jupyter"))
+  (elpy-enable)
+  (add-hook 'elpy-mode-hook (lambda ()
                                 (add-hook 'before-save-hook
                                           'elpy-black-fix-code nil t)))
     (when (load "flycheck" t t)
@@ -1275,7 +1298,7 @@ Syntax checking and linting.
       (add-hook 'elpy-mode-hook 'flycheck-mode))
 
     (add-to-list 'python-shell-completion-native-disabled-interpreters
-                 "jupyter"))
+                 "jupyter")
 #+end_src
 
 **** Anaconda
@@ -1361,7 +1384,6 @@ Set up ~lsp~, ~ccls~.
 
 Automatically insert Include-Guards.
 #+begin_src emacs-lisp :tangle yes
-
   ;; autoinsert C/C++ header
     (define-auto-insert
       (cons "\\.\\([Hh]\\|hh\\|hpp\\)\\'" "My C / C++ header")
@@ -1399,6 +1421,11 @@ Clang Format.
 Cmake support.
 #+begin_src emacs-lisp :tangle yes
   (use-package cmake-mode)
+#+end_src
+
+Use 4 spaces for indenting.
+#+begin_src emacs-lisp :tangle yes
+  (setq-default c-basic-offset 4)
 #+end_src
 
 **** RealGUD
@@ -1506,7 +1533,7 @@ Hooking into aggressive indent.
     :straight (julia-formatter
                :type git
                :repo "https://codeberg.org/FelipeLema/julia-formatter.el.git"
-               :pre-build ("julia --project=. -e \"using Pkg; Pkg.resolve();\"")
+               :pre-build ("julia" "--project=." "-e " "\"using Pkg; Pkg.resolve();\"")
                :files ("*.el" "*.toml" "*.jl"))
     :hook
     (julia-mode . (lambda ()
@@ -1664,3 +1691,65 @@ Stolen from https://yiufung.net/post/anki-org/.
 
 #+RESULTS:
 : insert-uebung
+*** Fun Hack to make C++ look like python
+#+begin_src emacs-lisp :tangle yes
+  (use-package ov)
+  (defun pycpp-sugar ()
+    (interactive)
+    (ov-clear 'category 'pycpp)
+    (ov-set (ov-regexp "[[:blank:]]*\n?[[:blank:]]*{[[:blank:]]*\n") 'display ":\n" 'category 'pycpp
+            'modification-hooks '(my-ov-evaporate-matching) 'evaporate 't
+            'insert-in-front-hooks '(my-ov-evaporate-matching-end)
+            'insert-behind-hooks '(my-ov-evaporate-matching-end))
+    (ov-set (ov-regexp "^[[:blank:]]*}[[:blank:];]*\n") 'display "\n" 'category 'pycpp 'evaporate 't
+            'modification-hooks '(my-ov-evaporate-matching-end)
+            'insert-in-front-hooks '(my-ov-evaporate-matching-end)
+            'insert-behind-hooks '(my-ov-evaporate-matching-end)))
+
+  (defun pycpp-unsugar ()
+    (interactive)
+    (ov-clear 'category 'pycpp))
+
+  (defun my-ov-evaporate-matching (_ov _after _beg _end &optional _length)
+    (save-excursion
+      (goto-char (ov-beg _ov))
+      (re-search-forward "{")
+      (backward-char)
+      (forward-sexp)
+      (backward-char)
+      (ov-clear 'category 'pycpp (point) (+ (point) 1))
+      (goto-char _beg)
+      (insert (buffer-substring _beg _end))
+      (ov-clear (ov-beg _ov) (ov-end _ov))))
+
+  (defun my-ov-evaporate-matching-end (_ov _after _beg _end &optional _length)
+    (save-excursion
+      (goto-char (ov-end _ov))
+      (re-search-backward "}")
+      (forward-char)
+      (backward-sexp)
+      (ov-clear 'category 'pycpp (point) (+ (point) 1))
+      (goto-char _beg)
+      (insert (buffer-substring _beg _end))
+      (ov-clear (ov-beg _ov) (ov-end _ov))))
+
+  (defun pycpp--newline ()
+    (interactive)
+    (newline)
+    (pycpp-sugar))
+
+  (define-minor-mode pycpp-mode
+    "Toggles the pycpp mode."
+    nil                                ; Initial value, nil for disabled
+    :global nil
+    :group 'cpp
+    :lighter " pycpp"
+    :keymap
+    (list (cons (kbd "RET") #'pycpp--newline))
+
+    (if pycpp-mode
+        (progn
+          (message "pycpp mode enabled")
+          (pycpp-sugar))
+      (pycpp-unsugar)))
+#+end_src

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+MONITORS=({{ MONITORS[@] }})
+
+new=$2
+bspc desktop $1 --to-monitor "${MONITORS[new]}"

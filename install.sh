@@ -156,6 +156,7 @@ function linkall {
             mv $CDIR/$f.tmp $CDIR/$f
         fi
 
+        mkdir -p $(dirname $HOME/$INSTALL_PREFIX/$f)
         ln -sfv $CDIR/$f $HOME/$INSTALL_PREFIX/$f
     done
 
