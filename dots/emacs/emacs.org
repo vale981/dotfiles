@@ -1,4 +1,5 @@
 #+TITLE: Hiro's Emacs Config
+#+PROPERTY: header-args :results silent
 
 * Hiro's Emacs Config
 ** General Stuff
@@ -12,9 +13,8 @@ Allow downcase.
 Shortcut to edit this file.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun find-config ()
-    (interpactive)
-    (find-file "~/.emacs/emacs.org"))
-
+    (interactive)
+    (find-file "~/.emacs.d/emacs.org"))
   (global-set-key (kbd "C-c I") 'find-config)
 #+END_SRC
 
@@ -37,6 +37,7 @@ including all that emacs gruft in ~.gitignore~ files.
   (setq auto-save-file-name-transforms
     `((".*" "~/.emacs-saves/" t)))
 #+end_src
+
 ** Hacks
 *** Speed up Cursor Movement
 Taken from https://github.com/Atman50/emacs-config.
@@ -112,6 +113,7 @@ Install diminish:
     (add-to-list 'boon-special-mode-list 'jupyter-repl-mode)
     (add-to-list 'boon-special-mode-list 'term-mode)
     (add-to-list 'boon-special-mode-list 'ansi-term-mode)
+    (add-to-list 'boon-special-mode-list 'bufler-list-mode)
     (boon-mode))
 #+end_src
 
@@ -283,38 +285,14 @@ Centralize the backup location.
         )
 #+END_SRC
 
-*** Ibuffer
-Nicer buffer menu. Set up some custom filters.
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq ibuffer-saved-filter-groups
-        (quote (("default"
-                 ("Org" ;; all org-related buffers
-                  (mode . org-mode))
-                 ("Programming" ;; prog stuff not already in MyProjectX
-                  (or
-                   (mode . c-mode)
-                   (mode . c++-mode)
-                   (mode . perl-mode)
-                   (mode . python-mode)
-                   (mode . lisp-mode)
-                   (mode . emacs-lisp-mode)))
-                 ("Matrix"
-                  (mode . matrix-client-mode))
-                 ("LaTeX"
-                  (mode . latex-mode))
-                 ("Docker"
-                  (mode . dockerfile-mode))
-                 ("Configs"
-                  (mode . yaml-mode))
-                 ("Directories"
-                  (mode . dired-mode))))))
-
-  (add-hook 'ibuffer-mode-hook
-            (lambda ()
-              (ibuffer-switch-to-saved-filter-groups "default")))
-  (global-set-key (kbd "C-x C-b") 'ibuffer-other-window)
-#+END_SRC
-
+*** Bufler
+Nice buffer management and switching.
+#+begin_src emacs-lisp :tangle yes
+  (use-package bufler
+    :init (require 'map)
+    :bind (("C-x C-b" . bufler)
+           ("C-x b" . bufler-switch-buffer)))
+#+end_src
 *** Navigation
 **** Avy
 Jump to char.
@@ -325,6 +303,7 @@ Jump to char.
            ("C-'" . avy-goto-char)
            ("C-;" . avy-goto-char-2)))
 #+END_SRC
+
 *** Move Lines
 Move whole lines easily.
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -495,7 +474,7 @@ Use abbrev for greek input.
    :config
    (direnv-mode))
 #+end_src
-*** Writeroomi
+*** Writeroom
 Distraction free writing.
 
 #+begin_src emacs-lisp :tangle yes
@@ -537,45 +516,28 @@ Support for the =Language Server Protocol=.
      lsp-clients-clangd-args '("--background-index" "-j=2" "--clang-tidy" "--cross-file-rename" "--log=verbose"))
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-    (setq lsp-clients-elixir-server-executable "/home/hiro/src/elixir-ls/release/language_server.sh")
+
     :hook ((elixir-mode . lsp)
            (lsp-mode . lsp-ui-mode)))
+
   (use-package dap-mode
     :config
     (add-hook 'dap-stopped-hook
-            (lambda (arg) (call-interactively #'dap-hydra)))
+              (lambda (arg) (call-interactively #'dap-hydra)))
     (setq dap-auto-configure-features
           '(sessions locals controls tooltip))
     :hook ((c-mode c++-mode) .
            (lambda ()
-             (setq dap-cpptools-debug-path "/nix/store/xmh8y9r01jgahyp4nhhcwfhlxvpgzxbl-vscode-extension-ms-vscode-cpptools-1.0.1/share/vscode/extensions/ms-vscode.cpptools/")
-             (setq dap-cpptools-debug-program '("/nix/store/xmh8y9r01jgahyp4nhhcwfhlxvpgzxbl-vscode-extension-ms-vscode-cpptools-1.0.1/share/vscode/extensions/ms-vscode.cpptools/debugAdapters/OpenDebugAD7"))
-             (require 'dap-cpptools))))
+             (let ((cpptools (getenv "CPPTOOLS")))
+               (setq dap-cpptools-debug-path
+                     (concat cpptools "/share/vscode/extensions/ms-vscode.cpptools/"))
+               (setq dap-cpptools-debug-program
+                     (list
+                      (concat cpptools
+                              "/share/vscode/extensions/ms-vscode.cpptools/debugAdapters/OpenDebugAD7")))
+               (require 'dap-cpptools)))))
 
-  (define-minor-mode +dap-running-session-mode
-    "A mode for adding keybindings to running sessions"
-    nil
-    nil
-    (make-sparse-keymap)
-    ;; The following code adds to the dap-terminated-hook
-    ;; so that this minor mode will be deactivated when the debugger finishes
-    (when +dap-running-session-mode
-      (let ((session-at-creation (dap--cur-active-session-or-die)))
-        (add-hook 'dap-terminated-hook
-                  (lambda (session)
-                    (when (eq session session-at-creation)
-                      (+dap-running-session-mode -1)))))))
 
-  ;; Activate this minor mode when dap is initialized
-  (add-hook 'dap-session-created-hook '+dap-running-session-mode)
-
-  ;; Activate this minor mode when hitting a breakpoint in another file
-  (add-hook 'dap-stopped-hook '+dap-running-session-mode)
-
-  ;; Activate this minor mode when stepping into code in another file
-  (add-hook 'dap-stack-frame-changed-hook (lambda (session)
-                                            (when (dap--session-running session)
-                                              (+dap-running-session-mode 1))))
 
 #+END_SRC
 
@@ -593,10 +555,6 @@ Support for the =Language Server Protocol=.
 #+end_src
 *** Company
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package company-flx
-    :after company
-    :config (company-flx-mode +1))
-
   (use-package company
     :diminish
     :bind (:map company-active-map
@@ -609,12 +567,11 @@ Support for the =Language Server Protocol=.
     (setq company-minimum-prefix-length 3)
     (add-to-list 'company-backends 'company-capf)
     (global-set-key (kbd "C-<tab>") 'company-complete-common)
-    (company-tng-configure-default)
+
     (setq company-frontends
           '(company-pseudo-tooltip-frontend
             company-echo-metadata-frontend))
-    :hook (after-init . global-company-mode)
-    (after-init . company-tng-mode))
+    :hook (after-init . global-company-mode))
 #+END_SRC
 
 Set up the company backends: (maybe do it the other way around...)
@@ -625,6 +582,14 @@ Set up the company backends: (maybe do it the other way around...)
   ;;   :config )
 
 #+END_SRC
+
+*** Hotfuzz
+For fuzzy completion matching.
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package hotfuzz
+    :config (setq completion-styles '(hotfuzz)))
+#+end_src
 
 *** Lisp
 **** Roswell
@@ -847,6 +812,31 @@ Buff the agenda to use Groups.
   (define-key org-mode-map (kbd "C-S-<return>") 'org-insert-todo-heading)
 #+END_SRC
 
+**** Bullets
+For headings.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-bullets
+    :custom
+    (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶"))
+    (org-ellipsis "⤵")
+    :hook (org-mode . org-bullets-mode))
+#+end_src
+
+And for normal lists.
+#+begin_src emacs-lisp :tangle yes
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([+]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
+#+end_src
+
+**** Numbers in Heading
+#+begin_src emacs-lisp :tangle yes
+  (add-hook 'org-mode-hook 'org-num-mode)
+#+end_src
+
 **** Directories
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-directory "~/Documents/org")
@@ -942,6 +932,34 @@ Agenda Files:
            (file+headline "~/Documents/org/general.org" "Appointments")
            "** %? :APPOINTMENT:\n"))))
 #+END_SRC
+
+For =ox-hugo=.
+#+begin_src emacs-lisp :tangle yes
+  (defun org-hugo-new-subtree-post-capture-template ()
+    "Returns `org-capture' template string for new Hugo post.
+  See `org-capture-templates' for more information."
+    (let* ((title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
+           (fname (org-hugo-slug title)))
+      (mapconcat #'identity
+                 `(
+                   ,(concat "* TODO " title)
+                   ":PROPERTIES:"
+                   ,(concat ":EXPORT_FILE_NAME: " fname)
+                   ":END:"
+                   "%?\n")                ;Place the cursor here finally
+                 "\n")))
+
+    (add-to-list 'org-capture-templates
+                 '("h"                ;`org-capture' binding + h
+                   "Hugo post"
+                   entry
+                   ;; It is assumed that below file is present in `org-directory'
+                   ;; and that it has a "Blog Ideas" heading. It can even be a
+                   ;; symlink pointing to the actual location of all-posts.org!
+                   (file+olp "content.org" "Blog""Uncategorized")
+                   (function org-hugo-new-subtree-post-capture-template)))
+#+end_src
+
 **** Babel
 #+begin_src emacs-lisp :tangle yes
   (org-babel-do-load-languages
@@ -956,7 +974,7 @@ Agenda Files:
   (setq org-startup-with-inline-images t)
   (setq imagemagick-types-inhibit t)
   (define-key org-mode-map (kbd "M-<shift>-<return>")
-    '(lambda ()
+    #'(lambda ()
        (interactive)
        (org-babel-execute-src-block)
        (org-babel-next-src-block)))
@@ -1050,12 +1068,18 @@ Org tree slide is a presentation tool for org mode.
 
     (setq org-attach-screenshot-command-line "xfce4-screenshooter -r -s %f"))
 #+end_src
-
+**** Hugo
+Ox-hugo allows to export org mode to hugo for my [[https://protagon.space][website]].
+#+begin_src emacs-lisp :tangle yes
+  (use-package ox-hugo
+    :after ox)
+#+end_src
 *** Git
 **** Magit
 - Just load magit and give it a key.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit
+    :init (require 'project)
     :bind ("C-x g" . magit-status))
 #+END_SRC
 
@@ -1093,7 +1117,6 @@ Make mini-buffers and search nicer.
     :diminish ivy-mode
     :bind (("C-s" . swiper)
            ("C-x r" . counsel-recentf)
-           ("C-x b" . counsel-ibuffer)
            :map boon-command-map
            ("w" . swiper))
     :config
@@ -1291,8 +1314,8 @@ Syntax checking and linting.
   ;;                "jupyter"))
   (elpy-enable)
   (add-hook 'elpy-mode-hook (lambda ()
-                                (add-hook 'before-save-hook
-                                          'elpy-black-fix-code nil t)))
+                              (add-hook 'before-save-hook
+                                        'elpy-black-fix-code nil t)))
     (when (load "flycheck" t t)
       (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
       (add-hook 'elpy-mode-hook 'flycheck-mode))
@@ -1561,7 +1584,10 @@ Hooking into aggressive indent.
 #+begin_src emacs-lisp :tangle yes
   (use-package qml-mode)
 #+end_src
-
+*** Arduino
+#+begin_src emacs-lisp :tangle yes
+    (use-package arduino-mode)
+#+end_src
 ** Applications
 *** Anki
 Stolen from https://yiufung.net/post/anki-org/.
@@ -1601,7 +1627,6 @@ Stolen from https://yiufung.net/post/anki-org/.
     ;; Initialize
     (anki-editor-reset-cloze-number))
 #+end_src
-
 ** Custom Scripts
 *** Close all Buffers
 #+BEGIN_SRC emacs-lisp :tangle yes
