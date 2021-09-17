@@ -689,6 +689,7 @@ Multiple major modes in one buffer.
   (setq org-clock-persist 'history)
   (add-hook 'org-mode-hook 'org-indent-mode)
   (org-clock-persistence-insinuate)
+  (setq org-id-link-to-org-use-id t)
 #+END_SRC
 
 **** Refile
