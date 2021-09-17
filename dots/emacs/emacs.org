@@ -454,16 +454,6 @@ Use abbrev for greek input.
   (setq-default abbrev-mode t)
 #+end_src
 
-*** Outline Magic
-#+begin_src emacs-lisp :tangle yes
-  (use-package outline-magic
-    :config
-    (eval-after-load 'outline
-      '(progn
-         (require 'outline-magic)
-         (define-key outline-minor-mode-map (kbd "<C-tab>") 'outline-cycle))))
-#+end_src
-
 *** Hydra
 #+begin_src emacs-lisp :tangle yes
   (use-package hydra)
@@ -973,7 +963,7 @@ For =ox-hugo=.
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
   (setq org-startup-with-inline-images t)
   (setq imagemagick-types-inhibit t)
-  (define-key org-mode-map (kbd "M-<shift>-<return>")
+  (define-key org-mode-map (kbd "M-j")
     #'(lambda ()
        (interactive)
        (org-babel-execute-src-block)
@@ -991,8 +981,6 @@ And dont evaluate code again.
 #+begin_src emacs-lisp :tangle yes
   (setq org-export-use-babel nil)
 #+end_src
-
-#+RESULTS:
 
 Automatically tangle on save.
 #+begin_src emacs-lisp :tangle yes
