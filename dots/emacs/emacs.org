@@ -4,12 +4,18 @@
 * Hiro's Emacs Config
 ** General Stuff
 *** Allow Dangerous Stuff
+:PROPERTIES:
+:ID:       5e3711ab-6ce4-4297-a757-e67ada5deb32
+:END:
 Allow downcase.
 #+begin_src emacs-lisp :tangle yes
   (put 'downcase-region 'disabled nil)
 #+end_src
 
 *** Edit Config
+:PROPERTIES:
+:ID:       3ec4da82-3022-4d27-b205-f6d3826c735e
+:END:
 Shortcut to edit this file.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun find-config ()
@@ -19,17 +25,26 @@ Shortcut to edit this file.
 #+END_SRC
 
 *** Start Server
+:PROPERTIES:
+:ID:       2fefb864-628c-4ecc-877e-9b6487074768
+:END:
 Starts the emacs server.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (server-start)
 #+END_SRC
 
 *** Desktop
+:PROPERTIES:
+:ID:       6e7debf5-6388-4d1a-b082-71c9ded7bcfa
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (desktop-save-mode 1)
 #+END_SRC
 
 *** Auto-Save
+:PROPERTIES:
+:ID:       af9dde51-e5b2-476a-9851-76e51c0ec5e6
+:END:
 Let emacs auto-save in a separate directory. This spares me from
 including all that emacs gruft in ~.gitignore~ files.
 
@@ -40,12 +55,18 @@ including all that emacs gruft in ~.gitignore~ files.
 
 ** Hacks
 *** Speed up Cursor Movement
+:PROPERTIES:
+:ID:       359303ad-78af-4d60-8f33-2c7cd7206f08
+:END:
 Taken from https://github.com/Atman50/emacs-config.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq auto-window-vscroll nil)
 #+END_SRC
 
 *** Tune GC
+:PROPERTIES:
+:ID:       b0006909-45b3-4282-b297-0fe8ac7a4aa3
+:END:
 #+begin_src emacs-lisp :tangle yes
   (defun my-minibuffer-setup-hook ()
     (setq gc-cons-threshold (* 100 1024 1024)))
@@ -57,10 +78,16 @@ Taken from https://github.com/Atman50/emacs-config.
   (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
 #+end_src
 *** Read more data from child processes
+:PROPERTIES:
+:ID:       2073371e-adda-493d-b8c9-373bcf1302bd
+:END:
 #+begin_src emacs-lisp :tangle yes
   (setq read-process-output-max (* 1024 1024))
 #+end_src
 *** Disable Garbage Collection on Fontcache
+:PROPERTIES:
+:ID:       0eca2431-ad2c-47f2-821c-ab5eafe373ca
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq inhibit-compacting-font-caches t)
 #+END_SRC
@@ -71,6 +98,9 @@ Straight is loaded in =~/.emacs= before anything else to then load the
 latest org mode which loads this file.
 
 *** Packages
+:PROPERTIES:
+:ID:       95e601a5-0c8a-4dbf-8629-9721765030ae
+:END:
 Set up package sources.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
@@ -80,6 +110,9 @@ Set up package sources.
 #+END_SRC
 
 *** Bootstrap Use-Package
+:PROPERTIES:
+:ID:       6b502930-7fac-49ec-9bec-9c94d9071fe6
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
@@ -98,6 +131,9 @@ Install diminish:
 
 ** Preferences
 *** Boon
+:PROPERTIES:
+:ID:       0baef9d0-a5a4-48f2-9e88-2ffa87d15957
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package expand-region)
   (use-package boon
@@ -118,6 +154,9 @@ Install diminish:
 #+end_src
 
 *** Term
+:PROPERTIES:
+:ID:       97cb4819-4203-4cbc-a371-e62c69fabd67
+:END:
 HL line mode is nonsensical in term.
 #+begin_src emacs-lisp :tangle yes
   (add-hook 'term-mode-hook
@@ -132,6 +171,9 @@ HL line mode is nonsensical in term.
 #+end_src
 
 *** VTerm
+:PROPERTIES:
+:ID:       dedeb938-0a53-463b-b1d3-424e366b7e31
+:END:
 VTerm has a ~c~ core and is faster + more compatible. We install this through nix.
 #+begin_src emacs-lisp :tangle yes
   ;; (use-package vterm
@@ -143,12 +185,18 @@ VTerm has a ~c~ core and is faster + more compatible. We install this through ni
      (setq global-hl-line-mode nil)))
 #+end_src
 *** Custom
+:PROPERTIES:
+:ID:       1ede7fc3-889f-425e-84e4-8a9eabce2866
+:END:
 Prevent custom from preserving state.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq custom-file (make-temp-file "emacs-custom"))
 #+END_SRC
 
 *** General
+:PROPERTIES:
+:ID:       12ffac7a-903b-4c84-ba0d-31366d4bdca7
+:END:
 No startup screen.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq inhibit-startup-screen t)
@@ -167,6 +215,9 @@ No cursor blink.
 #+END_SRC
 
 *** Font and Editor
+:PROPERTIES:
+:ID:       33861a6a-1617-4633-be00-5587dbf8e6ce
+:END:
 - Set font to ~JetBrains Mono~.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -177,6 +228,9 @@ No cursor blink.
 #+END_SRC
 
 **** Highlight current line.
+:PROPERTIES:
+:ID:       77be21fb-9db5-497e-af66-1b4cc804d026
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-hl-line-mode 1)
 #+END_SRC
@@ -188,12 +242,18 @@ This allows us to disable it locally
 #+end_src
 
 *** Sound
+:PROPERTIES:
+:ID:       40ee9fc9-39bf-45e3-94a8-9ce8cba65257
+:END:
 No terminal bell.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq ring-bell-function 'ignore)
 #+END_SRC
 
 *** Whitespace
+:PROPERTIES:
+:ID:       4d26afac-fc06-432b-88f0-c56beca9208b
+:END:
 Ethan wspace mode resolves the nightmare of mixed whitespace.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package ethan-wspace
@@ -202,12 +262,18 @@ Ethan wspace mode resolves the nightmare of mixed whitespace.
 #+END_SRC
 
 **** Tabs
+:PROPERTIES:
+:ID:       ffbdaa5a-26ba-47e3-8661-b77e1fe1dfe6
+:END:
 Don't use 'em.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq-default indent-tabs-mode nil)
 #+END_SRC
 
 *** Pairs
+:PROPERTIES:
+:ID:       8e6afa0c-941d-4ec8-a1c4-1d40c79959bc
+:END:
 Enable electric pairs.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (electric-pair-mode 1)
@@ -222,6 +288,9 @@ Show parens.
 #+end_src
 
 *** Theme
+:PROPERTIES:
+:ID:       ea6f41b1-8067-452f-9b99-40bb573500f6
+:END:
 We use the doom theme.
 #+begin_src emacs-lisp :tangle yes
   (use-package all-the-icons)
@@ -240,6 +309,9 @@ We use the doom theme.
 #+end_src
 
 *** Compilation
+:PROPERTIES:
+:ID:       00d0bc01-ca6b-4f53-9aef-12f92d6224bb
+:END:
 Reuse the compilation frame instead of annoyingly creating new ones.
 #+begin_src emacs-lisp :tangle yes
   (add-to-list
@@ -255,12 +327,18 @@ And scroll the compilation output.
 
 ** Interface
 *** General Tweaks
+:PROPERTIES:
+:ID:       53254477-f03e-44b4-bb80-6e6bf9fd28c5
+:END:
 Short =yes-no=.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
 *** Multiple Cursors
+:PROPERTIES:
+:ID:       14313a37-a3d7-41b9-a2b6-b79c8459c22a
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package multiple-cursors
     :bind (("M-<mouse-1>" . mc/add-cursor-on-click)
@@ -274,6 +352,9 @@ Short =yes-no=.
 #+END_SRC
 
 *** Misc
+:PROPERTIES:
+:ID:       5a653d75-bc36-479d-8f4f-1bf83d5f0af2
+:END:
 Centralize the backup location.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
@@ -286,6 +367,9 @@ Centralize the backup location.
 #+END_SRC
 
 *** Bufler
+:PROPERTIES:
+:ID:       39150942-cac9-4474-a68d-9860fc80bbf0
+:END:
 Nice buffer management and switching.
 #+begin_src emacs-lisp :tangle yes
   (use-package bufler
@@ -295,6 +379,9 @@ Nice buffer management and switching.
 #+end_src
 *** Navigation
 **** Avy
+:PROPERTIES:
+:ID:       45e310ac-0893-46f7-ad4e-fd10e4223d5d
+:END:
 Jump to char.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package avy
@@ -305,6 +392,9 @@ Jump to char.
 #+END_SRC
 
 *** Move Lines
+:PROPERTIES:
+:ID:       ada00b7c-b930-4a89-89d7-054e142ee913
+:END:
 Move whole lines easily.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package move-text
@@ -313,6 +403,9 @@ Move whole lines easily.
 #+END_SRC
 
 *** Treemacs
+:PROPERTIES:
+:ID:       cfb56f78-fbaa-46ae-b291-b4363695dfbe
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package treemacs
     :ensure t
@@ -345,6 +438,9 @@ Move whole lines easily.
 #+END_SRC
 
 *** Rainbow Delimiters, Identifiers
+:PROPERTIES:
+:ID:       dc0ff24a-4d59-42b4-b99b-95b65274ceb0
+:END:
 Color code matching delimiters.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package rainbow-identifiers
@@ -355,6 +451,9 @@ Color code matching delimiters.
 #+END_SRC
 
 *** Ligatures
+:PROPERTIES:
+:ID:       6d6b7fe3-bdcd-4392-bca4-915a433e4e3c
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package ligature
     :straight (:host github :repo "mickeynp/ligature.el")
@@ -377,6 +476,9 @@ Color code matching delimiters.
     (global-ligature-mode t))
 #+end_src
 *** Ripgrep
+:PROPERTIES:
+:ID:       961b4dd1-6784-4cf5-a347-8d603c1ba3b5
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package rg
     :config
@@ -385,6 +487,9 @@ Color code matching delimiters.
 #+end_src
 
 *** Flyspell
+:PROPERTIES:
+:ID:       eac8b2db-730c-48c0-9765-857e2afcbdbb
+:END:
 #+begin_src emacs-lisp :tangle yes
 (use-package flyspell-correct-ivy
     :bind ("C-;" . flyspell-correct-wrapper)
@@ -393,6 +498,9 @@ Color code matching delimiters.
 #+end_src
 
 *** Abbrev
+:PROPERTIES:
+:ID:       28c3f70a-568c-4ccb-9314-0056fc0c59bd
+:END:
 Use abbrev for greek input.
 #+begin_src emacs-lisp :tangle yes
   (define-abbrev-table 'global-abbrev-table
@@ -455,22 +563,34 @@ Use abbrev for greek input.
 #+end_src
 
 *** Hydra
+:PROPERTIES:
+:ID:       b4a81a76-c3ec-44eb-8beb-664fcb218311
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package hydra)
 #+end_src
 *** Direnv Support
+:PROPERTIES:
+:ID:       de7c7800-9d2a-49bf-a004-159d688fd715
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package direnv
    :config
    (direnv-mode))
 #+end_src
 *** Writeroom
+:PROPERTIES:
+:ID:       7ef0eb70-75c3-4f69-b50d-637fc34051bb
+:END:
 Distraction free writing.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package writeroom-mode)
 #+end_src
 *** Aggressive Indent
+:PROPERTIES:
+:ID:       7e964146-a4d6-4d50-9865-df03314329d4
+:END:
 Indenting wherever we can!
 #+begin_src emacs-lisp :tangle yes
   (use-package aggressive-indent
@@ -478,6 +598,9 @@ Indenting wherever we can!
 #+end_src
 ** Programming / Language Support
 *** LSP
+:PROPERTIES:
+:ID:       114a9729-b4a7-4cb8-81cf-89f0eeafb316
+:END:
 Support for the =Language Server Protocol=.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package lsp-ui)
@@ -532,6 +655,9 @@ Support for the =Language Server Protocol=.
 #+END_SRC
 
 *** Separedit
+:PROPERTIES:
+:ID:       a914f70d-d05e-427a-aa5c-2cb24cee0858
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package separedit
     :config
@@ -544,6 +670,9 @@ Support for the =Language Server Protocol=.
 
 #+end_src
 *** Company
+:PROPERTIES:
+:ID:       f5437fe9-bac3-4b7f-aa73-28f468a18a7d
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package company
     :diminish
@@ -574,6 +703,9 @@ Set up the company backends: (maybe do it the other way around...)
 #+END_SRC
 
 *** Hotfuzz
+:PROPERTIES:
+:ID:       b56c98c9-0d00-44a9-9050-7e819c0001b4
+:END:
 For fuzzy completion matching.
 
 #+begin_src emacs-lisp :tangle yes
@@ -583,12 +715,18 @@ For fuzzy completion matching.
 
 *** Lisp
 **** Roswell
+:PROPERTIES:
+:ID:       0ec09485-7f6f-4557-8c79-ac732c6b27cc
+:END:
 Support for the roswell package manager.
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;(load (expand-file-name "~/.roswell/helper.el"))
 #+END_SRC
 
 **** Lispy Mode
+:PROPERTIES:
+:ID:       ab3ddba8-e875-47cf-b63c-427fbe504d36
+:END:
 A lisp code navigation extension that exploits the syntax of lisp to
 avoid modifiers.
 
@@ -626,6 +764,9 @@ avoid modifiers.
 #+END_SRC
 
 **** Cider
+:PROPERTIES:
+:ID:       5a524ad4-fa26-4f29-b32c-1d1376c4e4bd
+:END:
 Clojure IDE.
 #+begin_src emacs-lisp :tangle yes
   (use-package cider
@@ -637,6 +778,9 @@ Clojure IDE.
 #+end_src
 
 ***** clj-refactor
+:PROPERTIES:
+:ID:       e2f52a4a-a2c6-4b1b-961b-d550ae39b1c9
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package clj-refactor
     :config (cljr-add-keybindings-with-prefix "C-c C-m")
@@ -649,6 +793,9 @@ Clojure IDE.
     :hook (cider-mode . my-clojure-mode-hook))
 #+end_src
 **** Sly
+:PROPERTIES:
+:ID:       879ca264-d5e4-495a-a0fd-362f9c5056ad
+:END:
 Slime fork with new features.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package sly
@@ -662,6 +809,9 @@ Slime fork with new features.
 #+END_SRC
 
 *** Racket
+:PROPERTIES:
+:ID:       1a617fa1-9cf6-4ba4-960a-7b01d5fc3c53
+:END:
 #+begin_src emacs-lisp :tangle yes
   ;; (use-package geiser)
 
@@ -672,6 +822,9 @@ Slime fork with new features.
 #+end_src
 
 *** Poly Mode
+:PROPERTIES:
+:ID:       921ceae1-2e82-4083-8da0-cb910cfd8363
+:END:
 Multiple major modes in one buffer.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -684,6 +837,9 @@ Multiple major modes in one buffer.
 
 *** Org Mode
 **** General Tweaks
+:PROPERTIES:
+:ID:       0684cabd-733b-40e5-86cb-47de1c562e7e
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-treat-S-cursor-todo-selection-as-state-change nil)
   (setq org-clock-persist 'history)
@@ -693,6 +849,9 @@ Multiple major modes in one buffer.
 #+END_SRC
 
 **** Refile
+:PROPERTIES:
+:ID:       25e8eb21-b15c-4cd1-9cde-4b458a885b71
+:END:
 - Targets include this file and any file contributing to the agenda - up to 9 levels deep
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-refile-targets
@@ -732,6 +891,9 @@ Multiple major modes in one buffer.
 #+END_SRC
 
 **** Agenda
+:PROPERTIES:
+:ID:       0c5b4ae0-6278-4f9f-b71c-8cd6ddc6842e
+:END:
 - Formatting: Add path to Items
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-agenda-prefix-format
@@ -778,6 +940,9 @@ Multiple major modes in one buffer.
 #+END_SRC
 
 **** Super Agenda
+:PROPERTIES:
+:ID:       6ab271bc-30b2-444c-9678-8f6e6416f010
+:END:
 Buff the agenda to use Groups.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -798,12 +963,18 @@ Buff the agenda to use Groups.
 #+END_SRC
 
 **** Keybindings
+:PROPERTIES:
+:ID:       b736811c-d62e-4cc1-bdce-9fa7eeca04fa
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-set-key (kbd "C-c c") 'org-capture)
   (define-key org-mode-map (kbd "C-S-<return>") 'org-insert-todo-heading)
 #+END_SRC
 
 **** Bullets
+:PROPERTIES:
+:ID:       3dfd3886-edd6-4c15-9c9d-3f0dea822d26
+:END:
 For headings.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-bullets
@@ -824,11 +995,17 @@ And for normal lists.
 #+end_src
 
 **** Numbers in Heading
+:PROPERTIES:
+:ID:       25dbd121-47df-4035-8978-598034404cce
+:END:
 #+begin_src emacs-lisp :tangle yes
   (add-hook 'org-mode-hook 'org-num-mode)
 #+end_src
 
 **** Directories
+:PROPERTIES:
+:ID:       47490474-e7cb-4b82-83f6-d794771c985e
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-directory "~/Documents/org")
   (setq org-default-notes-file "~/Documents/org/refile.org")
@@ -844,6 +1021,9 @@ Agenda Files:
 #+END_SRC
 
 **** Automatically mark task as done if all subtasks are done
+:PROPERTIES:
+:ID:       a7c4a187-a647-43fd-b96c-5fe2ca469f74
+:END:
 #+begin_src emacs-lisp :tangle yes
   (defun org-summary-todo (n-done n-not-done)
     "Switch entry to DONE when all subentries are done, to TODO otherwise."
@@ -853,6 +1033,9 @@ Agenda Files:
   (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 #+end_src
 **** Custom States
+:PROPERTIES:
+:ID:       9a13b076-b2cb-4617-85a0-8f37a18c15eb
+:END:
 - states
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq org-todo-keywords
@@ -891,6 +1074,9 @@ Agenda Files:
            ("HOLD")))))
 #+END_SRC
 **** Capture Templates
+:PROPERTIES:
+:ID:       534bc598-1e8f-4f63-91b9-2653d30cd173
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq org-capture-templates
         (quote
@@ -952,6 +1138,9 @@ For =ox-hugo=.
 #+end_src
 
 **** Babel
+:PROPERTIES:
+:ID:       f14de4ec-7360-497f-be62-7a53c4922a73
+:END:
 #+begin_src emacs-lisp :tangle yes
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -990,6 +1179,9 @@ Automatically tangle on save.
               (add-hook 'after-save-hook 'org-babel-tangle nil 'make-it-local)))
 #+end_src
 **** Evince for PDF, Xournal for xoj
+:PROPERTIES:
+:ID:       d9b3dab5-4e9f-4ab2-a40f-40f1268a1670
+:END:
 #+begin_src emacs-lisp :tangle yes
   (eval-after-load "org"
     '(setq org-file-apps
@@ -1017,6 +1209,9 @@ Automatically tangle on save.
 : whatacold/org-pdf-app
 
 **** Presentations
+:PROPERTIES:
+:ID:       1d6c1a53-fb56-4cb1-8c09-868c0126b6c9
+:END:
 Org tree slide is a presentation tool for org mode.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-tree-slide
@@ -1024,15 +1219,24 @@ Org tree slide is a presentation tool for org mode.
            ("<f9>" . 'org-tree-slide-move-previous-tree)))
 #+end_src
 **** LaTeX preview size
+:PROPERTIES:
+:ID:       b6beac7c-6b2e-433f-80a8-2c77f4df6aef
+:END:
 #+begin_src emacs-lisp :tangle yes
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 #+end_src
 **** Instant latex preview
+:PROPERTIES:
+:ID:       efa1372a-d79f-4eb2-bee8-572fa1aa2669
+:END:
 #+begin_src emacs-lisp :tangle yes
   ;; (use-package org-fragtog
   ;;   :hook org-mode)
 #+end_src
 **** Archive all DONE
+:PROPERTIES:
+:ID:       30bddaf0-e2c0-4d52-85d1-984d8509f8f4
+:END:
 #+begin_src emacs-lisp :tangle yes
   (defun org-archive-done-tasks ()
     (interactive)
@@ -1043,6 +1247,9 @@ Org tree slide is a presentation tool for org mode.
      "/DONE" 'tree))
 #+end_src
 **** Screenshots
+:PROPERTIES:
+:ID:       850d926a-992b-4f09-9fce-1cd38cfdba0f
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package org-download)
   (use-package org-attach-screenshot
@@ -1058,13 +1265,117 @@ Org tree slide is a presentation tool for org mode.
     (setq org-attach-screenshot-command-line "xfce4-screenshooter -r -s %f"))
 #+end_src
 **** Hugo
+:PROPERTIES:
+:ID:       af2d7bd1-c43d-4bdc-9bdc-eae7ba922f6a
+:END:
 Ox-hugo allows to export org mode to hugo for my [[https://protagon.space][website]].
 #+begin_src emacs-lisp :tangle yes
   (use-package ox-hugo
     :after ox)
 #+end_src
+**** Org Ref
+:PROPERTIES:
+:ID:       7f5826e2-ac3d-4f59-a8f0-1e8810d6d177
+:END:
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-ref
+    :config
+    (setq org-ref-bibliography-notes "~/bibliography/notes.org"
+          org-ref-default-bibliography '("~/bibliography/references.bib")
+          org-ref-pdf-directory "~/bibliography/bibtex-pdfs/")
+    (require 'org-ref-ivy))
+#+end_src
+
+We add scihub as a pdf source.
+#+begin_src emacs-lisp :tangle yes
+  (defun sci-hub-pdf-url (doi)
+    "Get url to the pdf from SCI-HUB"
+    (setq *doi-utils-pdf-url* (concat "https://sci-hub.se/" doi) ;captcha
+          ,*doi-utils-waiting* t
+          )
+    ;; try to find PDF url (if it exists)
+    (url-retrieve (concat "https://sci-hub.se/" doi)
+                  (lambda (status)
+                    (goto-char (point-min))
+                    (while (search-forward-regexp "\\(https://\\|//sci-hub.se/downloads\\).+download=true'" nil t)
+                      (let ((foundurl (match-string 0)))
+                        (message foundurl)
+                        (if (string-match "https:" foundurl)
+                            (setq *doi-utils-pdf-url* foundurl)
+                          (setq *doi-utils-pdf-url* (concat "https:" foundurl))))
+                      (setq *doi-utils-waiting* nil))))
+    (while *doi-utils-waiting* (sleep-for 0.1))
+    ,*doi-utils-pdf-url*)
+
+  (defun doi-utils-get-bibtex-entry-pdf (&optional arg)
+    "Download pdf for entry at point if the pdf does not already exist locally.
+  The entry must have a doi. The pdf will be saved to
+  `org-ref-pdf-directory', by the name %s.pdf where %s is the
+  bibtex label.  Files will not be overwritten.  The pdf will be
+  checked to make sure it is a pdf, and not some html failure
+  page. You must have permission to access the pdf. We open the pdf
+  at the end if `doi-utils-open-pdf-after-download' is non-nil.
+
+  With one prefix ARG, directly get the pdf from a file (through
+  `read-file-name') instead of looking up a DOI. With a double
+  prefix ARG, directly get the pdf from an open buffer (through
+  `read-buffer-to-switch') instead. These two alternative methods
+  work even if the entry has no DOI, and the pdf file is not
+  checked."
+    (interactive "P")
+    (save-excursion
+      (bibtex-beginning-of-entry)
+      (let ( ;; get doi, removing http://dx.doi.org/ if it is there.
+            (doi (replace-regexp-in-string
+                  "https?://\\(dx.\\)?.doi.org/" ""
+                  (bibtex-autokey-get-field "doi")))
+            (key (cdr (assoc "=key=" (bibtex-parse-entry))))
+            (pdf-url)
+            (pdf-file))
+        (setq pdf-file (concat
+                        (if org-ref-pdf-directory
+                            (file-name-as-directory org-ref-pdf-directory)
+                          (read-directory-name "PDF directory: " "."))
+                        key ".pdf"))
+        ;; now get file if needed.
+        (unless (file-exists-p pdf-file)
+          (cond
+           ((and (not arg)
+                 doi
+                 (if (doi-utils-get-pdf-url doi)
+                     (setq pdf-url (sci-hub-pdf-url doi))
+                   (setq pdf-url "https://www.sciencedirect.com/science/article/")))
+            (url-copy-file pdf-url pdf-file)
+            ;; now check if we got a pdf
+            (if (org-ref-pdf-p pdf-file)
+                (message "%s saved" pdf-file)
+              (delete-file pdf-file)
+              ;; sci-hub fallback option
+              (setq pdf-url (sci-hub-pdf-url doi))
+              (url-copy-file pdf-url pdf-file)
+              ;; now check if we got a pdf
+              (if (org-ref-pdf-p pdf-file)
+                  (message "%s saved" pdf-file)
+                (delete-file pdf-file)
+                (message "No pdf was downloaded.") ; SH captcha
+                (browse-url pdf-url))))
+           ;; End of sci-hub fallback option
+           ((equal arg '(4))
+            (copy-file (expand-file-name (read-file-name "Pdf file: " nil nil t))
+                       pdf-file))
+           ((equal arg '(16))
+            (with-current-buffer (read-buffer-to-switch "Pdf buffer: ")
+              (write-file pdf-file)))
+           (t
+            (message "We don't have a recipe for this journal.")))
+          (when (and doi-utils-open-pdf-after-download (file-exists-p pdf-file))
+            (org-open-file pdf-file))))))
+#+end_src
 *** Git
 **** Magit
+:PROPERTIES:
+:ID:       01ea61d7-eb1f-4f6b-b4f5-d4ea2bffeab4
+:END:
 - Just load magit and give it a key.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit
@@ -1077,12 +1388,18 @@ Ox-hugo allows to export org mode to hugo for my [[https://protagon.space][websi
   (use-package magit-filenotify)
 #+END_SRC
 **** Time-Machine
+:PROPERTIES:
+:ID:       96d780be-db71-4e19-b0f4-f41fe103ea71
+:END:
 View the history of a file.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package git-timemachine)
 #+end_src
 **** Gutter
+:PROPERTIES:
+:ID:       ebe9a7aa-3f9a-4ec9-b651-3018472e1f46
+:END:
 Mark changed lines on the fringes.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package git-gutter-fringe+
@@ -1093,6 +1410,9 @@ Mark changed lines on the fringes.
     (git-gutter+-turn-on))
 #+END_SRC
 *** Sage Math
+:PROPERTIES:
+:ID:       dd2ade9d-25e7-4575-a3b9-76f5e7c580e2
+:END:
 CAS for some annoying calculations.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package sage-shell-mode
@@ -1100,6 +1420,9 @@ CAS for some annoying calculations.
 #+END_SRC
 
 *** Ivy
+:PROPERTIES:
+:ID:       8c91633b-52ea-4957-9720-2164b79d424a
+:END:
 Make mini-buffers and search nicer.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package ivy
@@ -1117,6 +1440,9 @@ Make mini-buffers and search nicer.
 #+END_SRC
 
 *** LaTeX
+:PROPERTIES:
+:ID:       141f5f31-5bfd-4356-a205-27e25306a5cd
+:END:
 Enable electric braces for math mode: ~\( \)~
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq LaTeX-electric-left-right-brace t)
@@ -1141,6 +1467,9 @@ Custom math macros.
 #+end_src
 
 **** RefTeX
+:PROPERTIES:
+:ID:       90b8584a-92fe-4032-b74a-a6c2610728fb
+:END:
 #+begin_src emacs-lisp :tangle yes
   (setq reftex-plug-into-auctex t)
   (setq reftex-ref-macro-prompt nil)
@@ -1151,6 +1480,9 @@ Custom math macros.
 #+end_src
 
 **** Latexmk
+:PROPERTIES:
+:ID:       c7a8c0e0-b050-471a-8804-c7a20715bd25
+:END:
 Set up latexmk for easier making.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package auctex-latexmk
@@ -1161,6 +1493,9 @@ Set up latexmk for easier making.
 **** TODO Use Tectonic
 *** Javascript
 **** JS2
+:PROPERTIES:
+:ID:       67935874-5a0d-4871-9cff-0207ec3ede99
+:END:
 Nicer JS mode.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package js2-mode
@@ -1178,12 +1513,18 @@ rather than a line.
 #+END_SRC
 
 **** RJSX
+:PROPERTIES:
+:ID:       cd707071-336a-4fe2-a2c3-92e0cad25c20
+:END:
 A js2 mode for a =jsx=.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package rjsx-mode)
 #+END_SRC
 
 **** JS-Doc
+:PROPERTIES:
+:ID:       0f490c55-f6b2-4ecf-ab44-533d68b1cc3c
+:END:
 Documentation comment helper.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package js-doc
@@ -1198,12 +1539,18 @@ Documentation comment helper.
 #+END_SRC
 
 **** JSON
+:PROPERTIES:
+:ID:       74517987-a646-4c18-a53a-14f42a732192
+:END:
 Json mode package.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package json-mode)
 #+END_SRC
 
 **** TODO Tern
+:PROPERTIES:
+:ID:       48b6fe23-a48d-43d1-a0de-0fa1e8d6b9f3
+:END:
 JS Ide feautures. May be replaced by LSP.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'load-path "~/src/tern")
@@ -1215,6 +1562,9 @@ JS Ide feautures. May be replaced by LSP.
 Some junk for the elixir programming language.
 
 **** Base Mode
+:PROPERTIES:
+:ID:       2062b283-a743-48fd-9247-f361d61bd3ff
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package elixir-mode
     :config
@@ -1231,6 +1581,9 @@ Some junk for the elixir programming language.
 #+END_SRC
 
 *** Projectile
+:PROPERTIES:
+:ID:       da08907a-c833-4fe8-a9d7-c2263aed0049
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package projectile
     :diminish
@@ -1249,6 +1602,9 @@ Some junk for the elixir programming language.
 #+END_SRC
 
 *** Web Mode
+:PROPERTIES:
+:ID:       1d3441ed-8802-4ec1-a6a4-6645e1f727a7
+:END:
 A very neat mode for editing html and the like.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -1265,6 +1621,9 @@ A very neat mode for editing html and the like.
 #+END_SRC
 
 *** Emmet
+:PROPERTIES:
+:ID:       9b25f942-73fa-494a-8c59-93c8444dd9f0
+:END:
 Nice html and css snippets.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package emmet-mode
@@ -1274,6 +1633,9 @@ Nice html and css snippets.
 #+END_SRC
 
 *** Flycheck
+:PROPERTIES:
+:ID:       e859a2c3-2de4-4912-bfb8-4b4d3b29ab6f
+:END:
 Syntax checking and linting.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package flycheck
@@ -1286,6 +1648,9 @@ Syntax checking and linting.
 
 *** Python
 **** Elpy
+:PROPERTIES:
+:ID:       c236c336-289a-4133-8bf3-ecb5a66534f5
+:END:
 #+begin_src emacs-lisp :tangle yes
   ;; Installed through nix
   ;; (use-package elpy
@@ -1314,6 +1679,9 @@ Syntax checking and linting.
 #+end_src
 
 **** Anaconda
+:PROPERTIES:
+:ID:       31703afa-434c-4b64-a65b-cd21c992fdd0
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;; (use-package anaconda-mode
   ;;   :after (sphinx-doc python-docstring)
@@ -1328,12 +1696,18 @@ Syntax checking and linting.
 #+END_SRC
 
 **** Mark overlong Lines
+:PROPERTIES:
+:ID:       ecbcdb07-0489-412e-b426-ace03776e455
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq whitespace-line-collumn 79)
   (setq whitespace-style '(face empty tabs lines-tail trailing))
 #+END_SRC
 
 **** Docstrings
+:PROPERTIES:
+:ID:       012deb47-1587-473a-b74c-85a0a322d7ad
+:END:
 Support for sphinx style docstrings.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package python-docstring)
@@ -1341,6 +1715,9 @@ Support for sphinx style docstrings.
 #+END_SRC
 
 *** Jupyter
+:PROPERTIES:
+:ID:       db24f115-910d-4f9f-ba13-4dd9855c0b7d
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package jupyter
     :config
@@ -1355,6 +1732,9 @@ Support for sphinx style docstrings.
 #+end_src
 
 *** YASnippets
+:PROPERTIES:
+:ID:       7dc43d7d-d857-4947-9f82-56d956bea24b
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package yasnippet
     :diminish yas-global-mode
@@ -1368,15 +1748,24 @@ Support for sphinx style docstrings.
 #+END_SRC
 
 *** Fish
+:PROPERTIES:
+:ID:       8f702ee5-59b7-4056-b76e-f9cd13414657
+:END:
 Fish shell script mode.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package fish-mode)
 #+END_SRC
 *** Arch PKGBUILD
+:PROPERTIES:
+:ID:       76851fc8-b7eb-458a-8d42-c60c31c429bc
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package pkgbuild-mode)
 #+END_SRC
 *** C++
+:PROPERTIES:
+:ID:       5eb6b743-18bd-4c18-ba40-a5372793e570
+:END:
 Set up ~lsp~, ~ccls~.
 #+begin_src emacs-lisp :tangle yes
   (use-package modern-cpp-font-lock
@@ -1441,36 +1830,60 @@ Use 4 spaces for indenting.
 #+end_src
 
 **** RealGUD
+:PROPERTIES:
+:ID:       483441e4-c3aa-421a-b3c7-509188fc99b6
+:END:
 Debugging yay!
 #+begin_src emacs-lisp :tangle yes
   (use-package realgud
     :config (setq realgud-safe-mode nil))
 #+end_src
 *** YAML
+:PROPERTIES:
+:ID:       6386c709-34bd-42ce-97a3-985bfae11ceb
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package yaml-mode)
 #+end_src
 *** Docker
+:PROPERTIES:
+:ID:       08c8c436-b465-4659-86a8-d23a8b22ddfe
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package dockerfile-mode)
 #+end_src
 *** Regex
+:PROPERTIES:
+:ID:       23d2c04f-d35c-444e-888c-4bb68328bdcc
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package regex-tool)
 #+end_src
 *** Meson
+:PROPERTIES:
+:ID:       b62041da-b43c-4f2a-b5c1-7848205c4897
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package meson-mode)
 #+end_src
 *** Lua
+:PROPERTIES:
+:ID:       1e6a36c0-cfdb-4fe9-9c1a-52ecea13b06e
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package lua-mode)
 #+end_src
 *** Nix
+:PROPERTIES:
+:ID:       465f550d-9380-4ce2-a3ba-98c2529acb5b
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package nix-mode)
 #+end_src
 *** Julia
+:PROPERTIES:
+:ID:       c06a05a4-ce4f-400a-a6a3-7bffbbcfa792
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package julia-repl
     :config
@@ -1497,6 +1910,9 @@ Debugging yay!
 #+end_src
 
 **** Highlighting
+:PROPERTIES:
+:ID:       3bd869ed-0168-4722-a3b4-49745567dd40
+:END:
 Some extra highlighting for assignments is nice.
 Stolen from [[https://www.reddit.com/r/emacs/comments/cbvwlp/juliamode_syntax_highlight/][reddit]] or python-mode by proxy.
 #+begin_src emacs-lisp :tangle yes
@@ -1539,6 +1955,9 @@ Stolen from [[https://www.reddit.com/r/emacs/comments/cbvwlp/juliamode_syntax_hi
 #+RESULTS:
 
 **** Formatting
+:PROPERTIES:
+:ID:       83deb4c2-9191-45c8-afd7-d59feb3c8dae
+:END:
 Hooking into aggressive indent.
 #+begin_src emacs-lisp :tangle yes
   (use-package julia-formatter
@@ -1558,6 +1977,9 @@ Hooking into aggressive indent.
                               t))))
 #+end_src
 *** Rust
+:PROPERTIES:
+:ID:       784b23ee-9e23-4562-b485-27851f865a3d
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package rust-mode
     :hook (rust-mode . lsp))
@@ -1570,15 +1992,24 @@ Hooking into aggressive indent.
     :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 #+end_src
 *** QML
+:PROPERTIES:
+:ID:       b49db1fb-a87e-4bca-ac22-fde79fd4d80a
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package qml-mode)
 #+end_src
 *** Arduino
+:PROPERTIES:
+:ID:       ae05b648-a396-4d16-8fbf-3f2609ceb763
+:END:
 #+begin_src emacs-lisp :tangle yes
     (use-package arduino-mode)
 #+end_src
 ** Applications
 *** Anki
+:PROPERTIES:
+:ID:       f8d492d4-6bbc-4f0c-888e-0b12837a661f
+:END:
 Stolen from https://yiufung.net/post/anki-org/.
 #+begin_src emacs-lisp :tangle yes
   (use-package anki-editor
@@ -1618,6 +2049,9 @@ Stolen from https://yiufung.net/post/anki-org/.
 #+end_src
 ** Custom Scripts
 *** Close all Buffers
+:PROPERTIES:
+:ID:       84c7e39f-d35d-49d8-bb66-acb8df2fdeb6
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun close-all-buffers ()
     "Closes all buffers."
@@ -1626,6 +2060,9 @@ Stolen from https://yiufung.net/post/anki-org/.
           (buffer-list)))
 #+END_SRC
 *** Rename Buffer and File
+:PROPERTIES:
+:ID:       53dd7d81-f90e-4088-9326-0d5d8ebb69c6
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defun rename-file-and-buffer (new-name)
     "Renames both current buffer and file it's visiting to NEW-NAME."
@@ -1644,6 +2081,9 @@ Stolen from https://yiufung.net/post/anki-org/.
 #+END_SRC
 
 *** Create Common Use-Package declaration
+:PROPERTIES:
+:ID:       58d9179a-8ef6-4713-a216-2d8549795bad
+:END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defmacro my-create-up-common (name &rest common-args)
     "Creates a use-package declaration that automatically adds
@@ -1656,6 +2096,9 @@ Stolen from https://yiufung.net/post/anki-org/.
           ,@',common-args)))
 #+END_SRC
 *** Insert a new exercise into an org file
+:PROPERTIES:
+:ID:       6ac3df76-84eb-4f86-a010-59a3001db150
+:END:
 #+begin_src emacs-lisp :tangle yes
   (require 'org)
   (require 'org-element)
@@ -1706,6 +2149,9 @@ Stolen from https://yiufung.net/post/anki-org/.
 #+RESULTS:
 : insert-uebung
 *** Fun Hack to make C++ look like python
+:PROPERTIES:
+:ID:       6cba49bd-d365-46e9-8d53-62fe91ece43b
+:END:
 #+begin_src emacs-lisp :tangle yes
   (use-package ov)
   (defun pycpp-sugar ()
