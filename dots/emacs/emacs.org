@@ -150,6 +150,7 @@ Install diminish:
     (add-to-list 'boon-special-mode-list 'term-mode)
     (add-to-list 'boon-special-mode-list 'ansi-term-mode)
     (add-to-list 'boon-special-mode-list 'bufler-list-mode)
+    (add-to-list 'boon-special-mode-list 'pdf-outline-buffer-mode)
     (boon-mode))
 #+end_src
 
@@ -350,6 +351,15 @@ Short =yes-no=.
            ("<" . mc/mark-all-like-this)))
   :config (put 'narrow-to-region 'disabled nil)
 #+END_SRC
+
+*** Previous/Next Buffer
+:PROPERTIES:
+:ID:       033b54d9-e5a3-420c-af9e-26be143c20e7
+:END:
+#+begin_src emacs-lisp :tangle yes
+  (global-set-key (kbd "M-p") 'previous-buffer)
+  (global-set-key (kbd "M-n") 'next-buffer)
+#+end_src
 
 *** Misc
 :PROPERTIES:
@@ -595,6 +605,23 @@ Indenting wherever we can!
 #+begin_src emacs-lisp :tangle yes
   (use-package aggressive-indent
     :config (global-aggressive-indent-mode 1))
+#+end_src
+*** Ace Window
+:PROPERTIES:
+:ID:       73c8bf4d-9124-404a-82fb-15db7bd11396
+:END:
+#+begin_src emacs-lisp :tangle yes
+  (use-package ace-window
+    :bind (("M-o" . ace-window))
+    :config
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+#+end_src
+*** PDF Tools
+#+begin_src emacs-lisp :tangle yes
+  (require 'pdf-tools)
+  (pdf-tools-install)
+  (add-hook 'pdf-view-mode-hook
+            'pdf-view-auto-slice-minor-mode)
 #+end_src
 ** Programming / Language Support
 *** LSP
@@ -845,7 +872,7 @@ Multiple major modes in one buffer.
   (setq org-clock-persist 'history)
   (add-hook 'org-mode-hook 'org-indent-mode)
   (org-clock-persistence-insinuate)
-  (setq org-id-link-to-org-use-id t)
+  (setq org-id-link-to-org-use-id 'create-if-interactive)
 #+END_SRC
 
 **** Refile
@@ -900,9 +927,9 @@ Multiple major modes in one buffer.
         '((agenda . " %i %-12:c%?-12t% s")
           (timeline . "  % s")
           (todo .
-                " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+                " %i %-12:c [%b] ")
           (tags .
-                " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+                " %i %-12:c [%b] ")
           (search . " %i %-12:c")))
 #+END_SRC
 
@@ -968,6 +995,7 @@ Buff the agenda to use Groups.
 :END:
 #+BEGIN_SRC emacs-lisp :tangle yes
   (global-set-key (kbd "C-c c") 'org-capture)
+  (global-set-key (kbd "C-c a") 'org-agenda)
   (define-key org-mode-map (kbd "C-S-<return>") 'org-insert-todo-heading)
 #+END_SRC
 
@@ -979,8 +1007,8 @@ For headings.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-bullets
     :custom
-    (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶"))
-    (org-ellipsis "⤵")
+    (org-bullets-bullet-list '("◉" "○" "✸" "✿"  "✜" "◆"))
+    (org-ellipsis "↬")
     :hook (org-mode . org-bullets-mode))
 #+end_src
 
@@ -1016,8 +1044,7 @@ Agenda Files:
   (setq
    org-agenda-files
    (list "~/Documents/org/todo.org"
-         "~/Documents/org/general.org"
-         "/home/hiro/Documents/Projects/UNI/master/sem_1/courses.org"))
+         "~/Documents/Projects/UNI/master/masterarb/project.org"))
 #+END_SRC
 
 **** Automatically mark task as done if all subtasks are done
@@ -1182,12 +1209,14 @@ Automatically tangle on save.
 :PROPERTIES:
 :ID:       d9b3dab5-4e9f-4ab2-a40f-40f1268a1670
 :END:
+
+I have disabled evince for now.
 #+begin_src emacs-lisp :tangle yes
   (eval-after-load "org"
     '(setq org-file-apps
            '((auto-mode . emacs)
              ("\\.x?html?\\'" . "firefox %s")
-             ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
+             ;; ("\\.pdf\\(::[0-9]+\\)?\\'" . whatacold/org-pdf-app)
              ("\\.gif\\'" . "eog \"%s\"")
              ("\\.mp4\\'" . "vlc \"%s\"")
              ("\\.mkv" . "vlc \"%s\"")
@@ -1195,14 +1224,14 @@ Automatically tangle on save.
              ("\\.svg" . "firefox \"%s\"")
              ("\\.webm" . "vlc \"%s\""))))
 
-  (defun whatacold/org-pdf-app (file-path link-without-schema)
-    "Open pdf file using pdf-tools and go to the specified page."
-    (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
-                                      link-without-schema))
-                     1
-                   (string-to-number (match-string 1 link-without-schema)))))
-      (require 'subr-x)
-      (start-process "evince" "evince" "evince" (concat "--page-label=" (number-to-string page)) file-path)))
+  ;; (defun whatacold/org-pdf-app (file-path link-without-schema)
+  ;;   "Open pdf file using pdf-tools and go to the specified page."
+  ;;   (let* ((page (if (not (string-match "\\.pdf::\\([0-9]+\\)\\'"
+  ;;                                     link-without-schema))
+  ;;                    1
+  ;;                  (string-to-number (match-string 1 link-without-schema)))))
+  ;;     (require 'subr-x)
+  ;;     (start-process "evince" "evince" "evince" (concat "--page-label=" (number-to-string page)) file-path)))
 #+end_src
 
 #+RESULTS:
@@ -1370,6 +1399,105 @@ We add scihub as a pdf source.
             (message "We don't have a recipe for this journal.")))
           (when (and doi-utils-open-pdf-after-download (file-exists-p pdf-file))
             (org-open-file pdf-file))))))
+#+end_src
+
+Download the paper from arxiv.
+#+begin_src emacs-lisp :tangle yes
+  (defun arxiv-utils-get-bibtex-entry-pdf (&optional arg)
+    (interactive "P")
+    (save-excursion
+      (bibtex-beginning-of-entry)
+      (let* ((arxiv (bibtex-autokey-get-field "eprint"))
+             (key (cdr (assoc "=key=" (bibtex-parse-entry))))
+             (pdf-url (concat "https://arxiv.org/pdf/" arxiv ".pdf"))
+             (pdf-file (concat
+                        (if org-ref-pdf-directory
+                            (file-name-as-directory org-ref-pdf-directory)
+                          (read-directory-name "PDF directory: " "."))
+                        key ".pdf")))
+        ;; now get file if needed.
+        (if (string-empty-p arxiv)
+            (message "%s" (propertize "No arxiv entry!"
+                                      'face '(:foreground "red")))
+          (when (or (not (file-exists-p pdf-file))
+                    (yes-or-no-p "File exists. Overwrite?"))
+            (if (file-exists-p pdf-file)
+                (delete-file pdf-file))
+            (url-copy-file pdf-url pdf-file)
+            ;; now check if we got a pdf
+            (if (org-ref-pdf-p pdf-file)
+                (message "%s saved" pdf-file)
+              (delete-file pdf-file)))))))
+#+end_src
+
+**** Org Roam
+:PROPERTIES:
+:ID:       0f207452-8517-4c0b-bde8-80f80a88763c
+:END:
+See https://www.orgroam.com/manual.html.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-roam
+    :init
+    (setq org-roam-v2-ack t)
+    :config
+    (setq org-roam-directory "~/Documents/org/roam"
+          org-roam-completion-everywhere t)
+    (org-roam-db-autosync-mode)
+    (setq orb-preformat-keywords '("citekey" "file"))
+    (setq org-roam-capture-templates
+          '(("d" "default" plain "%?"
+             :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n")
+             :unnarrowed t)
+            ("r" "bibliography reference" plain
+             (file "~/.emacs.d/roam-literature-template.org")
+             :if-new
+             (file+head "references/${citekey}.org" "#+title: ${title}\n")
+             :unnarrowed t)))
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)))
+#+end_src
+
+***** Bibtex
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-roam-bibtex
+    :after (org-roam)
+    :config
+    (require 'org-ref)
+    (require 'orb-ivy)
+    (setq orb-note-actions-interface 'hydra)
+    (setq orb-process-file-keyword t)
+    (setq orb-file-field-extensions '("pdf" "epub" "html"))
+    (org-roam-bibtex-mode)
+    :bind (("C-c n r" . orb-insert-link)
+           ("C-c n a" . orb-note-actions)))
+#+end_src
+
+****  Org Noter
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-noter
+    :config
+    (setq
+     ;; The WM can handle splits
+     org-noter-notes-window-location 'other-frame
+     ;; Please stop opening frames
+     org-noter-always-create-frame nil
+     ;; I want to see the whole file
+     org-noter-hide-other nil))
+#+end_src
+
+**** TODO Mathpix
+:PROPERTIES:
+:ID:       4d864096-b257-450c-b11c-ccd49dea6b8b
+:END:
+#+begin_src emacs-lisp :tangle yes
+  ;; (use-package mathpix.el
+  ;;   :straight (:host github :repo "jethrokuan/mathpix.el")
+  ;;   :custom ((mathpix-app-id "app-id")
+  ;;            (mathpix-app-key "app-key"))
+  ;;   :bind
+  ;;   ("C-x m" . mathpix-screenshot))
 #+end_src
 *** Git
 **** Magit
@@ -1584,6 +1712,8 @@ Some junk for the elixir programming language.
 :PROPERTIES:
 :ID:       da08907a-c833-4fe8-a9d7-c2263aed0049
 :END:
+
+The caching makes it /way/ faster.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package projectile
     :diminish
@@ -1592,6 +1722,7 @@ Some junk for the elixir programming language.
     (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
     (defadvice projectile-project-root (around ignore-remote first activate)
       (unless (file-remote-p default-directory) ad-do-it))
+    (setq projectile-enable-caching t)
     :after ivy)
 
   (use-package counsel-projectile
@@ -2006,7 +2137,7 @@ Hooking into aggressive indent.
     (use-package arduino-mode)
 #+end_src
 ** Applications
-*** Anki
+*** Ank
 :PROPERTIES:
 :ID:       f8d492d4-6bbc-4f0c-888e-0b12837a661f
 :END:
@@ -2046,6 +2177,55 @@ Stolen from https://yiufung.net/post/anki-org/.
       (anki-editor-reset-cloze-number))
     ;; Initialize
     (anki-editor-reset-cloze-number))
+#+end_src
+*** MU4E
+:PROPERTIES:
+:ID:       19002b1b-7dab-4239-ba33-83ab204df86d
+:END:
+#+begin_src emacs-lisp :tangle yes
+  ;; (use-package mu4e
+  ;;   :config
+  ;;   (setq mu4e-view-show-images t)
+  ;;   (when (fboundp 'imagemagick-register-types)
+  ;;     (imagemagick-register-types))
+  ;;   (setq mu4e-compose-in-new-frame t)
+  ;;   (setq mu4e-sent-messages-behavior 'delete)
+  ;;   (add-hook 'mu4e-headers-mode-hook
+  ;;             (defun my/mu4e-change-headers ()
+  ;;               (interactive)
+  ;;               (setq mu4e-headers-fields
+  ;;                     `((:human-date . 25) ;; alternatively, use :date
+  ;;                       (:flags . 6)
+  ;;                       (:from . 22)
+  ;;                       (:thread-subject . ,(- (window-body-width) 70)) ;; alternatively, use :subject
+  ;;                       (:size . 7)))))
+  ;;   (add-hook 'mu4e-compose-mode-hook
+  ;;             (defun my-do-compose-stuff ()
+  ;;               "My settings for message composition."
+  ;;               (visual-line-mode)
+  ;;               (org-mu4e-compose-org-mode)
+  ;;               (use-hard-newlines -1)
+  ;;               (flyspell-mode)))
+
+  ;;   (setq mu4e-contexts
+  ;;         `(
+  ;;           ,(make-mu4e-context
+  ;;             :name "Protagon"
+  ;;             :match-func (lambda (msg) (when msg
+  ;;                                         (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+  ;;             :vars '(
+  ;;                     (mu4e-trash-folder . "/Gmail/[Gmail].Trash")
+  ;;                     (mu4e-refile-folder . "/Gmail/[Gmail].Archive")
+  ;;                     )))))
+#+end_src
+*** Helm Bibtex
+#+begin_src emacs-lisp :tangle yes
+    (use-package ivy-bibtex
+      :config
+      (setq bibtex-completion-bibliography
+            (list org-ref-default-bibliography)
+            bibtex-completion-library-path (list org-ref-pdf-directory))
+      (setq bibtex-dialect 'biblatex))
 #+end_src
 ** Custom Scripts
 *** Close all Buffers
