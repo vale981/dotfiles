@@ -1,0 +1,7 @@
+
+
+* Notes
+:PROPERTIES:
+:NOTER_DOCUMENT: %^{file}
+:NOTER_PAGE:
+:END:
