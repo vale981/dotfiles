@@ -622,6 +622,7 @@ Indenting wherever we can!
   (pdf-tools-install)
   (add-hook 'pdf-view-mode-hook
             'pdf-view-auto-slice-minor-mode)
+  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
 #+end_src
 ** Programming / Language Support
 *** LSP
@@ -1454,10 +1455,49 @@ See https://www.orgroam.com/manual.html.
              :if-new
              (file+head "references/${citekey}.org" "#+title: ${title}\n")
              :unnarrowed t)))
+    (setq rm-base "~/Documents/rm_notes")
+    (defun my-get-note-name ()
+      (let* ((filename (buffer-file-name (window-buffer (minibuffer-selected-window))))
+             (relative (file-name-sans-extension (file-relative-name filename org-roam-directory))))
+        relative))
+
+    (defun open-rm-note ()
+      "Opens the handwritten notes coressponding to the buffer."
+      (interactive)
+      (let ((pdf (concat (file-name-as-directory rm-base) (my-get-note-name) "/notes.pdf")))
+        (if (file-exists-p pdf)
+            (find-file pdf))))
+    (defun sync-rm-note ()
+      (interactive)
+      (let ((name (my-get-note-name)))
+        (shell-command (concat "bash "
+                               "sync_rm "
+                               name))))
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
-           ("C-c n i" . org-roam-node-insert)))
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n s" . sync-rm-note)
+           ("C-c n d" . open-rm-note)))
 #+end_src
+  (defun my-get-note-name ()
+    (let* ((filename (buffer-file-name (window-buffer (minibuffer-selected-window))))
+           (relative (file-name-sans-extension (file-relative-name filename org-roam-directory))))
+      relative))
+
+  (defun open-rm-note ()
+    "Opens the handwritten notes coressponding to the buffer."
+    (interactive)
+    (let ((pdf (concat (file-name-as-directory rm-base) (my-get-note-name) "/notes.pdf")))
+      (if (file-exists-p pdf)
+          (find-file pdf))))
+  (defun sync-rm-note ()
+    (interactive)
+    (let ((name (my-get-note-name)))
+      (shell-command (concat "bash "
+                             "sync_rm "
+                             name))))
+#+end_src
+
 
 ***** Bibtex
 #+begin_src emacs-lisp :tangle yes
@@ -1474,9 +1514,29 @@ See https://www.orgroam.com/manual.html.
            ("C-c n a" . orb-note-actions)))
 #+end_src
 
+***** UI
+For a nice mindmap in the browser.
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-roam-ui
+    :straight
+    '(:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+    ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+    ;;         a hookable mode anymore, you're advised to pick something yourself
+    ;;         if you don't care about startup time, use
+    ;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+
+#+end_src
+
 ****  Org Noter
 #+begin_src emacs-lisp :tangle yes
   (use-package org-noter
+    :after org-roam
     :config
     (setq
      ;; The WM can handle splits
@@ -1484,7 +1544,11 @@ See https://www.orgroam.com/manual.html.
      ;; Please stop opening frames
      org-noter-always-create-frame nil
      ;; I want to see the whole file
-     org-noter-hide-other nil))
+     org-noter-hide-other nil
+
+     org-noter-set-auto-save-last-location t
+
+     org-noter-notes-search-path (list (concat org-roam-directory "/references"))))
 #+end_src
 
 **** TODO Mathpix
@@ -1801,12 +1865,33 @@ Syntax checking and linting.
   (add-hook 'elpy-mode-hook (lambda ()
                               (add-hook 'before-save-hook
                                         'elpy-black-fix-code nil t)))
-    (when (load "flycheck" t t)
-      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-      (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-    (add-to-list 'python-shell-completion-native-disabled-interpreters
-                 "jupyter")
+  (when (load "flycheck" t t)
+    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+    (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+  (setq elpy-project-root-finder-functions '(elpy-project-find-git-root elpy-project-find-python-root elpy-project-find-hg-root elpy-project-find-svn-root))
+  (setq elpy-rpc-backend "jedi")
+  (setq python-shell-interpreter "ipython"
+        python-shell-interpreter-args "-i --simple-prompt")
+#+end_src
+**** Tree Sitter
+#+begin_src emacs-lisp :tangle yes
+  (use-package tree-sitter
+    :hook
+    (((python-mode
+       inferior-python-mode) . tree-sitter-mode)
+     (python-mode . (lambda ()
+                      (add-function :before-until (local 'tree-sitter-hl-face-mapping-function)
+                                    (lambda (capture-name)
+                                      (pcase capture-name
+                                        ("doc" 'font-lock-comment-face))))))))
+  (use-package tree-sitter-langs
+    :after (tree-sitter)
+    :config
+    (add-to-list 'tree-sitter-major-mode-language-alist '(jupyter-repl-mode . python))
+    (add-to-list 'tree-sitter-major-mode-language-alist '(inferior-python-mode . python))
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 #+end_src
 
 **** Anaconda
@@ -2135,6 +2220,15 @@ Hooking into aggressive indent.
 :END:
 #+begin_src emacs-lisp :tangle yes
     (use-package arduino-mode)
+#+end_src
+*** Languagetool LSP
+#+begin_src emacs-lisp :tangle yes
+  (use-package lsp-ltex
+    :after (lsp-mode)
+    :hook (latex-mode . (lambda ()
+                          (require 'lsp-ltex)
+                          (lsp)))
+    :config (setq lsp-ltex-language "en-GB"))
 #+end_src
 ** Applications
 *** Ank
