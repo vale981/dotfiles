@@ -624,6 +624,18 @@ Indenting wherever we can!
             'pdf-view-auto-slice-minor-mode)
   (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
 #+end_src
+*** Return to Minibuffer
+Taken from [[https://emacs.stackexchange.com/questions/42287/set-focus-to-minibuffer-window][stackoverlow]]. Returns the focus to the minibuffer.
+#+begin_src emacs-lisp :tangle yes
+  (defun switch-to-minibuffer ()
+    "Switch to minibuffer window."
+    (interactive)
+    (if (active-minibuffer-window)
+        (select-window (active-minibuffer-window))
+      (error "Minibuffer is not active")))
+
+  (global-set-key "\C-co" 'switch-to-minibuffer) ;
+#+end_src
 ** Programming / Language Support
 *** LSP
 :PROPERTIES:
@@ -1440,9 +1452,11 @@ See https://www.orgroam.com/manual.html.
   (use-package org-roam
     :init
     (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory "~/Documents/org/roam")
     :config
-    (setq org-roam-directory "~/Documents/org/roam"
-          org-roam-completion-everywhere t)
+    (setq
+     org-roam-completion-everywhere t)
     (org-roam-db-autosync-mode)
     (setq orb-preformat-keywords '("citekey" "file"))
     (setq org-roam-capture-templates
@@ -1479,25 +1493,6 @@ See https://www.orgroam.com/manual.html.
            ("C-c n s" . sync-rm-note)
            ("C-c n d" . open-rm-note)))
 #+end_src
-  (defun my-get-note-name ()
-    (let* ((filename (buffer-file-name (window-buffer (minibuffer-selected-window))))
-           (relative (file-name-sans-extension (file-relative-name filename org-roam-directory))))
-      relative))
-
-  (defun open-rm-note ()
-    "Opens the handwritten notes coressponding to the buffer."
-    (interactive)
-    (let ((pdf (concat (file-name-as-directory rm-base) (my-get-note-name) "/notes.pdf")))
-      (if (file-exists-p pdf)
-          (find-file pdf))))
-  (defun sync-rm-note ()
-    (interactive)
-    (let ((name (my-get-note-name)))
-      (shell-command (concat "bash "
-                             "sync_rm "
-                             name))))
-#+end_src
-
 
 ***** Bibtex
 #+begin_src emacs-lisp :tangle yes
@@ -1588,18 +1583,16 @@ View the history of a file.
 #+begin_src emacs-lisp :tangle yes
   (use-package git-timemachine)
 #+end_src
-**** Gutter
+**** Highlight Diffs
 :PROPERTIES:
 :ID:       ebe9a7aa-3f9a-4ec9-b651-3018472e1f46
 :END:
 Mark changed lines on the fringes.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package git-gutter-fringe+
-    ;:diminish
-    :config
-    (global-git-gutter+-mode 1)
-    (git-gutter-fr+-minimal)
-    (git-gutter+-turn-on))
+  (use-package diff-hl
+    :config (global-diff-hl-mode)
+    (add-hook 'magit-pre-refresh-hook 'diff-hl-magit-pre-refresh)
+    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
 #+END_SRC
 *** Sage Math
 :PROPERTIES:
@@ -1862,9 +1855,9 @@ Syntax checking and linting.
   ;;   (add-to-list 'python-shell-completion-native-disabled-interpreters
   ;;                "jupyter"))
   (elpy-enable)
-  (add-hook 'elpy-mode-hook (lambda ()
-                              (add-hook 'before-save-hook
-                                        'elpy-black-fix-code nil t)))
+  ;; (add-hook 'elpy-mode-hook (lambda ()
+  ;;                             (add-hook 'before-save-hook
+  ;;                                       'elpy-black-fix-code nil t)))
 
   (when (load "flycheck" t t)
     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
@@ -2053,6 +2046,7 @@ Debugging yay!
 #+begin_src emacs-lisp :tangle yes
   (use-package realgud
     :config (setq realgud-safe-mode nil))
+  (use-package realgud-ipdb)
 #+end_src
 *** YAML
 :PROPERTIES:
