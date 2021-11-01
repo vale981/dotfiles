@@ -1,29 +1,38 @@
 ###############################################################################
 #                               External Monitor                              #
 ###############################################################################
+source ~/dotfiles/config.sh
 
-workspaces=(I II III V VI VIII IX X IV VII)
-mon_1=(I II III V VI VIII IX X)
-mon_2=(IV VII)
+# This script should only run when X is running.
+# Exit immediately if X isn't running.
+pgrep X > /dev/null || exit 0
 
-bspc monitor eDP-1 -d ${workspaces[*]}
+all_workspaces="1 2 3 4 5 6 7 8 9 0"
+declare -A workspaces
 
-MONITOR=$(xrandr | rg -i "\sconnected" | rg -v eDP | cut -d" " -f1)
+workspaces[0]="1 5 8"
+workspaces[1]="3 9 0"
+workspaces[2]="2 4 7 6"
 
-# move_to_monitor() {
-#     local -n workspaces=$1
-#     for D in "${workspaces[@]}"; do
-#         bspc desktop $D --to-monitor $2
-#     done
-# }
+move_to_monitor() {
+    for D in $1; do
+        bspc desktop $D --to-monitor $2
+    done
+}
 
-if [ -n "$MONITOR" ]; then
-    bspc monitor HDMI-2 -d IV VII
+bspc query -D --names | rg 1 || bspc monitor $MAIN_MONITOR -d $all_workspaces
+if [[ $SIDE_MONITORS != "" ]]; then
+    echo "DOCKED"
+    eval $SCREEN_LAYOUT_DOCKED
+    move_to_monitor "$all_workspaces" $MAIN_MONITOR
 
-    xrandr --output eDP-1 --primary --mode 1920x1080 --pos 0x1080\
-           --rotate normal --output DP-1 --off --output HDMI-2 --off\
-           --output DP-2 --off --output $MONITOR --mode 1920x1080i --pos 0x0\
-           --rotate normal
-
-    # move_to_monitor $mon_1 $MONITOR
+    for i in "${!SIDE_MONITORS[@]}"; do
+        move_to_monitor "${workspaces[$i]}" "${SIDE_MONITORS[$i]}"
+    done
+else
+    eval $SCREEN_LAYOUT
+    move_to_monitor "$all_workspaces" $MAIN_MONITOR
 fi
+
+~/.scripts/wallp
+sleep 1 && ~/.config/polybar/launch.sh

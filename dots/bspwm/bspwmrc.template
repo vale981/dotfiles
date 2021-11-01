@@ -11,23 +11,24 @@ bspc config gapless_monocle      true
 bspc config focus_follows_pointer true
 bspc config pointer_follows_focus true
 
-bspc rule -a Chromium desktop='II'
-bspc rule -a Firefox desktop='II'
-bspc rule -a Emacs desktop='I' state=tiled
-bspc rule -a Evince desktop='IV'
+bspc rule -a Chromium desktop='2'
+bspc rule -a Firefox desktop='2'
+bspc rule -a Emacs desktop='1' state=tiled
+bspc rule -a Evince desktop='4'
 bspc rule -a mplayer2 state=floating
-bspc rule -a TelegramDesktop desktop='X'
-bspc rule -a Thunderbird desktop='X'
-bspc rule -a Skype desktop='X'
-bspc rule -a Anki desktop='^V'
-bspc rule -a zoom desktop='^VII'
-bspc rule -a .obs-wrapped desktop='VIII'
-bspc rule -a Zeal desktop='IX'
-bspc rule -a Xournal desktop='VI'
+bspc rule -a TelegramDesktop desktop='0'
+bspc rule -a Thunderbird desktop='0'
+bspc rule -a Skype desktop='0'
+bspc rule -a Anki desktop='^5'
+bspc rule -a zoom desktop='^7'
+bspc rule -a .obs-wrapped desktop='8'
+bspc rule -a Zeal desktop='9'
+bspc rule -a Xournal desktop='6'
 bspc rule -a Pavucontrol state=floating
 
 xsetroot -cursor_name left_ptr
 bspc config remove_unplugged_monitors true
+
 
 ###############################################################################
 #                                   Scripts                                   #
