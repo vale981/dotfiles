@@ -15,7 +15,7 @@ window_fullscreen=true
 # the window width in pixels (when not maximized)
 window_width=1920
 # the window height in pixels
-window_height=1080
+window_height=2160
 # scrollbar step increment (in pixels)
 scrollbar_speed=30
 # the step increment in the zoom dialog box
@@ -33,9 +33,9 @@ ignore_other_devices=true
 # do not worry if device reports button isn't pressed while drawing (true/false)
 ignore_btn_reported_up=true
 # always map eraser tip to eraser (true/false)
-use_erasertip=true
+use_erasertip=false
 # always map touchscreen device to hand tool (true/false) (requires separate pen and touch devices)
-touchscreen_as_hand_tool=true
+touchscreen_as_hand_tool=false
 # disable touchscreen device when pen is in proximity (true/false) (requires separate pen and touch devices)
 pen_disables_touch=false
 # name of touchscreen device for touchscreen_as_hand_tool
@@ -96,7 +96,7 @@ apply_all=true
 # preferred unit (cm, in, px, pt)
 default_unit=cm
 # include paper ruling when printing or exporting to PDF (true/false)
-print_ruling=true
+print_ruling=false
 # when creating a new page, duplicate a PDF or image background instead of using default paper (true/false)
 new_page_duplicates_bg=true
 # just-in-time update of page backgrounds (true/false)
@@ -132,13 +132,13 @@ highlighter_ruler=false
 # default highlighter is in shape recognizer mode (true/false)
 highlighter_recognizer=false
 # button 2 tool (pen, eraser, highlighter, text, selectregion, selectrect, vertspace, hand, image)
-btn2_tool=eraser
+btn2_tool=hand
 # button 2 brush linked to primary brush (true/false) (overrides all other settings)
 btn2_linked=true
 # button 2 brush color (for pen or highlighter only)
 btn2_color=white
 # button 2 brush thickness (pen, eraser, or highlighter only)
-btn2_thickness=2
+btn2_thickness=0
 # button 2 ruler mode (true/false) (for pen or highlighter only)
 btn2_ruler=false
 # button 2 shape recognizer mode (true/false) (pen or highlighter only)

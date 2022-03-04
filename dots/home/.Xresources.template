@@ -62,3 +62,4 @@ rofi.color-urgent: S_base03, S_magenta, S_base03, S_base02, S_magenta
 
 Emacs.font: JetBrains Mono-11
 Emacs.fontBackend: xft
+Xft.dpi: 110

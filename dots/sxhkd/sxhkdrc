@@ -3,8 +3,9 @@
 #
 
 # terminal emulator
+# WINIT_X11_SCALE_FACTOR=1.6666666666666667
 super + Return
-        WINIT_X11_SCALE_FACTOR=1.6666666666666667 alacritty
+        alacritty
 
 # emacs
 super + j
