@@ -3,6 +3,9 @@ set -gx PATH $HOME/.scripts $PATH
 set -gx PATH $HOME/.roswell/bin $PATH
 set -gx PATH /usr/lib/ccache/bin/ $PATH
 set -g theme_display_date no
+set -g theme_color_scheme solarized-light
+set -g theme_project_dir_length 1
+set -g theme_display_git no
 set -g fish_key_bindings fish_default_key_bindings
 set -g FZF_PREVIEW_FILE_CMD "bat --color=always"
 set -g FZF_CD_CMD "fd --type d . \$dir"

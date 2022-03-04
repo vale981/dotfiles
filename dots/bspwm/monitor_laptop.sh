@@ -7,12 +7,12 @@ source ~/dotfiles/config.sh
 # Exit immediately if X isn't running.
 pgrep X > /dev/null || exit 0
 
-all_workspaces="1 2 3 4 5 6 7 8 9 0"
+all_workspaces="1 2 3 4 5 6 7 8 9 10"
 declare -A workspaces
 
-workspaces[0]="1 5 8"
-workspaces[1]="3 9 0"
-workspaces[2]="2 4 7 6"
+#workspaces[0]="1 5 8"
+workspaces[0]="2 4 7 6"
+workspaces[1]="3 9 10"
 
 move_to_monitor() {
     for D in $1; do
@@ -20,7 +20,7 @@ move_to_monitor() {
     done
 }
 
-bspc query -D --names | rg 1 || bspc monitor $MAIN_MONITOR -d $all_workspaces
+echo bspc query -D --names | rg 1 || bspc monitor $MAIN_MONITOR -d $all_workspaces
 if [[ $SIDE_MONITORS != "" ]]; then
     echo "DOCKED"
     eval $SCREEN_LAYOUT_DOCKED

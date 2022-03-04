@@ -64,10 +64,10 @@ function main {
     # Install Stuff
     autolink
 
-    if ! [ -z "$SCREEN_LAYOUT" ]; then
-	printHeading "Setting up Screens"
-	$($SCREEN_LAYOUT)
-    fi
+    # if ! [ -z "$SCREEN_LAYOUT" ]; then
+    #     printHeading "Setting up Screens"
+    #     $($SCREEN_LAYOUT)
+    # fi
     
     # Reload
     printHeading "Reloading"

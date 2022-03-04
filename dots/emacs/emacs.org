@@ -3,6 +3,10 @@
 
 * Hiro's Emacs Config
 ** General Stuff
+*** Enable Lexical Binding
+#+begin_src emacs-lisp :tangle yes
+  ;; -*- lexical-binding: t -*-
+#+end_src
 *** Allow Dangerous Stuff
 :PROPERTIES:
 :ID:       5e3711ab-6ce4-4297-a757-e67ada5deb32
@@ -140,6 +144,7 @@ Install diminish:
     (add-to-list 'boon-special-mode-list 'ansi-term-mode)
     (add-to-list 'boon-special-mode-list 'bufler-list-mode)
     (add-to-list 'boon-special-mode-list 'pdf-outline-buffer-mode)
+    (add-to-list 'boon-special-mode-list 'git-timemachine-mode)
     (boon-mode))
 #+end_src
 
@@ -166,13 +171,89 @@ HL line mode is nonsensical in term.
 :END:
 VTerm has a ~c~ core and is faster + more compatible. We install this through nix.
 #+begin_src emacs-lisp :tangle yes
-  (use-package vterm)
-  (add-hook 'vterm-mode-hook
-   (lambda ()
-     (setq cursor-type 'bar)
-     (turn-off-boon-mode)
-     (setq global-hl-line-mode nil)))
+  (use-package vterm
+    :config
+    (setq vterm-environment '("DIRENV_LOG_FORMAT="))
+    (add-hook 'vterm-mode-hook
+              (lambda ()
+                (setq cursor-type 'bar)
+                (turn-off-boon-mode)
+                (setq global-hl-line-mode nil))))
 #+end_src
+
+And an org babel vterm mode. The contents of the block are run
+aynchrounsily in another buffer. The contens of the shell buffer are
+then inserted as result.
+
+#+begin_src emacs-lisp :tangle yes
+  (defun last-index-of (regex str &optional ignore-case)
+    "Pilfered from
+  https://stackoverflow.com/questions/27996264/lastindexof-using-regex-in-elisp"
+    (let ((start 0)
+          (case-fold-search ignore-case)
+          idx)
+      (while (string-match regex str start)
+        (setq idx (match-beginning 0))
+        (setq start (match-end 0)))
+      idx))
+
+  (defun run-in-vterm-kill (process event key org-buffer)
+    "A process sentinel. Kills PROCESS's buffer if it is live."
+    (sit-for .5)
+    (let* ((b (process-buffer process))
+           (result
+            (substring
+             (org-escape-code-in-string
+              (string-trim-right
+               (with-current-buffer b
+                 (buffer-string))))
+             0 -1))
+           (result-without-exit
+            (substring result 0
+                       (last-index-of "\n" result))))
+
+      (and (buffer-live-p b)
+           (kill-buffer b))
+      (with-current-buffer org-buffer
+        (save-excursion
+          (goto-char 0)
+          (while (re-search-forward (concat ": " key) nil t 1)
+            (replace-match
+             (concat ":RESULTS:\n"
+                     result-without-exit
+                     "\n:END:")))))))
+
+  (defun random-alnum ()
+    (let* ((alnum "abcdefghijklmnopqrstuvwxyz0123456789")
+           (i (% (abs (random)) (length alnum))))
+      (substring alnum i (1+ i))))
+
+  (defun random-string (n)
+    (if (<= n 0)
+        ""
+      (concat (random-alnum) (random-string (- n 1)))))
+
+  (defun org-babel-execute:vterm (body params)
+    (let* ((key (random-string 20))
+           (command (if (alist-get :noexit params 'nil)
+                        body
+                      (concat body "\nexit")))
+           (org-buffer (current-buffer)))
+      (with-current-buffer
+          (vterm-other-window
+           (concat (alist-get :term-name params "shell") "-*" key "*"))
+        (set-process-sentinel
+         vterm--process
+         #'(lambda (process event)
+             (run-in-vterm-kill process event key org-buffer)
+             ))
+        (vterm-send-string command)
+        (vterm-send-return)
+        key)))
+
+  (add-to-list 'org-src-lang-modes '("vterm" . shell-script))
+#+end_src
+
 *** Custom
 :PROPERTIES:
 :ID:       1ede7fc3-889f-425e-84e4-8a9eabce2866
@@ -202,33 +283,6 @@ No cursor blink.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (blink-cursor-mode 0)
 #+END_SRC
-
-*** Font and Editor
-:PROPERTIES:
-:ID:       33861a6a-1617-4633-be00-5587dbf8e6ce
-:END:
-- Set font to ~JetBrains Mono~.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (add-to-list 'default-frame-alist
-               '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
-  (add-to-list 'default-frame-alist
-               '(internal-border-width . 0))
-#+END_SRC
-
-**** Highlight current line.
-:PROPERTIES:
-:ID:       77be21fb-9db5-497e-af66-1b4cc804d026
-:END:
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (global-hl-line-mode 1)
-#+END_SRC
-
-This allows us to disable it locally
-
-#+begin_src emacs-lisp :tangle yes
-  (make-variable-buffer-local 'global-hl-line-mode)
-#+end_src
 
 *** Sound
 :PROPERTIES:
@@ -290,12 +344,41 @@ We use the doom theme.
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     (load-theme 'doom-solarized-light t)
     (doom-themes-treemacs-config)
-    ;; (doom-themes-org-config)
+    (doom-themes-org-config)
     )
 
   (use-package doom-modeline
     :ensure t
     :hook (after-init . doom-modeline-mode))
+#+end_src
+*** Font and Editor
+:PROPERTIES:
+:ID:       33861a6a-1617-4633-be00-5587dbf8e6ce
+:END:
+- Set font to ~JetBrains Mono~.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (add-to-list 'default-frame-alist
+               '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
+
+  (set-face-attribute 'mode-line nil :font "JetBrains Mono-12:weight=light:antialias=subpixel")
+
+  (add-to-list 'default-frame-alist
+               '(internal-border-width . 0))
+#+END_SRC
+
+*** Highlight current line.
+:PROPERTIES:
+:ID:       77be21fb-9db5-497e-af66-1b4cc804d026
+:END:
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (global-hl-line-mode 1)
+#+END_SRC
+
+This allows us to disable it locally
+
+#+begin_src emacs-lisp :tangle yes
+  (make-variable-buffer-local 'global-hl-line-mode)
 #+end_src
 
 *** Compilation
@@ -324,7 +407,199 @@ Short =yes-no=.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
+*** Orderless
+A nice completion style.
+#+begin_src emacs-lisp :tangle yes
+  (use-package orderless
+    :config
+    (setq completion-styles '(orderless)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (partial-completion)))))
+    (savehist-mode))
+#+end_src
+*** Selectrum
+Use selectrum for selection dialogs.
+#+begin_src emacs-lisp :tangle yes
+  (use-package selectrum
+    :config (selectrum-mode +1)
+    (setq orderless-skip-highlighting (lambda () selectrum-is-active))
+    (setq selectrum-highlight-candidates-function #'orderless-highlight-matches))
+#+end_src
 
+*** Marginalia
+Extra info in the minibuffer.
+#+begin_src emacs-lisp :tangle yes
+;; Enable richer annotations using the Marginalia package
+(use-package marginalia
+  ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init configuration is always executed (Not lazy!)
+  :init
+
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+#+end_src
+
+*** Consult
+Swiper and rg alternative.
+#+begin_src emacs-lisp :tangle yes
+  (use-package consult
+    ;; Replace bindings. Lazily loaded due by `use-package'.
+    :bind (;; C-c bindings (mode-specific-map)
+           ("C-c h" . consult-history)
+           ("C-c m" . consult-mode-command)
+           ("C-c b" . consult-bookmark)
+           ("C-c k" . consult-kmacro)
+           ;; C-x bindings (ctl-x-map)
+           ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+           ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+           ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+           ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+           ;; Custom M-# bindings for fast register access
+           ("M-#" . consult-register-load)
+           ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+           ("C-M-#" . consult-register)
+           ;; Other custom bindings
+           ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           ("<help> a" . consult-apropos)            ;; orig. apropos-command
+           ;; M-g bindings (goto-map)
+           ("M-g e" . consult-compile-error)
+           ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+           ("M-g g" . consult-goto-line)             ;; orig. goto-line
+           ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+           ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+           ("M-g m" . consult-mark)
+           ("M-g k" . consult-global-mark)
+           ("M-g i" . consult-imenu)
+           ("M-g I" . consult-imenu-multi)
+           ;; M-s bindings (search-map)
+           ("M-s f" . consult-find)
+           ("M-s F" . consult-locate)
+           ("M-s g" . consult-grep)
+           ("M-s G" . consult-git-grep)
+           ("M-s r" . consult-ripgrep)
+           ("M-s l" . consult-line)
+
+           ("M-s L" . consult-line-multi)
+           ("M-s m" . consult-multi-occur)
+           ("M-s k" . consult-keep-lines)
+           ("M-s u" . consult-focus-lines)
+           ;; Isearch integration
+           ("M-s e" . consult-isearch-history)
+           :map boon-command-map
+           ("w" . consult-line)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+           ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+           ("M-s L" . consult-line-multi))           ;; needed by consult-line to detect isearch
+
+    ;; Enable automatic preview at point in the *Completions* buffer.
+    ;; This is relevant when you use the default completion UI,
+    ;; and not necessary for Vertico, Selectrum, etc.
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+
+    ;; The :init configuration is always executed (Not lazy)
+    :init
+
+    ;; Optionally configure the register formatting. This improves the register
+    ;; preview for `consult-register', `consult-register-load',
+    ;; `consult-register-store' and the Emacs built-ins.
+    (setq register-preview-delay 0
+          register-preview-function #'consult-register-format)
+
+    ;; Optionally tweak the register preview window.
+    ;; This adds thin lines, sorting and hides the mode line of the window.
+    (advice-add #'register-preview :override #'consult-register-window)
+
+    ;; Optionally replace `completing-read-multiple' with an enhanced version.
+    (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+
+    ;; Configure other variables and modes in the :config section,
+    ;; after lazily loading the package.
+    :config
+
+    ;; Optionally configure preview. The default value
+    ;; is 'any, such that any key triggers the preview.
+    ;; (setq consult-preview-key 'any)
+    ;; (setq consult-preview-key (kbd "M-."))
+    ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+    ;; For some commands and buffer sources it is useful to configure the
+    ;; :preview-key on a per-command basis using the `consult-customize' macro.
+    (consult-customize
+     consult-theme
+     :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-file consult--source-project-file consult--source-bookmark
+     :preview-key (kbd "M-."))
+
+    ;; Optionally configure the narrowing key.
+    ;; Both < and C-+ work reasonably well.
+    (setq consult-narrow-key "<") ;; (kbd "C-+")
+
+    ;; Optionally make narrowing help available in the minibuffer.
+    ;; You may want to use `embark-prefix-help-command' or which-key instead.
+    ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+    ;; Optionally configure a function which returns the project root directory.
+    ;; There are multiple reasonable alternatives to chose from.
+    ;;;; 1. project.el (project-roots)
+    ;; (setq consult-project-root-function
+    ;;       (lambda ()
+    ;;         (when-let (project (project-current))
+    ;;           (car (project-roots project)))))
+    ;;;; 2. projectile.el (projectile-project-root)
+    (autoload 'projectile-project-root "projectile")
+    (setq consult-project-root-function #'projectile-project-root)
+    ;;;; 3. vc.el (vc-root-dir)
+    ;; (setq consult-project-root-function #'vc-root-dir)
+    ;;;; 4. locate-dominating-file
+    ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+    )
+#+end_src
+
+*** Embark
+#+begin_src emacs-lisp :tangle yes
+(use-package embark
+  :ensure t
+
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+;; Consult users will also want the embark-consult package.
+(use-package embark-consult
+  :ensure t
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  ;; if you want to have consult previews as you move around an
+  ;; auto-updating embark collect buffer
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
 *** Multiple Cursors
 :PROPERTIES:
 :ID:       14313a37-a3d7-41b9-a2b6-b79c8459c22a
@@ -365,17 +640,6 @@ Centralize the backup location.
         )
 #+END_SRC
 
-*** Bufler
-:PROPERTIES:
-:ID:       39150942-cac9-4474-a68d-9860fc80bbf0
-:END:
-Nice buffer management and switching.
-#+begin_src emacs-lisp :tangle yes
-  (use-package bufler
-    :init (require 'map)
-    :bind (("C-x C-b" . bufler)
-           ("C-x b" . bufler-switch-buffer)))
-#+end_src
 *** Navigation
 **** Avy
 :PROPERTIES:
@@ -521,15 +785,7 @@ Distraction free writing.
 #+begin_src emacs-lisp :tangle yes
   (use-package writeroom-mode)
 #+end_src
-*** Aggressive Indent
-:PROPERTIES:
-:ID:       7e964146-a4d6-4d50-9865-df03314329d4
-:END:
-Indenting wherever we can!
-#+begin_src emacs-lisp :tangle yes
-  (use-package aggressive-indent
-    :config (global-aggressive-indent-mode 1))
-#+end_src
+
 *** Ace Window
 :PROPERTIES:
 :ID:       73c8bf4d-9124-404a-82fb-15db7bd11396
@@ -567,7 +823,40 @@ Taken from [[https://emacs.stackexchange.com/questions/42287/set-focus-to-minibu
 
   (global-set-key "\C-co" 'switch-to-minibuffer) ;
 #+end_src
+*** Highlight Indent
+#+begin_src emacs-lisp :tangle yes
+  (use-package highlight-indent-guides
+    :config
+    (setq highlight-indent-guides-method 'character)
+    (setq highlight-indent-guides-responsive 'top)
+
+    :hook (prog-mode . highlight-indent-guides-mode))
+#+end_src
+
+*** Whichkey
+#+begin_src emacs-lisp :tangle yes
+  (use-package which-key
+    :config (which-key-mode))
+#+end_src
+
 ** Programming / Language Support
+*** Corfu
+Completion at point.
+#+begin_src emacs-lisp :tangle yes
+  (use-package corfu
+    :custom
+    (corfu-cycle t) ;; Enable cycling for `corfu-next/previous'
+    (corfu-auto t)  ;; Enable auto completion
+    ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
+    (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
+    (corfu-quit-no-match t) ;; Automatically quit if there is no match
+    ;; (corfu-echo-documentation nil) ;; Do not show documentation in the echo area
+
+    ;; Opt
+    :config
+    (setq tab-always-indent 'complete)
+    (corfu-global-mode))
+#+end_src
 *** LSP
 :PROPERTIES:
 :ID:       114a9729-b4a7-4cb8-81cf-89f0eeafb316
@@ -582,7 +871,7 @@ Support for the =Language Server Protocol=.
     (setq lsp-prefer-flymake nil)
     (setq
      lsp-headerline-breadcrumb-enable nil
-     lsp-idle-delay 0.1
+     lsp-idle-delay .5
      lsp-ui-doc-enable nil
      lsp-ui-doc-use-childframe t
      lsp-ui-doc-position 'top
@@ -596,13 +885,18 @@ Support for the =Language Server Protocol=.
      lsp-ui-peek-peek-height 25
      lsp-enable-semantic-highlighting t
      lsp-enable-symbol-highlighting nil
+     lsp-completion-provider :none
      lsp-modeline-code-actions-segments '(count icon)
      lsp-clients-clangd-args '("--background-index" "-j=2" "--clang-tidy" "--cross-file-rename" "--log=verbose"))
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
 
     :hook ((elixir-mode . lsp)
-           (lsp-mode . lsp-ui-mode)))
+           (lsp-mode . lsp-ui-mode)
+           ;; (lsp-mode . (lambda ()
+           ;;               (company-mode -1)
+           ;;               (corfu-mode 1)))
+           ))
 
   (use-package dap-mode
     :config
@@ -632,56 +926,14 @@ Support for the =Language Server Protocol=.
 #+begin_src emacs-lisp :tangle yes
   (use-package separedit
     :config
-    (setq separedit-default-mode 'markdown-mode)
+    (setq separedit-default-mode 'rst-mode)
     (add-to-list 'separedit-string-quotes-alist
-                 '(julia-mode     . ("\"\"\"" "\"")))
+                 '(julia-mode     . ("\"\"\"" "\""))
+                 '(python-mode     . ("\"\"\"" "\"")))
     :bind
     (:map prog-mode-map
           ("C-c '" . separedit)))
 
-#+end_src
-*** Company
-:PROPERTIES:
-:ID:       f5437fe9-bac3-4b7f-aa73-28f468a18a7d
-:END:
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package company
-    :diminish
-    :bind (:map company-active-map
-                ("C-n" . company-select-next-or-abort)
-                ("C-p" . company-select-previous-or-abort)
-                ("<return>" . company-complete-selection))
-    :config
-    (setq company-show-numbers t)
-    (setq company-idle-delay 1)
-    (setq company-minimum-prefix-length 3)
-    (add-to-list 'company-backends 'company-capf)
-    (global-set-key (kbd "C-<tab>") 'company-complete-common)
-
-    (setq company-frontends
-          '(company-pseudo-tooltip-frontend
-            company-echo-metadata-frontend))
-    :hook (after-init . global-company-mode))
-#+END_SRC
-
-Set up the company backends: (maybe do it the other way around...)
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (use-package company-tern
-  ;;   :config (add-to-list 'company-backends 'company-tern))
-  ;; (use-package company-anaconda
-  ;;   :config )
-
-#+END_SRC
-
-*** Hotfuzz
-:PROPERTIES:
-:ID:       b56c98c9-0d00-44a9-9050-7e819c0001b4
-:END:
-For fuzzy completion matching.
-
-#+begin_src emacs-lisp :tangle yes
-  ;; (use-package hotfuzz
-  ;;   :config (setq completion-styles '(hotfuzz)))
 #+end_src
 
 *** Lisp
@@ -742,10 +994,7 @@ Clojure IDE.
 #+begin_src emacs-lisp :tangle yes
   (use-package cider
     :config
-    (setq cider-font-lock-dynamically '(macro core function var))
-
-    :hook ((cider-repl-mode . cider-company-enable-fuzzy-completion)
-           (cider-mode . cider-company-enable-fuzzy-completion)))
+    (setq cider-font-lock-dynamically '(macro core function var)))
 #+end_src
 
 ***** clj-refactor
@@ -1158,6 +1407,32 @@ Format python code with black.
   ;;     (python-black-buffer)))
 
 #+end_src
+
+Display stderr if the shell fails.
+#+begin_src emacs-lisp :tangle yes
+  (defvar org-babel-eval-verbose t
+    "A non-nil value makes `org-babel-eval' display")
+
+  (defun org-babel-eval (cmd body)
+    "Run CMD on BODY.
+  If CMD succeeds then return its results, otherwise display
+  STDERR with `org-babel-eval-error-notify'."
+    (let ((err-buff (get-buffer-create " *Org-Babel Error*")) exit-code)
+      (with-current-buffer err-buff (erase-buffer))
+      (with-temp-buffer
+        (insert body)
+        (setq exit-code
+              (org-babel--shell-command-on-region
+               (point-min) (point-max) cmd err-buff))
+        (if (or (not (numberp exit-code)) (> exit-code 0)
+                (and org-babel-eval-verbose (> (buffer-size err-buff) 0))) ; new condition
+            (progn
+              (with-current-buffer err-buff
+                (org-babel-eval-error-notify exit-code (buffer-string)))
+              nil)
+          (buffer-string)))))
+#+end_src
+
 **** Evince for PDF, Xournal for xoj
 :PROPERTIES:
 :ID:       d9b3dab5-4e9f-4ab2-a40f-40f1268a1670
@@ -1264,9 +1539,24 @@ Ox-hugo allows to export org mode to hugo for my [[https://protagon.space][websi
   (use-package org-ref
     :after (citeproc)
     :config
-    (setq org-ref-bibliography-notes "~/bibliography/notes.org"
-          org-ref-default-bibliography '("~/bibliography/references.bib")
-          org-ref-pdf-directory "~/bibliography/bibtex-pdfs/")
+    (require 'org-macs)
+
+    (setq bibtex-completion-bibliography '("~/bibliography/references.bib")
+          bibtex-completion-library-path '("~/bibliography/bibtex-pdfs/")
+          bibtex-completion-notes-path "~/bibliography/notes.org"
+          bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
+
+          bibtex-completion-additional-search-fields '(keywords)
+          bibtex-completion-display-formats
+          '((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+            (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+            (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+            (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+            (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+          bibtex-completion-pdf-open-function
+          (lambda (fpath)
+            (call-process "open" nil 0 nil fpath)))
+    (setq org-ref-pdf-directory bibtex-completion-library-path)
     ;; (require 'org-ref-ivy)
     )
 #+end_src
@@ -1319,7 +1609,7 @@ We add scihub as a pdf source.
             (pdf-file))
         (setq pdf-file (concat
                         (if org-ref-pdf-directory
-                            (file-name-as-directory org-ref-pdf-directory)
+                            (file-name-as-directory (car org-ref-pdf-directory))
                           (read-directory-name "PDF directory: " "."))
                         key ".pdf"))
         ;; now get file if needed.
@@ -1368,7 +1658,7 @@ Download the paper from arxiv.
              (pdf-url (concat "https://arxiv.org/pdf/" arxiv ".pdf"))
              (pdf-file (concat
                         (if org-ref-pdf-directory
-                            (file-name-as-directory org-ref-pdf-directory)
+                            (file-name-as-directory (cl-first org-ref-pdf-directory))
                           (read-directory-name "PDF directory: " "."))
                         key ".pdf")))
         ;; now get file if needed.
@@ -1443,7 +1733,6 @@ See https://www.orgroam.com/manual.html.
     :after (org-roam)
     :config
     (require 'org-ref)
-    (require 'orb-ivy)
     (setq orb-note-actions-interface 'hydra)
     (setq orb-process-file-keyword t)
     (setq orb-file-field-extensions '("pdf" "epub" "html"))
@@ -1537,6 +1826,34 @@ Mark changed lines on the fringes.
     (add-hook 'magit-pre-refresh-hook 'diff-hl-magit-pre-refresh)
     (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
 #+END_SRC
+**** Forge
+Integration for Git[Hub,Lab].
+#+begin_src emacs-lisp :tangle yes
+  (use-package forge
+    :after magit
+    :config
+    (add-to-list
+     'forge-alist
+     (list "gitlab.hrz.tu-chemnitz.de" "gitlab.hrz.tu-chemnitz.de/api/v4"
+           "gitlab.hrz.tu-chemnitz.de" forge-gitlab-repository)))
+#+end_src
+**** Blame
+For nice inline blame.
+#+begin_src emacs-lisp :tangle yes
+  (use-package blamer
+    :ensure t
+    :bind (("s-i" . blamer-show-commit-info))
+    :defer 20
+    :custom
+    (blamer-idle-time .3)
+    (blamer-min-offset 70)
+    :custom-face
+    (blamer-face ((t :foreground "#7a88cf"
+                      :background nil
+                      :height 120
+                      :italic t))))
+#+end_src
+
 *** Sage Math
 :PROPERTIES:
 :ID:       dd2ade9d-25e7-4575-a3b9-76f5e7c580e2
@@ -1553,18 +1870,18 @@ CAS for some annoying calculations.
 :END:
 Make mini-buffers and search nicer.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package ivy
-    :diminish ivy-mode
-    :bind (("C-s" . swiper)
-           ("C-x r" . counsel-recentf)
-           :map boon-command-map
-           ("w" . swiper))
-    :config
-    (ivy-mode 1)
-    (setq ivy-use-virtual-buffers t)
-    (setq enable-recursive-minibuffers t)
-    (with-eval-after-load 'recentf
-      (setq ivy-use-virtual-buffers nil)))
+  ;; (use-package ivy
+  ;;   :diminish ivy-mode
+  ;;   :bind (("C-s" . swiper)
+  ;;          ("C-x r" . counsel-recentf)
+  ;;          :map boon-command-map
+  ;;          ("w" . swiper))
+  ;;   :config
+  ;;   (ivy-mode 1)
+  ;;   (setq ivy-use-virtual-buffers t)
+  ;;   (setq enable-recursive-minibuffers t)
+  ;;   (with-eval-after-load 'recentf
+  ;;     (setq ivy-use-virtual-buffers nil)))
 #+END_SRC
 
 *** LaTeX
@@ -1719,17 +2036,17 @@ The caching makes it /way/ faster.
     :diminish
     :config
     (projectile-mode +1)
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    ;(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
     (defadvice projectile-project-root (around ignore-remote first activate)
       (unless (file-remote-p default-directory) ad-do-it))
     (setq projectile-enable-caching t)
     :after ivy)
 
-  (use-package counsel-projectile
-    :after (ivy projectile)
-    :config
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-    (counsel-projectile-mode))
+  ;; (use-package counsel-projectile
+  ;;   :after (ivy projectile)
+  ;;   :config
+  ;;   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  ;;   (counsel-projectile-mode))
 #+END_SRC
 
 *** Web Mode
@@ -1778,30 +2095,52 @@ Syntax checking and linting.
 #+END_SRC
 
 *** Python
+**** LSP
+#+begin_src emacs-lisp :tangle yes
+  (use-package lsp-pyright
+    :ensure t
+    :hook (python-mode . (lambda ()
+                           (when (executable-find "python3")
+                             (setq lsp-pyright-python-executable-cmd "python3"))
+                           (require 'lsp-pyright)
+                           (lsp)))
+    :config (setq python-shell-interpreter "ipython"
+             python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True"))
+  ;; (use-package lsp-python-ms
+  ;;   :ensure t
+  ;;   :init  (setq lsp-python-ms-executable (executable-find "python-language-server"))
+  ;;   :hook ((python-mode . (lambda ()
+  ;;                           (require 'lsp-python-ms)
+  ;;                           (lsp)
+  ;;                           (corfu-mode 1)))
+  ;;          ;; (flycheck-mode . (lambda ()
+  ;;          ;;                    (flycheck-add-next-checker 'python-mypy)))
+  ;;          ))
+#+end_src
 **** Elpy
 :PROPERTIES:
 :ID:       c236c336-289a-4133-8bf3-ecb5a66534f5
 :END:
 #+begin_src emacs-lisp :tangle yes
   ;; Installed through nix
-  (use-package elpy
-    :init
-    (elpy-enable)
-    :config
-    (add-hook 'elpy-mode-hook (lambda ()
-                                (add-hook 'before-save-hook
-                                          'elpy-black-fix-code nil t)))
-    (setq elpy-project-root-finder-functions '(elpy-project-find-git-root elpy-project-find-python-root elpy-project-find-hg-root elpy-project-find-svn-root))
-    (setq elpy-rpc-backend "jedi")
-    (setq python-shell-interpreter "ipython"
-          python-shell-interpreter-args "-i --simple-prompt")
+  ;; (use-package elpy * 9
+  ;;   :init
+  ;;   (elpy-enable)
+  ;;   :config
+  ;;   (add-hook 'elpy-mode-hook (lambda ()
+  ;;                               (add-hook 'before-save-hook
+  ;;                                         'elpy-black-fix-code nil t)))
+  ;;   (setq elpy-project-root-finder-functions '(elpy-project-find-git-root elpy-project-find-python-root elpy-project-find-hg-root elpy-project-find-svn-root))
+  ;;   (setq elpy-rpc-backend "jedi")
+  ;;   (setq python-shell-interpreter "ipython"
+  ;;         python-shell-interpreter-args "-i --simple-prompt")
 
-    (when (load "flycheck" t t)
-      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-      (add-hook 'elpy-mode-hook 'flycheck-mode))
+  ;;   (when (load "flycheck" t t)
+  ;;     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  ;;     (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-    (add-to-list 'python-shell-completion-native-disabled-interpreters
-                 "jupyter"))
+  ;;   (add-to-list 'python-shell-completion-native-disabled-interpreters
+  ;;                "jupyter"))
   ;; (add-hook 'elpy-mode-hook (lambda ()
   ;;                             (add-hook 'before-save-hook
   ;;                                       'elpy-black-fix-code nil t)))
@@ -1812,7 +2151,7 @@ Syntax checking and linting.
   (use-package python-black
     :demand t
     :after python
-    :hook (python-mode . python-black-on-save-mode-enable-dwim))
+    :hook (python-mode . python-black-on-save-mode))
 #+end_src
 **** Tree Sitter
 #+begin_src emacs-lisp :tangle yes
@@ -1851,23 +2190,14 @@ Syntax checking and linting.
   ;; (use-package company-anaconda)
 #+END_SRC
 
-**** Mark overlong Lines
-:PROPERTIES:
-:ID:       ecbcdb07-0489-412e-b426-ace03776e455
-:END:
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq whitespace-line-collumn 79)
-  (setq whitespace-style '(face empty tabs lines-tail trailing))
-#+END_SRC
-
 **** Docstrings
 :PROPERTIES:
 :ID:       012deb47-1587-473a-b74c-85a0a322d7ad
 :END:
 Support for sphinx style docstrings.
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package python-docstring)
-  (use-package sphinx-doc)
+  (use-package python-docstring
+    :hook (python-mode . python-docstring-mode))
 #+END_SRC
 
 *** Jupyter
@@ -1875,15 +2205,17 @@ Support for sphinx style docstrings.
 :ID:       db24f115-910d-4f9f-ba13-4dd9855c0b7d
 :END:
 #+begin_src emacs-lisp :tangle yes
+  (use-package ansi-color)
   (use-package jupyter
-    :config
-    (require 'jupyter-python)
-    (require 'jupyter-julia)
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((python . t)
-       (jupyter . t)))
-    (setq jupyter-eval-short-result-display-function 'popup-tip))
+      :config
+      (require 'jupyter-python)
+      (require 'jupyter-julia)
+      ;(require 'jupyter-wolfram-language)
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((python . t)
+         (jupyter . t)))
+      (setq jupyter-eval-short-result-display-function 'popup-tip))
 
 #+end_src
 
@@ -1898,9 +2230,9 @@ Support for sphinx style docstrings.
   (use-package elixir-yasnippets)
   (use-package yasnippet-snippets)
   (use-package yasnippet-classic-snippets)
-  (use-package ivy-yasnippet)
-  (use-package ivy-xref
-    :init (setq xref-show-definitions-function #'ivy-xref-show-defs))
+                                          ;(use-package ivy-yasnippet)
+  ;; (use-package ivy-xref
+  ;;   :init (setq xref-show-definitions-function #'ivy-xref-show-defs))
 #+END_SRC
 
 *** Auto expanding snippets
@@ -1956,63 +2288,78 @@ Very useful for TeX. Expand automatically.
                         ";Ch" "Χ"
                         ";Ps" "Ψ"
                         ";Oe" "Ω" ;; Omega
+                        ";int" "∫"
+                        ";su" "∑"
+                        ";pro" "∏"
+                        ";dag" "†"
+                        ";tra" "⊺"
+                        ";bra" "〈"
+                        ";ket" "〉"
+                        ";inf" "∞"
+                        ";par" "∂"
+                        ">="   "≥"
+
                         )
         greek-latex '(";al" "\\alpha"
-                     ";be" "\\beta"
-                     ";ga" "\\gamma"
-                     ";de" "\\delta"
-                     ";ep" "ε"
-                     ";ze" "ζ"
-                     ";et" "η"
-                     ";th" "θ"
-                     ";io" "ι"
-                     ";ka" "κ"
-                     ";la" "λ"
-                     ";mu" "μ"
-                     ";nu" "ν"
-                     ";xi" "ξ"
-                     ";oi" "ο" ;; omicron
-                     ";pi" "π"
-                     ";ro" "ρ"
-                     ";si" "σ"
-                     ";ta" "τ"
-                     ";up" "υ"
-                     ";ph" "φ"
-                     ";ch" "χ"
-                     ";ps" "ψ"
-                     ";oe" "ω" ;; omega
+                      ";be" "\\beta"
+                      ";ga" "\\gamma"
+                      ";de" "\\delta"
+                      ";ep" "ε"
+                      ";ze" "ζ"
+                      ";et" "η"
+                      ";th" "θ"
+                      ";io" "ι"
+                      ";ka" "κ"
+                      ";la" "λ"
+                      ";mu" "μ"
+                      ";nu" "ν"
+                      ";xi" "ξ"
+                      ";oi" "ο" ;; omicron
+                      ";pi" "π"
+                      ";ro" "ρ"
+                      ";si" "σ"
+                      ";ta" "τ"
+                      ";up" "υ"
+                      ";ph" "φ"
+                      ";ch" "χ"
+                      ";ps" "ψ"
+                      ";oe" "ω" ;; omega
 
-                     ;; Greek capital letters
-                     ";Al" "Α"
-                     ";Be" "Β"
-                     ";Ga" "Γ"
-                     ";De" "Δ"
-                     ";Ep" "Ε"
-                     ";Ze" "Ζ"
-                     ";Et" "Η"
-                     ";Th" "Θ"
-                     ";Io" "Ι"
-                     ";Ka" "Κ"
-                     ";La" "Λ"
-                     ";Mu" "Μ"
-                     ";Nu" "Ν"
-                     ";Xi" "Ξ"
-                     ";Oi" "Ο" ;; Omicron
-                     ";Pi" "Π"
-                     ";Ro" "Ρ"
-                     ";Si" "Σ"
-                     ";Ta" "Τ"
-                     ";Up" "Υ"
-                     ";Ph" "Φ"
-                     ";Ch" "Χ"
-                     ";Ps" "Ψ"
-                     ";Oe" "Ω" ;; Omega
-                     ))
+                      ;; Greek capital letters
+                      ";Al" "Α"
+                      ";Be" "Β"
+                      ";Ga" "Γ"
+                      ";De" "Δ"
+                      ";Ep" "Ε"
+                      ";Ze" "Ζ"
+                      ";Et" "Η"
+                      ";Th" "Θ"
+                      ";Io" "Ι"
+                      ";Ka" "Κ"
+                      ";La" "Λ"
+                      ";Mu" "Μ"
+                      ";Nu" "Ν"
+                      ";Xi" "Ξ"
+                      ";Oi" "Ο" ;; Omicron
+                      ";Pi" "Π"
+                      ";Ro" "Ρ"
+                      ";Si" "Σ"
+                      ";Ta" "Τ"
+                      ";Up" "Υ"
+                      ";Ph" "Φ"
+                      ";Ch" "Χ"
+                      ";Ps" "Ψ"
+                      ";Oe" "Ω" ;; Omega
+
+                      ))
   (use-package aas
     :hook (LaTeX-mode . aas-activate-for-major-mode)
     :hook (org-mode . aas-activate-for-major-mode)
     :hook (python-mode . aas-activate-for-major-mode)
     :hook (jupyter-repl-mode . (lambda ()
+                                 (aas-mode 1)
+                                 (aas-activate-keymap 'greek-letters)))
+    :hook (rst-mode . (lambda ()
                                  (aas-mode 1)
                                  (aas-activate-keymap 'greek-letters)))
     :hook (minibuffer-setup . (lambda ()
@@ -2026,6 +2373,79 @@ Very useful for TeX. Expand automatically.
     (apply #'aas-set-snippets 'greek-letters greek-letters)
     (apply #'aas-set-snippets 'python-mode greek-letters)
     (apply #'aas-set-snippets 'jupyter-repl-mode greek-letters)
+    (aas-set-snippets 'latex-mode
+      ;; set condition!
+      :cond #'texmathp                    ; expand only while in math
+      "supp" "\\supp"
+      "On" "O(n)"
+      "O1" "O(1)"
+      "Olog" "O(\\log n)"
+      "Olon" "O(n \\log n)"
+      "/adj" "^†"
+      "conj" "^\\ast"
+      "/cal" (lambda () (interactive)
+               (yas-expand-snippet "\\mathcal{$1}$0"))
+      "/dot" (lambda () (interactive)
+               (yas-expand-snippet "\\dot{$1}$0"))
+      "/ev" (lambda () (interactive)
+              (yas-expand-snippet "\\ev{$1}$0"))
+      ;; bind to functions!
+      "//" (lambda () (interactive)
+             (yas-expand-snippet "\\frac{$1}{$2}$0"))
+      "dv" (lambda () (interactive)
+             (yas-expand-snippet "\\dv{$1}{$2}$0"))
+      "Span" (lambda () (interactive)
+               (yas-expand-snippet "\\Span($1)$0"))
+      "!="    "\\neq"
+      "!>"    "\\mapsto"
+      "**"    "\\cdot"
+      "+-"    "\\pm"
+      "-+"    "\\mp"
+      "->"    "\\to"
+      "..."   "\\dots"
+      "<<"    "\\ll"
+      "<="    "\\leq"
+      "<>"    "\\diamond"
+      "=<"    "\\impliedby"
+      "=="    "&="
+      "=>"    "\\implies"
+      ">>"    "\\gg"
+      "AA"    "\\forall"
+      "EE"    "\\exists"
+      "cb"    "^3"
+      "iff"   "\\iff"
+      "inn"   "\\in"
+      "notin" "\\not\\in"
+      "sr"    "^2"
+      "xx"    "\\times"
+      "|->"   "\\mapsto"
+      "|="    "\\models"
+      "||"    "\\mid"
+      "~="    "\\approx"
+      "~~"    "\\sim"
+      "arccos" "\\arccos"
+      "arccot" "\\arccot"
+      "arccot" "\\arccot"
+      "arccsc" "\\arccsc"
+      "arcsec" "\\arcsec"
+      "arcsin" "\\arcsin"
+      "arctan" "\\arctan"
+      "cos"    "\\cos"
+      "cot"    "\\cot"
+      "csc"    "\\csc"
+      "exp"    "\\exp"
+      "ln"     "\\ln"
+      "log"    "\\log"
+      "perp"   "\\perp"
+      "sin"    "\\sin"
+      "star"   "\\star"
+      "gcd"    "\\gcd"
+      "min"    "\\min"
+      "max"    "\\max"
+      ";'"  "\\prime"
+      ";."  "\\cdot"
+      ";inv" "^{-1}"
+      )
     (aas-set-snippets 'latex-mode
                       ;; set condition!
                       :cond #'texmathp  ; expand only while in math
@@ -2098,6 +2518,7 @@ Very useful for TeX. Expand automatically.
                       "max"    "\\max"
                       ";'"  "\\prime"
                       ";."  "\\cdot"
+                      ";inv" "^{-1}"
                       ))
 #+end_src
 
@@ -2183,16 +2604,6 @@ Use 4 spaces for indenting.
   (setq-default c-basic-offset 4)
 #+end_src
 
-**** RealGUD
-:PROPERTIES:
-:ID:       483441e4-c3aa-421a-b3c7-509188fc99b6
-:END:
-Debugging yay!
-#+begin_src emacs-lisp :tangle yes
-  (use-package realgud
-    :config (setq realgud-safe-mode nil))
-  (use-package realgud-ipdb)
-#+end_src
 *** YAML
 :PROPERTIES:
 :ID:       6386c709-34bd-42ce-97a3-985bfae11ceb
@@ -2251,10 +2662,7 @@ Debugging yay!
     :config
     (setq eglot-jl-julia-flags  '("-J" "/home/hiro/.julia/image/sys_ls.so")))
   (use-package project
-    :demand t
-    :config
-    (defun project-root (project)
-      (car (project-roots project))))
+    :demand t)
   (use-package eglot)
   (use-package julia-mode
     :ensure t
@@ -2451,14 +2859,29 @@ Stolen from https://yiufung.net/post/anki-org/.
   ;;                     (mu4e-refile-folder . "/Gmail/[Gmail].Archive")
   ;;                     )))))
 #+end_src
-*** Helm Bibtex
+*** Bibtex Frontend
 #+begin_src emacs-lisp :tangle yes
-    (use-package ivy-bibtex
-      :config
-      (setq bibtex-completion-bibliography
-            (list org-ref-default-bibliography)
-            bibtex-completion-library-path (list org-ref-pdf-directory))
-      (setq bibtex-dialect 'biblatex))
+  (use-package citar
+    :after (org-ref)
+    :straight (:host github :repo "bdarcus/citar")
+    :bind (;("C-c b" . citar-insert-citation)
+           :map minibuffer-local-map
+           ("M-b" . citar-insert-preset))
+    :config
+    (setq citar-bibliography (car bibtex-completion-bibliography))
+    (setq citar-library-paths org-ref-pdf-directory))
+
+  (use-package citar-org
+    :straight (:host github :repo "bdarcus/citar")
+    :no-require
+    ;:bind                                 ; optional
+    ;(:map org-mode-map
+          ;("C-c b" . #'org-cite-insert))  ; Also bound to C-c C-x C-@
+    :config
+    (setq org-cite-global-bibliography bibtex-completion-bibliography)
+    (setq org-cite-insert-processor 'citar)
+    (setq org-cite-follow-processor 'citar)
+    (setq org-cite-activate-processor 'citar))
 #+end_src
 ** Custom Scripts
 *** Close all Buffers
