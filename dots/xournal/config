@@ -11,11 +11,11 @@ initial_zoom=269.67
 # maximize the window at startup (true/false)
 window_maximize=false
 # start in full screen mode (true/false)
-window_fullscreen=true
+window_fullscreen=false
 # the window width in pixels (when not maximized)
-window_width=1920
+window_width=2560
 # the window height in pixels
-window_height=2160
+window_height=1440
 # scrollbar step increment (in pixels)
 scrollbar_speed=30
 # the step increment in the zoom dialog box
