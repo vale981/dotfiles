@@ -11,6 +11,8 @@
         (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
-(straight-use-package '(org :host github :repo "yantar92/org" :branch "feature/org-fold-universal-core"
-                            :files (:defaults "contrib/lisp/*.el")))
+
+(straight-use-package 'org ;; '(org :host github :repo "yantar92/org" :branch "feature/org-fold-universal-core"
+ ;;       :files (:defaults "contrib/lisp/*.el"))
+ )
 (org-babel-load-file "~/.emacs.d/emacs.org")

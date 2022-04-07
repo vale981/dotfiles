@@ -61,6 +61,18 @@ including all that emacs gruft in ~.gitignore~ files.
 #+begin_src emacs-lisp :tangle yes
   (setq warning-suppress-log-types '((comp)))
 #+end_src
+
+*** GC Cons
+Use the GC less for performance.
+#+begin_src emacs-lisp :tangle yes
+  (setq gc-cons-threshold 100000000)
+#+end_src
+
+*** Read more Data from a Process
+#+begin_src emacs-lisp :tangle yes
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+#+end_src
+
 ** Hacks
 *** Speed up Cursor Movement
 :PROPERTIES:
@@ -133,13 +145,13 @@ Install diminish:
     :after expand-region
     :load-path "~/.emacs.d/boon/"
     :config
-    (use-package expand-region)
     (require 'boon-workman)
     (add-to-list 'boon-special-mode-list 'sly-db-mode)
     (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
     (add-to-list 'boon-special-mode-list 'cider-inspector-mode)
     (add-to-list 'boon-special-mode-list 'cider-macroexpansion-mode)
     (add-to-list 'boon-special-mode-list 'jupyter-repl-mode)
+    (add-to-list 'boon-special-mode-list 'jupyter-repl-interaction-mode)
     (add-to-list 'boon-special-mode-list 'term-mode)
     (add-to-list 'boon-special-mode-list 'ansi-term-mode)
     (add-to-list 'boon-special-mode-list 'bufler-list-mode)
@@ -300,8 +312,7 @@ No terminal bell.
 Ethan wspace mode resolves the nightmare of mixed whitespace.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package ethan-wspace
-    :config (global-ethan-wspace-mode 1)
-    (setq mode-require-final-newline nil))
+    :config (global-ethan-wspace-mode 1))
 #+END_SRC
 
 **** Tabs
@@ -412,9 +423,9 @@ A nice completion style.
 #+begin_src emacs-lisp :tangle yes
   (use-package orderless
     :config
-    (setq completion-styles '(orderless)
+    (setq completion-styles '(orderless partial-completion)
           completion-category-defaults nil
-          completion-category-overrides '((file (styles . (partial-completion)))))
+          completion-category-overrides nil)
     (savehist-mode))
 #+end_src
 *** Selectrum
@@ -866,24 +877,28 @@ Support for the =Language Server Protocol=.
   (use-package lsp-treemacs)
   (use-package lsp-mode
     :after (lsp-ui elixir-mode)
+    :init
+    (defun my/lsp-mode-setup-completion ()
+      (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+            '(orderless))) ;; Configure orderless
     :config
     (setq lsp-prefer-flymake nil)
     (setq
      lsp-headerline-breadcrumb-enable nil
-     lsp-idle-delay .5
+     lsp-idle-delay 5
      lsp-ui-doc-enable nil
      lsp-ui-doc-use-childframe t
      lsp-ui-doc-position 'top
      lsp-ui-doc-include-signature t
      lsp-ui-sideline-enable t
      lsp-ui-flycheck-enable t
-     lsp-ui-flycheck-list-position 'right
+     lsp-ui-flycheck-list-position 'top
      lsp-ui-flycheck-live-reporting t
      lsp-ui-peek-enable t
      lsp-ui-peek-list-width 60
      lsp-ui-peek-peek-height 25
      lsp-enable-semantic-highlighting t
-     lsp-enable-symbol-highlighting nil
+     lsp-enable-symbol-highlighting t
      lsp-completion-provider :none
      lsp-modeline-code-actions-segments '(count icon)
      lsp-clients-clangd-args '("--background-index" "-j=2" "--clang-tidy" "--cross-file-rename" "--log=verbose"))
@@ -892,6 +907,7 @@ Support for the =Language Server Protocol=.
 
     :hook ((elixir-mode . lsp)
            (lsp-mode . lsp-ui-mode)
+           (lsp-completion-mode . my/lsp-mode-setup-completion)
            ;; (lsp-mode . (lambda ()
            ;;               (company-mode -1)
            ;;               (corfu-mode 1)))
@@ -2104,7 +2120,8 @@ Syntax checking and linting.
                            (require 'lsp-pyright)
                            (lsp)))
     :config (setq python-shell-interpreter "ipython"
-             python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True"))
+                  python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True"
+                  lsp-pyright-use-library-code-for-types nil))
   ;; (use-package lsp-python-ms
   ;;   :ensure t
   ;;   :init  (setq lsp-python-ms-executable (executable-find "python-language-server"))
@@ -2205,15 +2222,18 @@ Support for sphinx style docstrings.
 :END:
 #+begin_src emacs-lisp :tangle yes
   (use-package ansi-color
+    :after jupyter
     :config
     (defun jupyter-ansi-color-apply-on-region (begin end)
       (ansi-color-apply-on-region begin end t)))
   (use-package popup)
   (use-package jupyter
+    :straight (:host github :repo "vale981/emacs-jupyter" :branch "patch-1")
     :config
     (require 'jupyter-python)
     (require 'jupyter-julia)
                                           ;(require 'jupyter-wolfram-language)
+    (setq ob-async-no-async-languages-alist '("jupyter-python" "jupyter-julia"))
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((python . t)
