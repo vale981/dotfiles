@@ -37,14 +37,6 @@ Starts the emacs server.
   (server-start)
 #+END_SRC
 
-*** Desktop
-:PROPERTIES:
-:ID:       6e7debf5-6388-4d1a-b082-71c9ded7bcfa
-:END:
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (desktop-save-mode 1)
-#+END_SRC
-
 *** Auto-Save
 :PROPERTIES:
 :ID:       af9dde51-e5b2-476a-9851-76e51c0ec5e6
@@ -392,6 +384,12 @@ This allows us to disable it locally
   (make-variable-buffer-local 'global-hl-line-mode)
 #+end_src
 
+*** Highlight Documentation in Comment Face
+#+begin_src emacs-lisp :tangle yes
+  (setq py-use-font-lock-doc-face-p t)
+  (setq font-lock-doc-face 'font-lock-comment-face)
+#+end_src
+
 *** Compilation
 :PROPERTIES:
 :ID:       00d0bc01-ca6b-4f53-9aef-12f92d6224bb
@@ -418,6 +416,12 @@ Short =yes-no=.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
+*** Pixel Precision Scrolling
+The new and glorious pixel-precision scrolling mode.
+#+begin_src emacs-lisp :tangle yes
+  ;(pixel-scroll-precision-mode)
+
+#+end_src
 *** Orderless
 A nice completion style.
 #+begin_src emacs-lisp :tangle yes
@@ -717,7 +721,8 @@ Move whole lines easily.
 Color code matching delimiters.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package rainbow-identifiers
-    :hook (julia-mode . rainbow-identifiers-mode))
+    :hook ((julia-mode . rainbow-identifiers-mode)
+           (python-mode . rainbow-identifiers-mode)))
 
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
@@ -835,12 +840,12 @@ Taken from [[https://emacs.stackexchange.com/questions/42287/set-focus-to-minibu
 #+end_src
 *** Highlight Indent
 #+begin_src emacs-lisp :tangle yes
-  (use-package highlight-indent-guides
-    :config
-    (setq highlight-indent-guides-method 'character)
-    (setq highlight-indent-guides-responsive 'top)
+  ;; (use-package highlight-indent-guides
+  ;;   :config
+  ;;   (setq highlight-indent-guides-method 'character)
+  ;;   (setq highlight-indent-guides-responsive 'top)
 
-    :hook (prog-mode . highlight-indent-guides-mode))
+  ;;   :hook (prog-mode . highlight-indent-guides-mode))
 #+end_src
 
 *** Whichkey
@@ -856,7 +861,7 @@ Completion at point.
   (use-package corfu
     :custom
     (corfu-cycle t) ;; Enable cycling for `corfu-next/previous'
-    (corfu-auto t)  ;; Enable auto completion
+    (corfu-auto nil)  ;; Enable auto completion
     ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
     (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
     (corfu-quit-no-match t) ;; Automatically quit if there is no match
@@ -885,7 +890,7 @@ Support for the =Language Server Protocol=.
     (setq lsp-prefer-flymake nil)
     (setq
      lsp-headerline-breadcrumb-enable nil
-     lsp-idle-delay 5
+     lsp-idle-delay 1.9
      lsp-ui-doc-enable nil
      lsp-ui-doc-use-childframe t
      lsp-ui-doc-position 'top
@@ -2169,24 +2174,26 @@ Syntax checking and linting.
     :after python
     :hook (python-mode . python-black-on-save-mode))
 #+end_src
+
 **** Tree Sitter
+Disabled for now.
 #+begin_src emacs-lisp :tangle yes
-  (use-package tree-sitter
-    :hook
-    (((python-mode
-       inferior-python-mode) . tree-sitter-mode)
-     (python-mode . (lambda ()
-                      (add-function :before-until (local 'tree-sitter-hl-face-mapping-function)
-                                    (lambda (capture-name)
-                                      (pcase capture-name
-                                        ("doc" 'font-lock-comment-face))))))))
-  (use-package tree-sitter-langs
-    :after (tree-sitter)
-    :config
-    (add-to-list 'tree-sitter-major-mode-language-alist '(jupyter-repl-mode . python))
-    (add-to-list 'tree-sitter-major-mode-language-alist '(inferior-python-mode . python))
-    (add-to-list 'tree-sitter-major-mode-language-alist '(inferior-python-mode . bash))
-    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+  ;; (use-package tree-sitter
+  ;;   :hook
+  ;;   (((python-mode
+  ;;      inferior-python-mode) . tree-sitter-mode)
+  ;;    (python-mode . (lambda ()
+  ;;                     (add-function :before-until (local 'tree-sitter-hl-face-mapping-function)
+  ;;                                   (lambda (capture-name)
+  ;;                                     (pcase capture-name
+  ;;                                       ("doc" 'font-lock-comment-face))))))))
+  ;; (use-package tree-sitter-langs
+  ;;   :after (tree-sitter)
+  ;;   :config
+  ;;   (add-to-list 'tree-sitter-major-mode-language-alist '(jupyter-repl-mode . python))
+  ;;   (add-to-list 'tree-sitter-major-mode-language-alist '(inferior-python-mode . python))
+  ;;   (add-to-list 'tree-sitter-major-mode-language-alist '(inferior-python-mode . bash))
+  ;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 #+end_src
 
 **** Anaconda
