@@ -29,3 +29,7 @@ function cmus
 end
 
 eval (direnv hook fish)
+
+if status --is-interactive
+    atuin init fish | source
+end

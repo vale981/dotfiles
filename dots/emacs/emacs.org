@@ -1643,6 +1643,7 @@ We add scihub as a pdf source.
             (url-copy-file pdf-url pdf-file)
             ;; now check if we got a pdf
             (if (org-ref-pdf-p pdf-file)
+
                 (message "%s saved" pdf-file)
               (delete-file pdf-file)
               ;; sci-hub fallback option
@@ -2126,7 +2127,7 @@ Syntax checking and linting.
                            (lsp)))
     :config (setq python-shell-interpreter "ipython"
                   python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True"
-                  lsp-pyright-use-library-code-for-types nil))
+                  lsp-pyright-use-library-code-for-types t))
   ;; (use-package lsp-python-ms
   ;;   :ensure t
   ;;   :init  (setq lsp-python-ms-executable (executable-find "python-language-server"))
@@ -2290,6 +2291,7 @@ Very useful for TeX. Expand automatically.
                         ";ta" "τ"
                         ";up" "υ"
                         ";ph" "φ"
+                        ";fi" "ϕ"
                         ";ch" "χ"
                         ";ps" "ψ"
                         ";oe" "ω" ;; omega
