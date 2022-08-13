@@ -811,20 +811,21 @@ Distraction free writing.
     :config
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 #+end_src
+
 *** PDF Tools
 #+begin_src emacs-lisp :tangle yes
   (use-package pdf-tools
-    :config
-    (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
-          TeX-source-correlate-start-server t)
+      :config
 
-    ;; Update PDF buffers after successful LaTeX runs
-    (add-hook 'TeX-after-compilation-finished-functions
-              #'TeX-revert-document-buffer)
-    (pdf-tools-install)
-    (add-hook 'pdf-view-mode-hook
-              'pdf-view-auto-slice-minor-mode)
-    (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
+      ;; Update PDF buffers after successful LaTeX runs
+      (add-hook 'TeX-after-compilation-finished-functions
+                #'TeX-revert-document-buffer)
+      (pdf-tools-install)
+      (add-hook 'pdf-view-mode-hook
+                'pdf-view-auto-slice-minor-mode)
+      (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
+    (use-package org-pdftools
+      :after pdf-tools)
 #+end_src
 *** Return to Minibuffer
 Taken from [[https://emacs.stackexchange.com/questions/42287/set-focus-to-minibuffer-window][stackoverlow]]. Returns the focus to the minibuffer.
@@ -870,7 +871,7 @@ Completion at point.
     ;; Opt
     :config
     (setq tab-always-indent 'complete)
-    (corfu-global-mode))
+    (global-corfu-mode))
 #+end_src
 *** LSP
 :PROPERTIES:
@@ -1913,19 +1914,27 @@ Enable electric braces for math mode: ~\( \)~
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq LaTeX-electric-left-right-brace t)
   (defun my-auctex-init ()
-     (auto-fill-mode)
-     (latex-math-mode)
+     (auto-fill-mode t)
+     (latex-math-mode t)
      (turn-on-reftex)
+     (setq font-latex-fontify-script 'multi-level)
+     (setq TeX-auto-save t)
+     (setq TeX-parse-self t)
+     (setq-default TeX-master nil)
+     (setq TeX-electric-sub-and-superscript t)
+     (setq TeX-source-correlate-mode t)
+     (setq TeX-PDF-mode t)
+     (setq TeX-source-correlate-start-server t)
+     (add-to-list 'TeX-view-program-list
+             '("Zathura"
+               ("zathura %o"
+                (mode-io-correlate " --synctex-forward %n:0:\"%b\" -x \"emacsclient -a emacs --no-wait +%{line} %{input}\""))
+               "zathura"))
+     (setcar (cdr (assoc 'output-pdf TeX-view-program-selection)) "Zathura")
      (flyspell-mode 1))
   (add-hook 'LaTeX-mode-hook 'my-auctex-init)
 #+END_SRC
 
-Configure AucTeX.
-#+begin_src emacs-lisp :tangle yes
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t)
-  (setq-default TeX-master nil)
-#+end_src
 
 Custom math macros.
 #+begin_src emacs-lisp :tangle yes
@@ -1952,6 +1961,7 @@ Custom math macros.
 Set up latexmk for easier making.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package auctex-latexmk
+    :straight '(:host github :repo "smile13241324/auctex-latexmk")
     :config
     (auctex-latexmk-setup))
 #+END_SRC
@@ -2057,11 +2067,10 @@ The caching makes it /way/ faster.
     :diminish
     :config
     (projectile-mode +1)
-    ;(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
     (defadvice projectile-project-root (around ignore-remote first activate)
       (unless (file-remote-p default-directory) ad-do-it))
-    (setq projectile-enable-caching t)
-    :after ivy)
+    (setq projectile-enable-caching t))
 
   ;; (use-package counsel-projectile
   ;;   :after (ivy projectile)
@@ -2232,8 +2241,9 @@ Support for sphinx style docstrings.
   (use-package ansi-color
     :after jupyter
     :config
-    (defun jupyter-ansi-color-apply-on-region (begin end)
-      (ansi-color-apply-on-region begin end t)))
+    ;; (defun jupyter-ansi-color-apply-on-region (begin end)
+    ;;   (ansi-color-apply-on-region begin end t))
+    )
   (use-package popup)
   (use-package jupyter
     :straight (:host github :repo "vale981/emacs-jupyter" :branch "patch-1")
@@ -2684,25 +2694,21 @@ Use 4 spaces for indenting.
 :ID:       c06a05a4-ce4f-400a-a6a3-7bffbbcfa792
 :END:
 #+begin_src emacs-lisp :tangle yes
-  (use-package julia-repl
-    :config
-    (julia-repl-set-terminal-backend 'vterm)
-    (add-hook 'julia-mode-hook 'julia-repl-mode)
-    (setq julia-repl-switches "-J /home/hiro/.julia/image/sys_repl.so"))
-  (use-package eglot-jl
-    :ensure t
-    :defer  t
-    :config
-    (setq eglot-jl-julia-flags  '("-J" "/home/hiro/.julia/image/sys_ls.so")))
+  ;; (use-package julia-repl
+  ;;   :config
+  ;;   (julia-repl-set-terminal-backend 'vterm)
+  ;;   (add-hook 'julia-mode-hook 'julia-repl-mode)
+  ;;   ;; (setq julia-repl-switches "-J /home/hiro/.julia/image/sys_repl.so")
+  ;;   )
+  (use-package julia-vterm)
+
   (use-package project
     :demand t)
-  (use-package eglot)
   (use-package julia-mode
     :ensure t
     :interpreter ("julia" . julia-mode)
     :config
-    (add-hook 'julia-mode-hook 'eglot-jl-init)
-    (add-hook 'julia-mode-hook 'eglot-ensure))
+    (add-hook 'julia-mode-hook 'lsp))
 #+end_src
 
 **** Highlighting
@@ -2803,12 +2809,14 @@ Hooking into aggressive indent.
 #+end_src
 *** Languagetool LSP
 #+begin_src emacs-lisp :tangle yes
-  ;; (use-package lsp-ltex
-  ;;   :after (lsp-mode)
-  ;;   :hook (latex-mode . (lambda ()
-  ;;                         (require 'lsp-ltex)
-  ;;                         (lsp)))
-  ;;   :config (setq lsp-ltex-language "en-GB"))
+  (use-package lsp-ltex
+    :after (lsp-mode)
+    :init (setq lsp-ltex-version "15.2.0")
+    :hook (latex-mode . (lambda ()
+                          (require 'lsp-ltex)
+                          (lsp)))
+    :config (setq lsp-ltex-language "en-GB")
+     (setq lsp-ltex-latex-commands "{'\\fixme{}': 'ignore'}"))
 #+end_src
 ** Applications
 *** Ank
