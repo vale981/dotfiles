@@ -1,31 +1,33 @@
-set synctex-editor-command "emacsclient -a emacs --no-wait +%{line} %{input}"
-set adjust-open width
+set guioptions none
 set synctex true
+set synctex-editor-command "emacsclient -a emacs --no-wait +%{line}:%{column} %{input}"
+set adjust-open width
+set page-cache-size 200
 
 map \< goto top
 map \> goto bottom
-map f navigate previous
+map n navigate previous
 map y follow
-map Y jumplist backward
-map \" jumplist forward
-map ; navigate next
-map U goto top
-map P goto bottom
+map f jumplist backward
+map ; jumplist forward
+map i navigate next
 
 map j zoom in
 map k zoom out
 map <C-=> zoom in
 map J adjust_window best-fit
 map K adjust_window width
-map n scroll full-left
+map E scroll full-left
 map e scroll left
-map i scroll full-right
+map O scroll full-right
 map o scroll right
 map <C-g> abort
 map p scroll down
 map u scroll up
 map P scroll full-down
 map U scroll full-up
+map \, search forward
+map \. search backward
 
 map l mark_add
 map \' mark_evaluate

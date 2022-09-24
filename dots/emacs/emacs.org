@@ -138,6 +138,9 @@ Install diminish:
     :load-path "~/.emacs.d/boon/"
     :config
     (require 'boon-workman)
+    (add-to-list 'boon-special-mode-list 'ement-room-mode)
+    (add-to-list 'boon-special-mode-list 'ement-room-list-mode)
+
     (add-to-list 'boon-special-mode-list 'sly-db-mode)
     (add-to-list 'boon-special-mode-list 'sly-inspector-mode)
     (add-to-list 'boon-special-mode-list 'cider-inspector-mode)
@@ -362,9 +365,9 @@ We use the doom theme.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'default-frame-alist
-               '(font . "JetBrains Mono-12:weight=light:antialias=subpixel"))
+               '(font . "JetBrains Mono-10:weight=light:antialias=subpixel"))
 
-  (set-face-attribute 'mode-line nil :font "JetBrains Mono-12:weight=light:antialias=subpixel")
+  (set-face-attribute 'mode-line nil :font "JetBrains Mono-10:weight=light:antialias=subpixel")
 
   (add-to-list 'default-frame-alist
                '(internal-border-width . 0))
@@ -405,6 +408,14 @@ Reuse the compilation frame instead of annoyingly creating new ones.
 And scroll the compilation output.
 #+begin_src emacs-lisp :tangle yes
   (setq compilation-scroll-output t)
+#+end_src
+
+*** Open PDFs with Zathura
+#+begin_src emacs-lisp :tangle yes
+  (use-package openwith
+    :config
+    (openwith-mode t)
+    (setq openwith-associations '(("\\.pdf\\'" "zathura" (file)))))
 #+end_src
 
 ** Interface
@@ -505,8 +516,6 @@ Swiper and rg alternative.
            ("M-s u" . consult-focus-lines)
            ;; Isearch integration
            ("M-s e" . consult-isearch-history)
-           :map boon-command-map
-           ("w" . consult-line)
            :map isearch-mode-map
            ("M-e" . consult-isearch-history) ;; orig. isearch-edit-string
            ("M-s e" . consult-isearch-history) ;; orig. isearch-edit-string
@@ -614,6 +623,22 @@ Swiper and rg alternative.
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
+
+*** Nicer Search
+#+begin_src emacs-lisp :tangle yes
+  (use-package ctrlf
+    :config
+    (setq ctrlf-default-search-style 'fuzzy-regexp)
+    (setq ctrlf-alternate-search-style 'literal)
+    (ctrlf-mode +1)
+    :bind
+    (:map boon-command-map
+          ("w" . ctrlf-forward-default)
+          ("W" . ctrlf-backward-default)
+          ("j" . ctrlf-forward-alternate)
+          ("J" . ctrlf-alternate-default)))
+#+end_src
+
 *** Multiple Cursors
 :PROPERTIES:
 :ID:       14313a37-a3d7-41b9-a2b6-b79c8459c22a
@@ -814,18 +839,18 @@ Distraction free writing.
 
 *** PDF Tools
 #+begin_src emacs-lisp :tangle yes
-  (use-package pdf-tools
-      :config
+  ;; (use-package pdf-tools
+  ;;     :config
 
-      ;; Update PDF buffers after successful LaTeX runs
-      (add-hook 'TeX-after-compilation-finished-functions
-                #'TeX-revert-document-buffer)
-      (pdf-tools-install)
-      (add-hook 'pdf-view-mode-hook
-                'pdf-view-auto-slice-minor-mode)
-      (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
-    (use-package org-pdftools
-      :after pdf-tools)
+  ;;     ;; Update PDF buffers after successful LaTeX runs
+  ;;     (add-hook 'TeX-after-compilation-finished-functions
+  ;;               #'TeX-revert-document-buffer)
+  ;;     (pdf-tools-install)
+  ;;     (add-hook 'pdf-view-mode-hook
+  ;;               'pdf-view-auto-slice-minor-mode)
+  ;;     (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
+    ;; (use-package org-pdftools
+    ;;   :after pdf-tools)
 #+end_src
 *** Return to Minibuffer
 Taken from [[https://emacs.stackexchange.com/questions/42287/set-focus-to-minibuffer-window][stackoverlow]]. Returns the focus to the minibuffer.
@@ -1828,15 +1853,7 @@ For a nice mindmap in the browser.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package magit-filenotify)
 #+END_SRC
-**** Time-Machine
-:PROPERTIES:
-:ID:       96d780be-db71-4e19-b0f4-f41fe103ea71
-:END:
-View the history of a file.
 
-#+begin_src emacs-lisp :tangle yes
-  (use-package git-timemachine)
-#+end_src
 **** Highlight Diffs
 :PROPERTIES:
 :ID:       ebe9a7aa-3f9a-4ec9-b651-3018472e1f46
@@ -1926,11 +1943,11 @@ Enable electric braces for math mode: ~\( \)~
      (setq TeX-PDF-mode t)
      (setq TeX-source-correlate-start-server t)
      (add-to-list 'TeX-view-program-list
-             '("Zathura"
+             '("Zathura_new111"
                ("zathura %o"
                 (mode-io-correlate " --synctex-forward %n:0:\"%b\" -x \"emacsclient -a emacs --no-wait +%{line} %{input}\""))
                "zathura"))
-     (setcar (cdr (assoc 'output-pdf TeX-view-program-selection)) "Zathura")
+     (setcar (cdr (assoc 'output-pdf TeX-view-program-selection)) "Zathura_new111")
      (flyspell-mode 1))
   (add-hook 'LaTeX-mode-hook 'my-auctex-init)
 #+END_SRC
@@ -1946,12 +1963,16 @@ Custom math macros.
 :ID:       90b8584a-92fe-4032-b74a-a6c2610728fb
 :END:
 #+begin_src emacs-lisp :tangle yes
-  (setq reftex-plug-into-auctex t)
-  (setq reftex-ref-macro-prompt nil)
-  (setq reftex-label-alist '(AMSTeX))
-  (defun reftex-format-cref (label def-fmt ref-style)
-    (format "\\cref{%s}" label))
-  (setq reftex-format-ref-function 'reftex-format-cref)
+  (with-eval-after-load 'reftex
+    (setq reftex-plug-into-auctex t)
+    (setq reftex-ref-macro-prompt nil)
+    (setq reftex-label-alist '(AMSTeX))
+    (defun reftex-format-cref (label def-fmt ref-style)
+      (format "\\cref{%s}" label))
+    (setq reftex-format-ref-function 'reftex-format-cref)
+    (define-key reftex-mode-map (kbd "M-.") 'reftex-view-crossref)
+    (setq reftex-extra-bindings t)
+    (setq reftex-plug-into-AUCTeX t))
 #+end_src
 
 **** Latexmk
@@ -2765,7 +2786,7 @@ Hooking into aggressive indent.
   (use-package julia-formatter
     :straight (julia-formatter
                :type git
-               :repo "https://codeberg.org/FelipeLema/julia-formatter.el.git"
+               :repo "https://codeberg.org/FelipeLema/julia-formatter.el"
                :pre-build ("julia" "--project=." "-e " "\"using Pkg; Pkg.resolve();\"")
                :files ("*.el" "*.toml" "*.jl"))
     :hook
@@ -2923,6 +2944,17 @@ Stolen from https://yiufung.net/post/anki-org/.
     (setq org-cite-insert-processor 'citar)
     (setq org-cite-follow-processor 'citar)
     (setq org-cite-activate-processor 'citar))
+#+end_src
+*** Ement
+A matrix client right inside emacs.
+#+begin_src emacs-lisp :tangle yes
+  (use-package ement
+    :straight
+    '(:host github :repo "alphapapa/ement.el" :branch "master")
+    :config ;(ement-connect :uri-prefix "http://localhost:8009")
+    :custom
+    ;; (ement-room-message-format-spec "%B%r%R%t")
+    (ement-save-sessions t))
 #+end_src
 ** Custom Scripts
 *** Close all Buffers
