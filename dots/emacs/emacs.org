@@ -837,21 +837,7 @@ Distraction free writing.
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 #+end_src
 
-*** PDF Tools
-#+begin_src emacs-lisp :tangle yes
-  ;; (use-package pdf-tools
-  ;;     :config
 
-  ;;     ;; Update PDF buffers after successful LaTeX runs
-  ;;     (add-hook 'TeX-after-compilation-finished-functions
-  ;;               #'TeX-revert-document-buffer)
-  ;;     (pdf-tools-install)
-  ;;     (add-hook 'pdf-view-mode-hook
-  ;;               'pdf-view-auto-slice-minor-mode)
-  ;;     (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
-    ;; (use-package org-pdftools
-    ;;   :after pdf-tools)
-#+end_src
 *** Return to Minibuffer
 Taken from [[https://emacs.stackexchange.com/questions/42287/set-focus-to-minibuffer-window][stackoverlow]]. Returns the focus to the minibuffer.
 #+begin_src emacs-lisp :tangle yes
@@ -896,7 +882,7 @@ Completion at point.
     ;; Opt
     :config
     (setq tab-always-indent 'complete)
-    (global-corfu-mode))
+    (corfu-global-mode))
 #+end_src
 *** LSP
 :PROPERTIES:
