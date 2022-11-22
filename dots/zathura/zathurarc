@@ -1,6 +1,6 @@
 set guioptions none
 set synctex true
-set synctex-editor-command "emacsclient -a emacs --no-wait +%{line}:%{column} %{input}"
+set synctex-editor-command "emacsclient -a emacs --no-wait +%{line} %{input}"
 set adjust-open width
 set page-cache-size 200
 
