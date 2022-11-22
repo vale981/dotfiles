@@ -37,3 +37,4 @@ bspc config remove_unplugged_monitors true
 ###############################################################################
 
 python ~/.config/bspwm/montitor_laptop.py &
+~/.config/polybar/launch.sh &
