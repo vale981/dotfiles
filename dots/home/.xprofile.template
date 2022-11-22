@@ -5,3 +5,10 @@ dunst &
 picom --config .picom.conf &
 xrdb .Xresources &
 kdeconnect-indicator &
+
+{{#SCALE}}
+export QT_AUTO_SCREEN_SET_FACTOR=0
+export QT_SCALE_FACTOR={{SCALE}}
+export QT_FONT_DPI={{DPI}}
+export GDK_SCALE={{SCALE}}
+{{/SCALE}}
