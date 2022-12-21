@@ -361,9 +361,9 @@ We use the doom theme.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'default-frame-alist
-               '(font . "JetBrains Mono-10:weight=light:antialias=subpixel"))
+               '(font . "JetBrains Mono Nerd Font-10:weight=light:antialias=subpixel"))
 
-  (set-face-attribute 'mode-line nil :font "JetBrains Mono-10:weight=light:antialias=subpixel")
+  (set-face-attribute 'mode-line nil :font "JetBrains Mono Nerd Font-10:weight=light:antialias=subpixel")
 
   (add-to-list 'default-frame-alist
                '(internal-border-width . 0))
@@ -1066,7 +1066,9 @@ Multiple major modes in one buffer.
   (add-hook 'org-mode-hook (lambda () (setq-local yas-indent-line 'fixed)))
   (org-clock-persistence-insinuate)
   (setq org-id-link-to-org-use-id 'create-if-interactive)
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale .5))
 #+END_SRC
+
 **** Refile
 :PROPERTIES:
 :ID:       25e8eb21-b15c-4cd1-9cde-4b458a885b71
@@ -1683,16 +1685,18 @@ See https://www.orgroam.com/manual.html.
 
 ***** Bibtex
 #+begin_src emacs-lisp :tangle yes
-  (use-package org-roam-bibtex
-    :after (org-roam)
-    :config
-    (require 'org-ref)
-    (setq orb-note-actions-interface 'hydra)
-    (setq orb-process-file-keyword t)
-    (setq orb-file-field-extensions '("pdf" "epub" "html"))
-    (org-roam-bibtex-mode)
-    :bind (("C-c n r" . orb-insert-link)
-           ("C-c n a" . orb-note-actions)))
+    (use-package org-roam-bibtex
+      :after (org-roam)
+      :hook (org-roam-mode . org-roam-bibtex-mode)
+
+      :config
+      (require 'org-ref)
+      (setq orb-note-actions-interface 'hydra)
+      (setq orb-process-file-keyword t)
+      (setq orb-file-field-extensions '("pdf" "epub" "html"))
+      (org-roam-bibtex-mode)
+      :bind (("C-c n r" . orb-insert-link)
+             ("C-c n a" . orb-note-actions)))
 #+end_src
 
 ***** UI

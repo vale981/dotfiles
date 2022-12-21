@@ -57,10 +57,10 @@ super + shift + {q,r}
         {xfce4-session-logout --fast,bspc wm -r}
 
 # close and kill
-super + x
+super + k
         bspc node -c
 
-super + shift + x
+super + shift + k
         bspc node -k
 
 # alternate between the tiled and monocle layout
